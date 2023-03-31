@@ -3,10 +3,10 @@ import Constants from "../../../helpers/constants";
 import { AdScraperUrlParams } from "../../../helpers/dtos/adScraperUrlParams";
 import { JobAdDTO } from "../../../helpers/dtos/jobAdDTO";
 import { AdScraperTracker } from "../../../helpers/dtos/adScraperTracker";
-import { ScrapeJobAdsForm } from "../../../helpers/dtos/scrapeJobAdsForm";
 import { JobAdSource } from "../../../helpers/enums/jobAdSource";
 import Utils from "../../../helpers/utils";
 import BrowserAPI from "../../browserAPI";
+import { ElementHandle } from "puppeteer";
 
 
 @Service()
@@ -15,9 +15,17 @@ export class BaseAdScraper {
     private browserAPI: BrowserAPI;
     @Inject()
     private utils: Utils;
+    
+    private sourcesWithPostedAgo: JobAdSource[] = [
+        JobAdSource.EURO_ENGINEER_JOBS,
+        JobAdSource.EURO_SCIENCE_JOBS,
+        JobAdSource.EURO_SPACE_CAREERS,
+        JobAdSource.EURO_TECH_JOBS,
+        JobAdSource.JOB_FLUENT,
+    ];
 
     /**
-   * @description Function that accepts requested parameters from the client and based on them returns a list of scraped JobAdDTOs
+   * @description Function accepts requested parameters from the client and based on them returns a list of scraped JobAdDTOs
    * @param {AdScraperUrlParams} urlParams @param {JobAdSource} adSource
    * @returns {Promise<JobAdDTO[]>} Returns the list of scraped JobAdDTOs.
    */
@@ -30,38 +38,81 @@ export class BaseAdScraper {
 
         await this.browserAPI.run();
         while (scraperTracker.nOfScrapedAds < urlParams.reqNofAds) {
-            const selector = this.getSiteData(urlParams, scraperTracker, adSource);
+            const jobAdSelector = this.getSiteData(urlParams, scraperTracker, adSource);
             await this.browserAPI.openPage(scraperTracker.url!);
-            const jobAdElements = await this.browserAPI.findMultiple(selector);
-            const postedAgoElements = await this.browserAPI.findMultiple(Constants.JOB_FLUENT_PUBLISHED_AGO_SELECTOR);
-            for (let j = 0; j < jobAdElements.length; j++) {
-                let jobLink = await this.browserAPI.getDataFromAttr(jobAdElements[j], Constants.HREF_SELECTOR);
-                if (!jobLink) continue;
-                console.log(jobLink);
-                jobLink = this.formatJobLink(jobLink, adSource);
-                const newAd: JobAdDTO = {
-                    source: adSource,
-                    jobLink: jobLink
-                }
-    
-                if (JobAdSource.JOB_FLUENT === adSource) {
-                    const publishedAgo = await this.browserAPI.getTextFrom(postedAgoElements[j]);
-                    console.log(`Published ago value is ${publishedAgo}\n`);
-                    if (publishedAgo) {
-                        newAd.postedDate = this.utils.getPostedDate4JobFluent(publishedAgo);
-                        newAd.postedDateTimestamp = this.utils.transformToTimestamp(newAd.postedDate.toString());
-                    }
-
-                    console.log(newAd);
-                }
-    
-                scraperTracker.scrapedAds.push(newAd);
-                scraperTracker.nOfScrapedAds += 1;
+            let postedDateElements: ElementHandle<Element>[] = [];
+            if (JobAdSource.JOB_FLUENT === adSource) {
+                postedDateElements = await this.browserAPI.findMultiple(Constants.JOB_FLUENT_PUBLISHED_AGO_SELECTOR);
             }
-    
-            if (!jobAdElements || jobAdElements.length == 0) break; 
+
+            const numberOfAdsScraped = await this.scrapePage(scraperTracker, adSource, jobAdSelector, postedDateElements);
+            if (numberOfAdsScraped === 0) break;
             scraperTracker.currentPage += 1;
+        }
     
+        console.log(scraperTracker.scrapedAds.length + " ads have been scraped in total.");
+        await this.browserAPI.close();
+        return scraperTracker.scrapedAds;
+    }
+
+    /**
+   * @description Function accepts job ad website (one of the four euroJobSites) url parameters and returns the list of scraped JobAdDTOs.
+   * @param {AdScraperUrlParams} urlParams @param {JobAdSource} adSource
+   * @returns {Promise<JobAdDTO[]>} Returns the list of scraped JobAdDTOs.
+   */
+    protected async scrapeEuroJobSitesAds(urlParams: AdScraperUrlParams, adSource: JobAdSource): Promise<JobAdDTO[]> {
+        await this.browserAPI.run();
+        const scraperTracker = this.getEuroJobSiteData(urlParams, adSource);
+        await this.browserAPI.openPage(scraperTracker.url!);
+        const postedDateElements = await this.browserAPI.findMultiple(Constants.EURO_JOBS_POSTED_AGO_SELECTOR);    // fetching elements here since this step is specific for euroJobSites - postedAgo dates are divided into two categories
+
+        await this.scrapePage(scraperTracker, adSource, Constants.EURO_JOBS_JOBLINKS_SELECTOR_ONE, postedDateElements);
+        await this.scrapePage(scraperTracker, adSource, Constants.EURO_JOBS_JOBLINKS_SELECTOR_TWO, postedDateElements.splice(scraperTracker.nOfScrapedAds));
+        
+        // scrapedAds = await gatherJobAds(scrapedAds, adSource, baseUrl, page, Constants.EURO_JOBS_JOBLINKS_SELECTOR_ONE, );
+        // console.log("about to scrape first batch of job ads from " + url + ". ");
+        // scrapedAds = await gatherJobAds(scrapedAds, adSource, baseUrl, page, Constants.EURO_JOBS_JOBLINKS_SELECTOR_TWO, );
+        // console.log("about to scrape second batch of job ads from " + url + ". ");
+    
+        await this.browserAPI.close();
+        return scraperTracker.scrapedAds;
+    }
+
+    /**
+   * @description Function accepts data about the page to be scraped, job ad selector and element handles to posted ago elements if they are present.
+   * @param {AdScraperTracker} scraperTracker @param {JobAdSource} adSource @param {string} adSelector @param {string} postedAgoElements
+   * @returns {Promise<n>} Returns the number of job ads scraped from the page.
+   */
+    private async scrapePage(scraperTracker: AdScraperTracker, adSource: JobAdSource, adSelector: string, postedAgoElements: ElementHandle<Element>[]): Promise<number> {
+        let nOfScrapedAds = 0;
+        const jobAdElements = await this.browserAPI.findMultiple(adSelector);
+
+        for (let i = 0; i < jobAdElements.length; i++) {
+            let jobLink = await this.browserAPI.getDataFromAttr(jobAdElements[i], Constants.HREF_SELECTOR);
+            if (!jobLink) continue;
+
+            const newAd: JobAdDTO = {
+                source: adSource,
+                jobLink: this.formatJobLink(jobLink, adSource),
+            }
+
+            if (this.sourcesWithPostedAgo.includes(adSource)) {
+                const postedAgo = await this.browserAPI.getTextFrom(postedAgoElements[i]);
+                if (postedAgo) {
+                    if (adSource === JobAdSource.JOB_FLUENT) {
+                        newAd.postedDate == this.utils.getPostedDate4JobFluent(postedAgo)
+                    } else {
+                        newAd.postedDate = this.utils.getPostedDate4EuroJobSites(postedAgo);
+                    }
+                    newAd.postedDateTimestamp = this.utils.transformToTimestamp(newAd.postedDate!.toString())                        
+                }
+            }
+            
+            scraperTracker.scrapedAds.push(newAd);
+            scraperTracker.nOfScrapedAds += 1;
+            nOfScrapedAds += 1;
+            await jobAdElements[i].dispose();
+
             if (adSource === JobAdSource.SIMPLY_HIRED) {
                 const navigationButtons = await this.browserAPI.findMultiple(Constants.SIMPLY_HIRED_NAVIGATION_BUTTONS_SELECTOR);
                 for (let i = 0; i < navigationButtons.length; i++) {
@@ -80,10 +131,8 @@ export class BaseAdScraper {
                 await this.browserAPI.openPage(scraperTracker.url!);
             }
         }
-    
-        console.log(scraperTracker.scrapedAds.length + " ads have been scraped in total.");
-        await this.browserAPI.close();
-        return scraperTracker.scrapedAds;
+
+        return nOfScrapedAds;
     }
 
     /**
@@ -97,6 +146,14 @@ export class BaseAdScraper {
                 return Constants.CAREER_JET_URL + jobLink.trim();
             case JobAdSource.CV_LIBRARY:
                 return Constants.CV_LIBRARY_URL + jobLink.trim();
+            case JobAdSource.EURO_ENGINEER_JOBS:
+                return Constants.EURO_ENGINEERING_URL + jobLink.trim();
+            case JobAdSource.EURO_SCIENCE_JOBS:
+                return Constants.EURO_SCIENCE_URL + jobLink.trim();
+            case JobAdSource.EURO_SPACE_CAREERS:
+                return Constants.EURO_SPACE_CAREERS_URL + jobLink.trim();
+            case JobAdSource.EURO_TECH_JOBS:
+                return Constants.EURO_TECH_URL + jobLink.trim();
             case JobAdSource.GRADUATELAND:
                 return Constants.GRADUATELAND_URL + jobLink.trim();
             case JobAdSource.JOB_FLUENT:
@@ -159,5 +216,32 @@ export class BaseAdScraper {
             default:
                 throw Constants.AD_SOURCE_NOT_RECOGNIZED;
         }
+    }
+
+    /**
+     * @description Function accepts requested parameters from the client and jobAdSource.
+     * Based on the parameters, the function constructs the euroJobSiteUrl which will be scraped for jobAds.
+     * @param {AdScraperUrlParams} urlParams @param {JobAdSource} jobAdSource
+     * @returns {string} Returns the element selector.
+     */
+    private getEuroJobSiteData(urlParams: AdScraperUrlParams, jobAdSource: JobAdSource): AdScraperTracker {
+        const scraperTracker: AdScraperTracker = {
+            nOfScrapedAds: 0,
+            scrapedAds: [],
+            currentPage: 1
+        }
+
+        switch (jobAdSource) {
+            case JobAdSource.EURO_ENGINEER_JOBS:
+                scraperTracker.url = `${Constants.EURO_ENGINEERING_URL}/job_search/keyword/${urlParams.jobTitle}`
+            case JobAdSource.EURO_SCIENCE_JOBS:
+                scraperTracker.url = `${Constants.EURO_SCIENCE_URL}/job_search/keyword/${urlParams.jobTitle}`
+            case JobAdSource.EURO_SPACE_CAREERS:
+                scraperTracker.url = `${Constants.EURO_SPACE_CAREERS_URL}/job_search/keyword/${urlParams.jobTitle}`
+            case JobAdSource.EURO_TECH_JOBS:
+                scraperTracker.url = `${Constants.EURO_TECH_URL}/job_search/keyword/${urlParams.jobTitle}`
+        }
+
+        return scraperTracker;
     }
 }

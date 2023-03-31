@@ -13,7 +13,11 @@ export default class Utils {
         return timestamp;
     }
 
-    // TODO: write the doc for the method. Needs to contain the description of the parameter received (expected format)
+    /**
+     * @description Function that formats postedAgo property from JobFluent ad (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
     public getPostedDate4JobFluent(textContainingPostedAgo: string): Date {
         const [_, firstPart, secondPart] = textContainingPostedAgo.trim().split(Constants.WHITESPACE);
 
@@ -26,6 +30,11 @@ export default class Utils {
         }
     }
 
+    /**
+     * @description Function that formats postedAgo property from CareerBuilder ad (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
     public getPostedDate4CareerBuilder(textContainingPostedAgo: string): Date {
         const [postedAgoText, timeframe, _] = textContainingPostedAgo.trim().split(Constants.WHITESPACE);
         const postedAgo = parseInt(postedAgoText);
@@ -39,5 +48,20 @@ export default class Utils {
         }
     
         return new Date();
+    }
+
+    /**
+     * @description Function that formats postedAgo property from EuroJobSites ad (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
+    public getPostedDate4EuroJobSites(textContainingPostedAgo: string): Date {
+        const [firstPart, secondPart, thirdPart, _] = textContainingPostedAgo.trim().split(Constants.WHITESPACE);
+        
+        if (thirdPart.includes(JobAdPostedAgoTimeframe.DAY)) {
+            return addDays(Date.now(), -parseInt(secondPart));
+        } else {
+            return new Date();
+        }
     }
 }

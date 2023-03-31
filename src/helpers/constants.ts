@@ -21,6 +21,7 @@ export default {
     COMMA_SIGN: ',',
     MINUS_SIGN: '-',
     PLUS_SIGN: '+',
+    UNDERSCORE_SIGN: '_',
     EMPTY_STRING: '',
     WHITESPACE: ' ',
     WHITESPACE_URL_ENCODING: '%20',
@@ -31,6 +32,7 @@ export default {
     AD_SOURCE_NOT_RECOGNIZED: 'AdSource not recognized',
     JOB_TITLE_INVALID: 'The job title you provided is invalid',
     NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
+    UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',
     WORK_FROM_HOME_INVALID: 'The "Work From Home" value is invalid',
 
     // common html selectors
@@ -62,6 +64,9 @@ export default {
     CAREER_BUILDER_POSTINGDATE_SELECTOR: '.data-results-publish-time',
     CAREER_BUILDER_JOB_ADS: 'li > .job-listing-item',
     CAREER_BUILDER_JOBLINK_SELECTOR: ['name', 'href'],
+    EURO_JOBS_POSTED_AGO_SELECTOR: '.postedDate',
+    EURO_JOBS_JOBLINKS_SELECTOR_ONE: '.searchList > li > div > div > div > a',
+    EURO_JOBS_JOBLINKS_SELECTOR_TWO: '.searchList > li > div > div > div > div > div > h3 > a',
 
 
     // HTTP codes

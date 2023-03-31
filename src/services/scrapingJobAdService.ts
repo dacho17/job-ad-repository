@@ -11,6 +11,7 @@ import { CareerBuilderScraper } from './scrapers/jobAdScrapers/careerBuilder';
 import { CarerJetAdScraper } from './scrapers/jobAdScrapers/careerJetAdScraper';
 import { CvLibraryAdScraper } from './scrapers/jobAdScrapers/cvLibraryAdScraper';
 import { EuroJobsAdScraper } from './scrapers/jobAdScrapers/euroJobsAdScraper';
+import { EuroJobSitesAdScraper } from './scrapers/jobAdScrapers/euroJobSitesAdScraper';
 import { GraduatelandAdScraper } from './scrapers/jobAdScrapers/graduatelandAdScraper';
 import { JobFluentAdScraper } from './scrapers/jobAdScrapers/jobFluentAdScraper';
 import { NoFluffAdScraper } from './scrapers/jobAdScrapers/noFluffJobsAdScraper';
@@ -37,6 +38,8 @@ export class ScrapingJobAdService {
     @Inject()
     private euroJobsAdScraper: EuroJobsAdScraper;
     @Inject()
+    private euroJobSitesAdScraper: EuroJobSitesAdScraper;
+    @Inject()
     private graduatelandAdScraper: GraduatelandAdScraper;
     @Inject()
     private jobFluentAdScraper: JobFluentAdScraper;
@@ -55,7 +58,8 @@ export class ScrapingJobAdService {
    * @returns {Promise<number>} Promise resolving to the number of stored job ads.
    */
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
-        const jobAdScrapers = this.getScrapers();
+        // const jobAdScrapers = this.getScrapers();
+        const jobAdScrapers = [this.euroJobSitesAdScraper];
 
         let totalAdsScraped = 0;
 
@@ -92,7 +96,7 @@ export class ScrapingJobAdService {
     private getScrapers(): IJobAdScraper[] {
         return [
             this.adzunaAdScraper, this.arbeitNowAdScraper, this.careerBuilderScraper, this.careerJetAdScraper, this.cvLibraryAdScraper,
-            this.euroJobsAdScraper, this.graduatelandAdScraper, this.jobFluentAdScraper, this.noFluffAdScraper,
+            this.euroJobsAdScraper, this.euroJobSitesAdScraper, this.graduatelandAdScraper, this.jobFluentAdScraper, this.noFluffAdScraper,
             this.qreerAdScraper, this.simplyHiredAdScraper, this.tybaAdScraper
         ];
     }
