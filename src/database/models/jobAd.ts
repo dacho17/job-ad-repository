@@ -14,6 +14,7 @@ export class JobAd extends Model {
     detailsScrapedDate?: Date;
     jobTitle?: string;
     postedDate?: Date;
+    postedDateTimestamp?: number;
     JobAdSourceId?: number;
     JobId?: number;
 }
@@ -60,6 +61,10 @@ export const JobAdMAP = (sequelize: Sequelize) => {
         postedDate: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        postedDateTimestamp: {
+            type: DataTypes.BIGINT,
+            allowNull: true,
         },
         JobAdSourceId: {
             type: DataTypes.INTEGER,

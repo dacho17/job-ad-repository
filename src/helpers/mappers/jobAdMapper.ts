@@ -17,7 +17,8 @@ export class JobAdMapper {
             source: jobAdDTO.source.valueOf(),
             // areDetailsScraped: jobAdDTO.areDetailsScraped || false, DTO not carrying the property at the moment
             jobTitle: jobAdDTO.jobTitle,
-            postedDate: jobAdDTO.postedDate ? new Date(jobAdDTO.postedDate) : new Date()
+            postedDate: jobAdDTO.postedDate ? new Date(jobAdDTO.postedDate) : new Date(),
+            postedDateTimestamp: jobAdDTO.postedDateTimestamp
         });
         return jobAdMAP;
     }
@@ -31,7 +32,8 @@ export class JobAdMapper {
         const jobAdDTO: JobAdDTO = {
             jobLink: jobAdMAP.jobLink,
             source: jobAdMAP.source,
-            jobTitle: jobAdMAP.jobTitle
+            jobTitle: jobAdMAP.jobTitle,
+            postedDateTimestamp: jobAdMAP.postedDateTimestamp
         }
         
         return jobAdDTO;
