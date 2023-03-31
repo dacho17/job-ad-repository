@@ -57,20 +57,28 @@ export default class BrowserAPI {
         }
     }
 
-     /**
+    public async getDataFromTwoAttrs(element: ElementHandle<Element>, selOne: string, selTwo: string): Promise<(string | null)[]> {
+        try {
+            return await this.page.evaluate((el, selectorOne, selectorTwo) => 
+                [el.getAttribute(selectorOne), el.getAttribute(selectorTwo)], element, selOne, selTwo);
+        } catch (exception) {
+            console.log(`Error while evaluating element with attributes ${selOne}, ${selTwo}`);
+            return [null, null];
+        }
+    }
+
+    /**
    * @description Function that extracts the text data from the selected element
-   * @param {string} selector
+   * @param {ElementHandle<Element>} 
    * @returns {Promise<string | null>} Returns the requested text content, or null if the one is not found.
    */
-    public async getDataFrom(selector: string): Promise<string | null> {
-        await this.page.waitForSelector(selector);
-        const dataElement = await this.page.$(selector);
+    public async getTextFrom(element: ElementHandle<Element>): Promise<string | null> {
         try {
-            const data = await dataElement?.evaluate(el => el.textContent);
-            await dataElement?.dispose();
-            return data!;            
+            const text = await this.page.evaluate(el => el.textContent, element);
+            await element.dispose();
+            return text;
         } catch (exception) {
-            console.log(`Not able to detect an element using the selector ${selector} on ${this.page.url()}`);
+            console.log(`Not able to evaluate an element`);
             return null;
         }
     }
