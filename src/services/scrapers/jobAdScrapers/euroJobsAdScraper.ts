@@ -1,9 +1,9 @@
 import { Service } from "typedi";
-import Constants from "../../helpers/constants";
-import { AdScraperUrlParams } from "../../helpers/dtos/adScraperUrlParams";
-import { JobAdDTO } from "../../helpers/dtos/jobAdDTO";
-import { ScrapeJobAdsForm } from "../../helpers/dtos/scrapeJobAdsForm";
-import { JobAdSource } from "../../helpers/enums/jobAdSource";
+import Constants from "../../../helpers/constants";
+import { AdScraperUrlParams } from "../../../helpers/dtos/adScraperUrlParams";
+import { JobAdDTO } from "../../../helpers/dtos/jobAdDTO";
+import { ScrapeJobAdsForm } from "../../../helpers/dtos/scrapeJobAdsForm";
+import { JobAdSource } from "../../../helpers/enums/jobAdSource";
 import { BaseAdScraper } from "./baseAdScraper";
 
 

@@ -1,17 +1,17 @@
 import { Service } from "typedi";
-import Constants from "../../helpers/constants";
-import { AdScraperUrlParams } from "../../helpers/dtos/adScraperUrlParams";
-import { JobAdDTO } from "../../helpers/dtos/jobAdDTO";
-import { ScrapeJobAdsForm } from "../../helpers/dtos/scrapeJobAdsForm";
-import { JobAdSource } from "../../helpers/enums/jobAdSource";
+import Constants from "../../../helpers/constants";
+import { AdScraperUrlParams } from "../../../helpers/dtos/adScraperUrlParams";
+import { JobAdDTO } from "../../../helpers/dtos/jobAdDTO";
+import { ScrapeJobAdsForm } from "../../../helpers/dtos/scrapeJobAdsForm";
+import { JobAdSource } from "../../../helpers/enums/jobAdSource";
 import { BaseAdScraper } from "./baseAdScraper";
 
 
 @Service()
-export class TybaAdScraper extends BaseAdScraper {
+export class QreerAdScraper extends BaseAdScraper {
     /**
    * @description Function that accepts client form, and based on it starts the jobAd scraping.
-   * Data available on Tyba in the scrape is (jobTitle, companyName, companyLocation, timeEngagement).
+   * Data available on Qreer in the scrape is (jobTitle, companyName, companyLocation, postedDate, salary).
    * Only jobLink is scraped at the moment since rest of the data is available on the job detail site.
    * @param {ScrapeJobAdsForm} clientForm
    * @returns {Promise<JobAdDTO[]>} Returns the list of scraped JobAdDTOs.
@@ -22,6 +22,6 @@ export class TybaAdScraper extends BaseAdScraper {
             reqNofAds: clientForm.reqNOfAds
         }
 
-        return await this.scrapeAds(urlParams, JobAdSource.TYBA);
+        return await this.scrapeAds(urlParams, JobAdSource.QREER);
     }
 }

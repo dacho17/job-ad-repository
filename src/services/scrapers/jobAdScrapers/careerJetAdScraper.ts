@@ -1,10 +1,10 @@
-import Constants from '../../helpers/constants';
 import { Service } from "typedi";
-import { AdScraperUrlParams } from "../../helpers/dtos/adScraperUrlParams";
-import { JobAdDTO } from "../../helpers/dtos/jobAdDTO";
-import { ScrapeJobAdsForm } from "../../helpers/dtos/scrapeJobAdsForm";
+import Constants from "../../../helpers/constants";
+import { AdScraperUrlParams } from "../../../helpers/dtos/adScraperUrlParams";
+import { JobAdDTO } from "../../../helpers/dtos/jobAdDTO";
+import { ScrapeJobAdsForm } from "../../../helpers/dtos/scrapeJobAdsForm";
+import { JobAdSource } from "../../../helpers/enums/jobAdSource";
 import { BaseAdScraper } from "./baseAdScraper";
-import { JobAdSource } from '../../helpers/enums/jobAdSource';
 
 @Service()
 export class CarerJetAdScraper extends BaseAdScraper {

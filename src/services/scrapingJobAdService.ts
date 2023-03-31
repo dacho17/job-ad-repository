@@ -4,18 +4,18 @@ import { JobAdDTO } from '../helpers/dtos/jobAdDTO';
 import { JobAdMapper } from '../helpers/mappers/jobAdMapper';
 import { ScrapingJobAdRepository } from '../repositories/scrapingJobAdRepository';
 import { ScrapeJobAdsForm }  from './../helpers/dtos/scrapeJobAdsForm';
-import { AdzunaAdScraper } from './scrapers/adzunaAdScraper';
-import { ArbeitNowAdScraper } from './scrapers/arbeitNowAdScraper';
-import { BaseAdScraper } from './scrapers/baseAdScraper';
-import { CarerJetAdScraper } from './scrapers/careerJetAdScraper';
-import { CvLibraryAdScraper } from './scrapers/cvLibraryAdScraper';
-import { EuroJobsAdScraper } from './scrapers/euroJobsAdScraper';
-import { GraduatelandAdScraper } from './scrapers/graduatelandAdScraper';
-import { JobFluentAdScraper } from './scrapers/jobFluentAdScraper';
-import { NoFluffAdScraper } from './scrapers/noFluffJobsAdScraper';
-import { QreerAdScraper } from './scrapers/qreerAdScraper';
-import { SimplyHiredAdScraper } from './scrapers/simplyHiredAdScraper';
-import { TybaAdScraper } from './scrapers/tybaAdScraper';
+import { AdzunaAdScraper } from './scrapers/jobAdScrapers/adzunaAdScraper';
+import { ArbeitNowAdScraper } from './scrapers/jobAdScrapers/arbeitNowAdScraper';
+import { BaseAdScraper } from './scrapers/jobAdScrapers/baseAdScraper';
+import { CarerJetAdScraper } from './scrapers/jobAdScrapers/careerJetAdScraper';
+import { CvLibraryAdScraper } from './scrapers/jobAdScrapers/cvLibraryAdScraper';
+import { EuroJobsAdScraper } from './scrapers/jobAdScrapers/euroJobsAdScraper';
+import { GraduatelandAdScraper } from './scrapers/jobAdScrapers/graduatelandAdScraper';
+import { JobFluentAdScraper } from './scrapers/jobAdScrapers/jobFluentAdScraper';
+import { NoFluffAdScraper } from './scrapers/jobAdScrapers/noFluffJobsAdScraper';
+import { QreerAdScraper } from './scrapers/jobAdScrapers/qreerAdScraper';
+import { SimplyHiredAdScraper } from './scrapers/jobAdScrapers/simplyHiredAdScraper';
+import { TybaAdScraper } from './scrapers/jobAdScrapers/tybaAdScraper';
 
 @Service()
 export class ScrapingJobAdService {
@@ -47,7 +47,8 @@ export class ScrapingJobAdService {
     private tybaAdScraper: TybaAdScraper;
 
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
-        const allScrapers = this.getScrapers();
+        // const allScrapers = this.getScrapers();
+        const allScrapers = [this.adzunaAdScraper]
         let totalAdsScraped = 0;
 
         for (let i = 0; i < allScrapers.length; i++) {

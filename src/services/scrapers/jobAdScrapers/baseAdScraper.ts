@@ -1,12 +1,13 @@
 import { Inject, Service } from "typedi";
-import Constants from "../../helpers/constants";
-import { AdScraperTracker } from "../../helpers/dtos/adScraperTracker";
-import { AdScraperUrlParams } from "../../helpers/dtos/adScraperUrlParams";
-import { JobAdDTO } from "../../helpers/dtos/jobAdDTO";
-import { ScrapeJobAdsForm } from "../../helpers/dtos/scrapeJobAdsForm";
-import { JobAdSource } from "../../helpers/enums/jobAdSource";
-import Utils from "../../helpers/utils";
-import BrowserAPI from "../browserAPI";
+import Constants from "../../../helpers/constants";
+import { AdScraperUrlParams } from "../../../helpers/dtos/adScraperUrlParams";
+import { JobAdDTO } from "../../../helpers/dtos/jobAdDTO";
+import { AdScraperTracker } from "../../../helpers/dtos/adScraperTracker";
+import { ScrapeJobAdsForm } from "../../../helpers/dtos/scrapeJobAdsForm";
+import { JobAdSource } from "../../../helpers/enums/jobAdSource";
+import Utils from "../../../helpers/utils";
+import BrowserAPI from "../../browserAPI";
+
 
 @Service()
 export abstract class BaseAdScraper {
