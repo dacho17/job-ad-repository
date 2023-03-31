@@ -18,6 +18,7 @@ import { NoFluffAdScraper } from './scrapers/jobAdScrapers/noFluffJobsAdScraper'
 import { QreerAdScraper } from './scrapers/jobAdScrapers/qreerAdScraper';
 import { SimplyHiredAdScraper } from './scrapers/jobAdScrapers/simplyHiredAdScraper';
 import { TybaAdScraper } from './scrapers/jobAdScrapers/tybaAdScraper';
+import { WeWorkRemotelyAdScraper } from './scrapers/jobAdScrapers/weWorkRemotelyAdScraper';
 
 @Service()
 export class ScrapingJobAdService {
@@ -51,6 +52,8 @@ export class ScrapingJobAdService {
     private simplyHiredAdScraper: SimplyHiredAdScraper;
     @Inject()
     private tybaAdScraper: TybaAdScraper;
+    @Inject()
+    private weWorkRemotelyAdScraper: WeWorkRemotelyAdScraper;
 
     /**
    * @description Function accepts client form, and based on the data provided scrapes jobs across the jobsites defined in the getScrapers() function.
@@ -59,7 +62,7 @@ export class ScrapingJobAdService {
    */
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
         // const jobAdScrapers = this.getScrapers();
-        const jobAdScrapers = [this.euroJobSitesAdScraper];
+        const jobAdScrapers = [this.adzunaAdScraper];
 
         let totalAdsScraped = 0;
 
@@ -97,7 +100,7 @@ export class ScrapingJobAdService {
         return [
             this.adzunaAdScraper, this.arbeitNowAdScraper, this.careerBuilderScraper, this.careerJetAdScraper, this.cvLibraryAdScraper,
             this.euroJobsAdScraper, this.euroJobSitesAdScraper, this.graduatelandAdScraper, this.jobFluentAdScraper, this.noFluffAdScraper,
-            this.qreerAdScraper, this.simplyHiredAdScraper, this.tybaAdScraper
+            this.qreerAdScraper, this.simplyHiredAdScraper, this.tybaAdScraper, this.weWorkRemotelyAdScraper
         ];
     }
 

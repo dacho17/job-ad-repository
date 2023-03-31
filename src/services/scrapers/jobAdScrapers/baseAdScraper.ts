@@ -12,7 +12,7 @@ import { ElementHandle } from "puppeteer";
 @Service()
 export class BaseAdScraper {
     @Inject()
-    private browserAPI: BrowserAPI;
+    protected browserAPI: BrowserAPI;
     @Inject()
     private utils: Utils;
     
@@ -78,15 +78,8 @@ export class BaseAdScraper {
         return scraperTracker.scrapedAds;
     }
 
-    /**
-   * @description Function accepts data about the page to be scraped, job ad selector and element handles to posted ago elements if they are present.
-   * @param {AdScraperTracker} scraperTracker @param {JobAdSource} adSource @param {string} adSelector @param {string} postedAgoElements
-   * @returns {Promise<n>} Returns the number of job ads scraped from the page.
-   */
-    private async scrapePage(scraperTracker: AdScraperTracker, adSource: JobAdSource, adSelector: string, postedAgoElements: ElementHandle<Element>[]): Promise<number> {
+    protected async scrapeJobAdElements(scraperTracker: AdScraperTracker, adSource: JobAdSource, jobAdElements: ElementHandle<Element>[], postedAgoElements: ElementHandle<Element>[]): Promise<number> {
         let nOfScrapedAds = 0;
-        const jobAdElements = await this.browserAPI.findMultiple(adSelector);
-
         for (let i = 0; i < jobAdElements.length; i++) {
             let jobLink = await this.browserAPI.getDataFromAttr(jobAdElements[i], Constants.HREF_SELECTOR);
             if (!jobLink) continue;
@@ -136,6 +129,18 @@ export class BaseAdScraper {
     }
 
     /**
+   * @description Function accepts data about the page to be scraped, job ad selector and element handles to posted ago elements if they are present.
+   * @param {AdScraperTracker} scraperTracker @param {JobAdSource} adSource @param {string} adSelector @param {string} postedAgoElements
+   * @returns {Promise<n>} Returns the number of job ads scraped from the page.
+   */
+    private async scrapePage(scraperTracker: AdScraperTracker, adSource: JobAdSource, adSelector: string, postedAgoElements: ElementHandle<Element>[]): Promise<number> {
+        const jobAdElements = await this.browserAPI.findMultiple(adSelector);
+        const nOfScrapedAds = await this.scrapeJobAdElements(scraperTracker, adSource, jobAdElements, postedAgoElements);
+        
+        return nOfScrapedAds;
+    }
+
+    /**
      * @description Function that accepts the scraped url and jobAdSource. Based on the jobAdSource the url is formatted and returned.
      * @param {string} jobLink @param {JobAdSource} jobAdSource
      * @returns {string} Returns the formatted url.
@@ -166,6 +171,8 @@ export class BaseAdScraper {
                 return Constants.SIMPLY_HIRED_URL + jobLink.trim();
             case JobAdSource.TYBA:
                 return Constants.TYBA_URL + jobLink.trim();
+            case JobAdSource.WE_WORK_REMOTELY:
+                return Constants.WE_WORK_REMOTELY_URL + jobLink.trim();
             default:    // adzuna, arbeitNow, cvLibrary, euroJobs,
                 return jobLink.trim();
         }

@@ -43,6 +43,10 @@ export default class BrowserAPI {
         return await this.page.$$(selector);
     }
 
+    public async findElementsOnElement(element: ElementHandle<Element>, selector: string): Promise<ElementHandle<Element>[]> {
+        return await element.$$(selector);
+    }
+
     /**
    * @description Function that extracts data from the selected attribute of the selected element
    * @param {ElementHandle<Element>} element @param {string} selector 

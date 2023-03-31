@@ -67,6 +67,8 @@ export default {
     EURO_JOBS_POSTED_AGO_SELECTOR: '.postedDate',
     EURO_JOBS_JOBLINKS_SELECTOR_ONE: '.searchList > li > div > div > div > a',
     EURO_JOBS_JOBLINKS_SELECTOR_TWO: '.searchList > li > div > div > div > div > div > h3 > a',
+    WE_WORK_REMOTELY_JOB_SECTION_SELECTOR: '.jobs-container > .jobs',
+    WE_WORK_REMOTELY_VIEW_ALL_JOBS_SELECTOR: 'article > ul > .view-all > a',
 
 
     // HTTP codes
