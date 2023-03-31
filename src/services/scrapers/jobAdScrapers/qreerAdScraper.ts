@@ -4,11 +4,12 @@ import { AdScraperUrlParams } from "../../../helpers/dtos/adScraperUrlParams";
 import { JobAdDTO } from "../../../helpers/dtos/jobAdDTO";
 import { ScrapeJobAdsForm } from "../../../helpers/dtos/scrapeJobAdsForm";
 import { JobAdSource } from "../../../helpers/enums/jobAdSource";
+import IJobAdScraper from "../interfaces/IJobAdScraper";
 import { BaseAdScraper } from "./baseAdScraper";
 
 
 @Service()
-export class QreerAdScraper extends BaseAdScraper {
+export class QreerAdScraper extends BaseAdScraper implements IJobAdScraper {
     /**
    * @description Function that accepts client form, and based on it starts the jobAd scraping.
    * Data available on Qreer in the scrape is (jobTitle, companyName, companyLocation, postedDate, salary).

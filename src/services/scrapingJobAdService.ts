@@ -4,9 +4,10 @@ import { JobAdDTO } from '../helpers/dtos/jobAdDTO';
 import { JobAdMapper } from '../helpers/mappers/jobAdMapper';
 import { ScrapingJobAdRepository } from '../repositories/scrapingJobAdRepository';
 import { ScrapeJobAdsForm }  from './../helpers/dtos/scrapeJobAdsForm';
+import IJobAdScraper from './scrapers/interfaces/IJobAdScraper';
 import { AdzunaAdScraper } from './scrapers/jobAdScrapers/adzunaAdScraper';
 import { ArbeitNowAdScraper } from './scrapers/jobAdScrapers/arbeitNowAdScraper';
-import { BaseAdScraper } from './scrapers/jobAdScrapers/baseAdScraper';
+import { CareerBuilderScraper } from './scrapers/jobAdScrapers/careerBuilder';
 import { CarerJetAdScraper } from './scrapers/jobAdScrapers/careerJetAdScraper';
 import { CvLibraryAdScraper } from './scrapers/jobAdScrapers/cvLibraryAdScraper';
 import { EuroJobsAdScraper } from './scrapers/jobAdScrapers/euroJobsAdScraper';
@@ -30,6 +31,8 @@ export class ScrapingJobAdService {
     @Inject()
     private careerJetAdScraper: CarerJetAdScraper;
     @Inject()
+    private careerBuilderScraper: CareerBuilderScraper;
+    @Inject()
     private cvLibraryAdScraper: CvLibraryAdScraper;
     @Inject()
     private euroJobsAdScraper: EuroJobsAdScraper;
@@ -46,24 +49,29 @@ export class ScrapingJobAdService {
     @Inject()
     private tybaAdScraper: TybaAdScraper;
 
+    /**
+   * @description Function accepts client form, and based on the data provided scrapes jobs across the jobsites defined in the getScrapers() function.
+   * @param {ScrapeJobAdsForm} clientForm Client form containing the data based on which job ads are collected.
+   * @returns {Promise<number>} Promise resolving to the number of stored job ads.
+   */
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
-        // const allScrapers = this.getScrapers();
-        const allScrapers = [this.adzunaAdScraper]
+        const jobAdScrapers = this.getScrapers();
+
         let totalAdsScraped = 0;
 
-        for (let i = 0; i < allScrapers.length; i++) {
-            totalAdsScraped += await this.scrapeJobAds(clientForm, allScrapers[i]);
+        for (let i = 0; i < jobAdScrapers.length; i++) {
+            totalAdsScraped += await this.scrapeJobAds(clientForm, jobAdScrapers[i]);
         }
 
         return totalAdsScraped;
     }
 
     /**
-   * @description Function accepts client form, and based on the data provided scrapes jobs across the predefined jobsites.
+   * @description Function accepts client form, and a scraper. Based on the two, it will start scraping jobs from the website determined by the provided scraper.
    * @param {ScrapeJobAdsForm} clientForm Client form containing the data based on which job ads are collected.
    * @returns {Promise<number>} Promise resolving to the number of stored job ads.
    */
-    public async scrapeJobAds(clientForm: ScrapeJobAdsForm, scraper: BaseAdScraper): Promise<number> {
+    public async scrapeJobAds(clientForm: ScrapeJobAdsForm, scraper: IJobAdScraper): Promise<number> {
         const scrapedJobAds = await scraper.scrape(clientForm);
         console.log(scrapedJobAds.length + ' ads have been scraped.');
 
@@ -77,9 +85,13 @@ export class ScrapingJobAdService {
         return numberOfStoredAds;
     }
 
-    private getScrapers(): BaseAdScraper[] {
+     /**
+   * @description Function returns the list of implemented jobAd scrapers.
+   * @returns {IJobAdScraper[]}
+   */
+    private getScrapers(): IJobAdScraper[] {
         return [
-            this.adzunaAdScraper, this.arbeitNowAdScraper, this.careerJetAdScraper, this.cvLibraryAdScraper,
+            this.adzunaAdScraper, this.arbeitNowAdScraper, this.careerBuilderScraper, this.careerJetAdScraper, this.cvLibraryAdScraper,
             this.euroJobsAdScraper, this.graduatelandAdScraper, this.jobFluentAdScraper, this.noFluffAdScraper,
             this.qreerAdScraper, this.simplyHiredAdScraper, this.tybaAdScraper
         ];

@@ -10,13 +10,11 @@ import BrowserAPI from "../../browserAPI";
 
 
 @Service()
-export abstract class BaseAdScraper {
+export class BaseAdScraper {
     @Inject()
     private browserAPI: BrowserAPI;
     @Inject()
     private utils: Utils;
-
-    public abstract scrape(clientForm: ScrapeJobAdsForm): Promise<JobAdDTO[]>;
 
     /**
    * @description Function that accepts requested parameters from the client and based on them returns a list of scraped JobAdDTOs

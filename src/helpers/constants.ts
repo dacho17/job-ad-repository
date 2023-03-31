@@ -36,6 +36,7 @@ export default {
     // common html selectors
     HREF_SELECTOR: 'href',
     ARIALABEL_SELECTOR: 'aria-label',
+    VALUE_SELECTOR: 'value',
 
     // joblinks selectors
     ADZUNA_JOBLINKS_SELECTOR: '.ui-search-results > div[data-aid] > .w-full > .flex.gap-4 > h2 > a',
@@ -58,6 +59,10 @@ export default {
     // selectors used in job ad scraping
     JOB_FLUENT_PUBLISHED_AGO_SELECTOR: '.published-date',
     SIMPLY_HIRED_NAVIGATION_BUTTONS_SELECTOR: 'nav[role="navigation"] > a',
+    CAREER_BUILDER_POSTINGDATE_SELECTOR: '.data-results-publish-time',
+    CAREER_BUILDER_JOB_ADS: 'li > .job-listing-item',
+    CAREER_BUILDER_JOBLINK_SELECTOR: ['name', 'href'],
+
 
     // HTTP codes
     OK: 200,

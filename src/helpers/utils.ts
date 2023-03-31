@@ -25,4 +25,19 @@ export default class Utils {
             return new Date();
         }
     }
+
+    public getPostedDate4CareerBuilder(textContainingPostedAgo: string): Date {
+        const [postedAgoText, timeframe, _] = textContainingPostedAgo.trim().split(Constants.WHITESPACE);
+        const postedAgo = parseInt(postedAgoText);
+        if (textContainingPostedAgo.trim().toLowerCase() == JobAdPostedAgoTimeframe.TODAY) {
+            return new Date(Date.now());
+        } else if (!isNaN(postedAgo)) {
+            const timeframeCheck = timeframe.trim().toLowerCase();
+            if (timeframeCheck.includes(JobAdPostedAgoTimeframe.DAY)) return addDays(Date.now(), -postedAgo);
+            else if (timeframeCheck.includes(JobAdPostedAgoTimeframe.MONTH)) return addMonths(Date.now(), -postedAgo);
+            else return new Date();
+        }
+    
+        return new Date();
+    }
 }
