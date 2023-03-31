@@ -58,9 +58,39 @@ export default class Utils {
     public getPostedDate4EuroJobSites(textContainingPostedAgo: string): Date {
         const [firstPart, secondPart, thirdPart, _] = textContainingPostedAgo.trim().split(Constants.WHITESPACE);
         
-        if (thirdPart.includes(JobAdPostedAgoTimeframe.DAY)) {
+        if (thirdPart.includes(JobAdPostedAgoTimeframe.TODAY)) {
+            return new Date(Date.now());
+        } else if (thirdPart.includes(JobAdPostedAgoTimeframe.DAY)) {
             return addDays(Date.now(), -parseInt(secondPart));
         } else {
+            return new Date();
+        }
+    }
+
+    /**
+     * @description Function that formats postedAgo property from LinkedIn ad (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
+    public getPostedDate4LinkedIn(textContainingPostedAgo: string): Date {
+        const [postedAgoText, timeframe, _] = textContainingPostedAgo.trim().split(Constants.WHITESPACE)
+        const postedAgo = parseInt(postedAgoText);
+    
+        if (isNaN(postedAgo)) return new Date();
+    
+        if (timeframe.includes(JobAdPostedAgoTimeframe.HOUR)) {
+            return addHours(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.DAY)) {
+            return addDays(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.WEEK)) {
+            return addWeeks(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.MONTH)) {
+            return addMonths(Date.now(), -postedAgo);
+        }
+        else {
             return new Date();
         }
     }

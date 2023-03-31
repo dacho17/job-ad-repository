@@ -35,6 +35,24 @@ export default class BrowserAPI {
     }
 
     /**
+   * @description Click on the passed element on the current page
+   * @param {any} element
+   * @returns {Promise<void>}
+   */
+    public async click(element: any): Promise<void> {
+        await element.evaluate(element);
+    }
+
+    /**
+   * @description Function that returns an element found on the page based on the passed selector
+   * @param {string} selector
+   * @returns {Promise<ElementHandle<Element>[]>} Returns the first element which matches the selector.
+   */
+    public async findElement(selector: string): Promise<ElementHandle<Element> | null> {
+        return await this.page.$(selector);
+    }
+
+    /**
    * @description Function that returns a list of elements found on the page based on the passed selector
    * @param {string} selector
    * @returns {Promise<ElementHandle<Element>[]>} Returns the list of elements.
@@ -43,6 +61,20 @@ export default class BrowserAPI {
         return await this.page.$$(selector);
     }
 
+    /**
+   * @description Function that returns an element found on the passed element which match the passed selector
+   * @param {ElementHandle<Element>} element @param {string} selector
+   * @returns {Promise<ElementHandle<Element> | null>} Returns the first element which matches the selector.
+   */
+    public async findElementOnElement(element: ElementHandle<Element>, selector: string): Promise<ElementHandle<Element> | null> {
+        return await element.$(selector);
+    }
+
+     /**
+   * @description Function that returns elements found on the passed element which match the passed selector
+   * @param {ElementHandle<Element>} element @param {string} selector
+   * @returns {Promise<ElementHandle<Element>[]>} Returns the list of element which matche the selector.
+   */
     public async findElementsOnElement(element: ElementHandle<Element>, selector: string): Promise<ElementHandle<Element>[]> {
         return await element.$$(selector);
     }
@@ -61,22 +93,24 @@ export default class BrowserAPI {
         }
     }
 
-    public async getDataFromTwoAttrs(element: ElementHandle<Element>, selOne: string, selTwo: string): Promise<(string | null)[]> {
-        try {
-            return await this.page.evaluate((el, selectorOne, selectorTwo) => 
-                [el.getAttribute(selectorOne), el.getAttribute(selectorTwo)], element, selOne, selTwo);
-        } catch (exception) {
-            console.log(`Error while evaluating element with attributes ${selOne}, ${selTwo}`);
-            return [null, null];
-        }
+    /**
+   * @description Function that extracts data from the selected attribute of the element defined by passed selector.
+   * @param {string} selector @param {string} attrSelector 
+   * @returns {Promise<string | null>} Returns the requested attribute, or null if the one is not found.
+   */
+    public async getDataSelectorAndAttr(selector: string, attrSelector: string): Promise<string | null> {
+        const element = await this.page.$(selector);
+        if (!element) return null;
+        
+        return await this.getDataFromAttr(element, attrSelector);
     }
 
     /**
    * @description Function that extracts the text data from the selected element
-   * @param {ElementHandle<Element>} 
+   * @param {ElementHandle<Element>} element
    * @returns {Promise<string | null>} Returns the requested text content, or null if the one is not found.
    */
-    public async getTextFrom(element: ElementHandle<Element>): Promise<string | null> {
+    public async getTextFromElement(element: ElementHandle<Element>): Promise<string | null> {
         try {
             const text = await this.page.evaluate(el => el.textContent, element);
             await element.dispose();
@@ -85,5 +119,18 @@ export default class BrowserAPI {
             console.log(`Not able to evaluate an element`);
             return null;
         }
+    }
+
+    /**
+   * @description Function that extracts the text data from element which matches the passed selector.
+   * If no element is found null is returned.
+   * @param {string} selector 
+   * @returns {Promise<string | null>} Returns the requested text content, or null if the one is not found.
+   */
+    public async getText(selector: string): Promise<string | null> {
+        const element = await this.page.$(selector);
+        if (!element) return null;
+        
+        return await this.getTextFromElement(element);
     }
 }

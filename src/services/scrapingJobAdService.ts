@@ -14,6 +14,7 @@ import { EuroJobsAdScraper } from './scrapers/jobAdScrapers/euroJobsAdScraper';
 import { EuroJobSitesAdScraper } from './scrapers/jobAdScrapers/euroJobSitesAdScraper';
 import { GraduatelandAdScraper } from './scrapers/jobAdScrapers/graduatelandAdScraper';
 import { JobFluentAdScraper } from './scrapers/jobAdScrapers/jobFluentAdScraper';
+import LinkedInAdScraper from './scrapers/jobAdScrapers/linkedinAdScraper';
 import { NoFluffAdScraper } from './scrapers/jobAdScrapers/noFluffJobsAdScraper';
 import { QreerAdScraper } from './scrapers/jobAdScrapers/qreerAdScraper';
 import { SimplyHiredAdScraper } from './scrapers/jobAdScrapers/simplyHiredAdScraper';
@@ -46,6 +47,8 @@ export class ScrapingJobAdService {
     @Inject()
     private jobFluentAdScraper: JobFluentAdScraper;
     @Inject()
+    private linkedinAdScraper: LinkedInAdScraper;
+    @Inject()
     private noFluffAdScraper: NoFluffAdScraper;
     @Inject()
     private qreerAdScraper: QreerAdScraper;
@@ -65,7 +68,7 @@ export class ScrapingJobAdService {
    */
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
         // const jobAdScrapers = this.getScrapers();
-        const jobAdScrapers = [this.snaphuntAdScraper];
+        const jobAdScrapers = [this.linkedinAdScraper];
 
         let totalAdsScraped = 0;
 
@@ -102,7 +105,8 @@ export class ScrapingJobAdService {
     private getScrapers(): IJobAdScraper[] {
         return [
             this.adzunaAdScraper, this.arbeitNowAdScraper, this.careerBuilderScraper, this.careerJetAdScraper, this.cvLibraryAdScraper,
-            this.euroJobsAdScraper, this.euroJobSitesAdScraper, this.graduatelandAdScraper, this.jobFluentAdScraper, this.noFluffAdScraper,
+            this.euroJobsAdScraper, this.euroJobSitesAdScraper, this.graduatelandAdScraper, this.jobFluentAdScraper, 
+            this.linkedinAdScraper, this.noFluffAdScraper,
             this.qreerAdScraper, this.simplyHiredAdScraper, this.snaphuntAdScraper, this.tybaAdScraper, this.weWorkRemotelyAdScraper
         ];
     }

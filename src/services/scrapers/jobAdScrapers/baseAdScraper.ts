@@ -15,14 +15,6 @@ export class BaseAdScraper {
     protected browserAPI: BrowserAPI;
     @Inject()
     private utils: Utils;
-    
-    private sourcesWithPostedAgo: JobAdSource[] = [
-        JobAdSource.EURO_ENGINEER_JOBS,
-        JobAdSource.EURO_SCIENCE_JOBS,
-        JobAdSource.EURO_SPACE_CAREERS,
-        JobAdSource.EURO_TECH_JOBS,
-        JobAdSource.JOB_FLUENT,
-    ];
 
     /**
    * @description Function accepts requested parameters from the client and based on them returns a list of scraped JobAdDTOs
@@ -40,12 +32,13 @@ export class BaseAdScraper {
         while (scraperTracker.nOfScrapedAds < urlParams.reqNofAds) {
             const jobAdSelector = this.getSiteData(urlParams, scraperTracker, adSource);
             await this.browserAPI.openPage(scraperTracker.url!);
-            let postedDateElements: ElementHandle<Element>[] = [];
-            if (JobAdSource.JOB_FLUENT === adSource) {
-                postedDateElements = await this.browserAPI.findMultiple(Constants.JOB_FLUENT_PUBLISHED_AGO_SELECTOR);
+            
+            let postedAgoList: (string | null)[] = [];  // gathering postedAgo information for several websites which contain it
+            if ([JobAdSource.JOB_FLUENT, JobAdSource.LINKEDIN].includes(adSource)) {
+                postedAgoList = await this.getPostedAgoList(adSource);
             }
 
-            const numberOfAdsScraped = await this.scrapePage(scraperTracker, adSource, jobAdSelector, postedDateElements);
+            const numberOfAdsScraped = await this.scrapePage(scraperTracker, adSource, jobAdSelector, postedAgoList);
             if (numberOfAdsScraped === 0) break;
             scraperTracker.currentPage += 1;
         }
@@ -64,21 +57,23 @@ export class BaseAdScraper {
         await this.browserAPI.run();
         const scraperTracker = this.getEuroJobSiteData(urlParams, adSource);
         await this.browserAPI.openPage(scraperTracker.url!);
-        const postedDateElements = await this.browserAPI.findMultiple(Constants.EURO_JOBS_POSTED_AGO_SELECTOR);    // fetching elements here since this step is specific for euroJobSites - postedAgo dates are divided into two categories
-
-        await this.scrapePage(scraperTracker, adSource, Constants.EURO_JOBS_JOBLINKS_SELECTOR_ONE, postedDateElements);
-        await this.scrapePage(scraperTracker, adSource, Constants.EURO_JOBS_JOBLINKS_SELECTOR_TWO, postedDateElements.splice(scraperTracker.nOfScrapedAds));
         
-        // scrapedAds = await gatherJobAds(scrapedAds, adSource, baseUrl, page, Constants.EURO_JOBS_JOBLINKS_SELECTOR_ONE, );
-        // console.log("about to scrape first batch of job ads from " + url + ". ");
-        // scrapedAds = await gatherJobAds(scrapedAds, adSource, baseUrl, page, Constants.EURO_JOBS_JOBLINKS_SELECTOR_TWO, );
-        // console.log("about to scrape second batch of job ads from " + url + ". ");
+        const postedDateElements = await this.getPostedAgoList(adSource);
+        await this.scrapePage(scraperTracker, adSource, Constants.EURO_JOB_SITES_JOBLINKS_SELECTOR_ONE, postedDateElements);
+        await this.scrapePage(scraperTracker, adSource, Constants.EURO_JOB_SITES_JOBLINKS_SELECTOR_TWO, postedDateElements.splice(scraperTracker.nOfScrapedAds));
     
         await this.browserAPI.close();
         return scraperTracker.scrapedAds;
     }
 
-    protected async scrapeJobAdElements(scraperTracker: AdScraperTracker, adSource: JobAdSource, jobAdElements: ElementHandle<Element>[], postedAgoElements: ElementHandle<Element>[]): Promise<number> {
+    /**
+   * @description Main function of the class, that extracts and formats data from the website, finally attaching
+   * it to the newly created JobAdDTO object. 
+   * @param {AdScraperTracker} scraperTracker @param {JobAdSource} adSource
+   * @param {ElementHandle<Element>[]} jobAdElements @param {(string | null)[]} postedAgoList
+   * @returns {Promise<number>} Returns the number of scraped job ads.
+   */
+    protected async scrapeJobAdElements(scraperTracker: AdScraperTracker, adSource: JobAdSource, jobAdElements: ElementHandle<Element>[], postedAgoList: (string | null)[]): Promise<number> {
         let nOfScrapedAds = 0;
         for (let i = 0; i < jobAdElements.length; i++) {
             let jobLink = await this.browserAPI.getDataFromAttr(jobAdElements[i], Constants.HREF_SELECTOR);
@@ -89,16 +84,8 @@ export class BaseAdScraper {
                 jobLink: this.formatJobLink(jobLink, adSource),
             }
 
-            if (this.sourcesWithPostedAgo.includes(adSource)) {
-                const postedAgo = await this.browserAPI.getTextFrom(postedAgoElements[i]);
-                if (postedAgo) {
-                    if (adSource === JobAdSource.JOB_FLUENT) {
-                        newAd.postedDate == this.utils.getPostedDate4JobFluent(postedAgo)
-                    } else {
-                        newAd.postedDate = this.utils.getPostedDate4EuroJobSites(postedAgo);
-                    }
-                    newAd.postedDateTimestamp = this.utils.transformToTimestamp(newAd.postedDate!.toString())                        
-                }
+            if (postedAgoList.length !== 0 && postedAgoList[i]) {
+                await this.setPostedDate(newAd, postedAgoList[i]!, adSource);
             }
             
             scraperTracker.scrapedAds.push(newAd);
@@ -109,8 +96,8 @@ export class BaseAdScraper {
             if (adSource === JobAdSource.SIMPLY_HIRED) {
                 const navigationButtons = await this.browserAPI.findMultiple(Constants.SIMPLY_HIRED_NAVIGATION_BUTTONS_SELECTOR);
                 for (let i = 0; i < navigationButtons.length; i++) {
-                    const [candidateButtonPageContent, candidateUrl] = 
-                        await this.browserAPI.getDataFromTwoAttrs(navigationButtons[i], Constants.ARIALABEL_SELECTOR, Constants.HREF_SELECTOR)
+                    const candidateButtonPageContent = await this.browserAPI.getDataFromAttr(navigationButtons[i], Constants.ARIALABEL_SELECTOR);
+                    const candidateUrl = await this.browserAPI.getDataFromAttr(navigationButtons[i], Constants.HREF_SELECTOR);
                     if (!candidateButtonPageContent || !candidateUrl) continue;
                     const pageElementSegments = candidateButtonPageContent.split(Constants.WHITESPACE);
                     const pageNumberCandidate = parseInt(pageElementSegments[1].trim());
@@ -133,9 +120,9 @@ export class BaseAdScraper {
    * @param {AdScraperTracker} scraperTracker @param {JobAdSource} adSource @param {string} adSelector @param {string} postedAgoElements
    * @returns {Promise<n>} Returns the number of job ads scraped from the page.
    */
-    private async scrapePage(scraperTracker: AdScraperTracker, adSource: JobAdSource, adSelector: string, postedAgoElements: ElementHandle<Element>[]): Promise<number> {
+    private async scrapePage(scraperTracker: AdScraperTracker, adSource: JobAdSource, adSelector: string, postedAgoList: (string | null)[]): Promise<number> {
         const jobAdElements = await this.browserAPI.findMultiple(adSelector);
-        const nOfScrapedAds = await this.scrapeJobAdElements(scraperTracker, adSource, jobAdElements, postedAgoElements);
+        const nOfScrapedAds = await this.scrapeJobAdElements(scraperTracker, adSource, jobAdElements, postedAgoList);
         
         return nOfScrapedAds;
     }
@@ -163,6 +150,9 @@ export class BaseAdScraper {
                 return Constants.GRADUATELAND_URL + jobLink.trim();
             case JobAdSource.JOB_FLUENT:
                 return Constants.JOB_FLUENT_URL + jobLink.trim();
+            case JobAdSource.LINKEDIN:
+                const formattedLink = jobLink.trim().split(Constants.QUESTIONMARK_SIGN)[0];
+                return formattedLink;
             case JobAdSource.NO_FLUFF_JOBS:
                 return Constants.NO_FLUFF_JOBS_URL + jobLink.trim();
             case JobAdSource.QREER:
@@ -208,6 +198,9 @@ export class BaseAdScraper {
             case JobAdSource.JOB_FLUENT:
                 scraperTracker.url = `${Constants.JOB_FLUENT_URL}/jobs-remote?q=${urlParams.jobTitle}&page=${scraperTracker.currentPage}`;
                 return Constants.JOB_FLUENT_JOBLINKS_SELECTOR;
+            case JobAdSource.LINKEDIN:
+                scraperTracker.url = `https://www.linkedin.com/jobs/search?keywords=${urlParams.jobTitle}&location=${urlParams.location}&trk=public_jobs_jobs-search-bar_search-submit&pageNum=${scraperTracker.currentPage}`
+                return Constants.LN_JOBLINKS_SELECTOR;
             case JobAdSource.NO_FLUFF_JOBS:
                 scraperTracker.url = `${Constants.NO_FLUFF_JOBS_URL}/${urlParams.jobTitle}?page=${scraperTracker.currentPage}`;
                 return Constants.NO_FLUFF_JOBS_JOBLINKS_SELECTOR;
@@ -222,6 +215,27 @@ export class BaseAdScraper {
                 return Constants.TYBA_JOBLINKS_SELECTOR;
             default:
                 throw Constants.AD_SOURCE_NOT_RECOGNIZED;
+        }
+    }
+
+    /**
+     * @description Based on adSource, this function returns selectors for collecting postedAgo information.
+     * @param {JobAdSource} adSource
+     * @returns {string} Returns a pair of selectors (jobCard, postedAgo).
+     */
+    private getPostedDateSelectors(adSource: JobAdSource): [string, string] {
+        switch (adSource) {
+            case JobAdSource.EURO_ENGINEER_JOBS:
+            case JobAdSource.EURO_SCIENCE_JOBS:
+            case JobAdSource.EURO_SPACE_CAREERS:
+            case JobAdSource.EURO_TECH_JOBS:
+                return [Constants.EURO_JOB_SITES_JOBCARD_SELECTOR, Constants.EURO_JOBS_POSTED_AGO_SELECTOR];
+            case JobAdSource.JOB_FLUENT:
+                return [Constants.JOB_FLUENT_JOBCARD_SELECTOR, Constants.JOB_FLUENT_POSTED_AGO_SELECTOR];
+            case JobAdSource.LINKEDIN:
+                return [Constants.LN_JOBCARD_SELECTOR, Constants.LINKEDIN_POSTED_AGO_SELECTOR];
+            default:
+                return [Constants.EMPTY_STRING, Constants.EMPTY_STRING];
         }
     }
 
@@ -250,5 +264,48 @@ export class BaseAdScraper {
         }
 
         return scraperTracker;
+    }
+
+    /**
+     * @description Function maps scraped postedAgo entry to postedDate and posted timestamp, based on the scraped website.
+     * The properties postedDate and postedTimestamp are then set for the JobAdDTO.
+     * @param {JobAdDTO} jobAd @param {string} postedAgo @param {JobAdSource} jobAdSource
+     * @returns {void}
+     */
+    private setPostedDate(jobAd: JobAdDTO, postedAgo: string, adSource: JobAdSource): void {
+        switch (adSource) {
+            case JobAdSource.JOB_FLUENT:
+                jobAd.postedDate = this.utils.getPostedDate4JobFluent(postedAgo);
+                break;
+            case JobAdSource.LINKEDIN:
+                jobAd.postedDate = this.utils.getPostedDate4LinkedIn(postedAgo);
+                break;
+            case JobAdSource.EURO_ENGINEER_JOBS:
+            case JobAdSource.EURO_SCIENCE_JOBS:
+            case JobAdSource.EURO_SPACE_CAREERS:
+            case JobAdSource.EURO_TECH_JOBS:
+                jobAd.postedDate = this.utils.getPostedDate4EuroJobSites(postedAgo);
+                break;
+        }
+
+        jobAd.postedDateTimestamp = this.utils.transformToTimestamp(jobAd.postedDate!.toString())                        
+    }
+
+    /**
+     * @description Function returns the ordered list of postedAgo values from the scraped website.
+     * The list contains either postedAgo or null values (for job ads without postedAgo information).
+     * @param {JobAdSource} adSource
+     * @returns {Promise<(string | null)[]>} List of postedAgo/null values.
+     */
+    private async getPostedAgoList(adSource: JobAdSource): Promise<(string | null)[]> {
+        let postedAgoList: (string | null)[] = [];
+        const [jobCardSelector, postedAgoSelector] = this.getPostedDateSelectors(adSource);
+        const jobCardElements = await this.browserAPI.findMultiple(jobCardSelector);
+        for (let i = 0; i < jobCardElements.length; i++) {
+            const postedAgoElem = await this.browserAPI.findElementOnElement(jobCardElements[i], postedAgoSelector);
+            const postedAgo = postedAgoElem ? await this.browserAPI.getTextFromElement(postedAgoElem) : null;
+            postedAgoList.push(postedAgo ? postedAgo.trim(): null);
+        }
+        return postedAgoList;
     }
 }
