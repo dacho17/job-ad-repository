@@ -14,8 +14,13 @@ export default {
     NO_FLUFF_JOBS_URL: 'https://nofluffjobs.com',
     QREER_URL: 'https://www.qreer.com',
     SIMPLY_HIRED_URL: 'https://www.simplyhired.com',
+    SNAPHUNT_API_JOB_URL: 'https://api.snaphunt.com/v2/job/',
+    SNAPHUNT_API_ADS_URL: 'https://api.snaphunt.com/v2/jobs',
     TYBA_URL: 'https://tyba.com',
     WE_WORK_REMOTELY_URL: 'https://weworkremotely.com',
+
+    SNAPHUNT_REMOTE_QUERY_PARAMETER: `&jobLocationType=remote&urlJobLocationType=remote`,
+
 
     // Commonly used strings
     COMMA_SIGN: ',',

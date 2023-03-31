@@ -22,9 +22,9 @@ export class RequestValidator {
         // location is not being validated
 
         const validScrapeJobAdsForm: ScrapeJobAdsForm = {
-            jobTitle: jobTitle,
+            jobTitle: jobTitle.trim(),
             reqNOfAds: nOfAds,
-            location: location,
+            location: location?.trim(),
             scrapeOnlyRemote: workFromHome
         };
 
