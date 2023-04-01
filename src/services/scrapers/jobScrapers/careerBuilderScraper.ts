@@ -31,7 +31,14 @@ export default class CareerBuilderScraper implements IJobScraper {
         return newJob;
     }
 
-    private async scrapeSubtitleSection(newJob: JobDTO, browserAPI: BrowserAPI) {
+    /**
+   * @description Function which scrapes a part of the page and sets companyLocation and timeManagement properties of new JobDTO,
+   * If companyName is found it sets that property as well.
+   * @param {number} jobAdId
+   * @param {BrowserAPI} browserAPI
+   * @returns {Promise<void>}
+   */
+    private async scrapeSubtitleSection(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
         const jobSubtitleElement = await browserAPI.findElements(Constants.CAREER_BUILDER_DETAILS_JOB_SUBTITLE_SELECTOR);
         let firstSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[0]); 
         let secondSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[1]);
@@ -46,7 +53,13 @@ export default class CareerBuilderScraper implements IJobScraper {
         }
     }
 
-    private async scrapeRequiredSkills(newJob: JobDTO, browserAPI: BrowserAPI) {
+    /**
+   * @description Function which scrapes a part of the page and sets requiredSkills property of the new JobDTO object.
+   * @param {number} jobAdId
+   * @param {BrowserAPI} browserAPI
+   * @returns {Promise<void>}
+   */
+    private async scrapeRequiredSkills(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
         const listOfRequiredSkillElements = await browserAPI.findElements(Constants.CAREER_BUILDER_DETAILS_REQUIRED_SKILLS_SELECTOR);
         const requiredSkills = await Promise.all(listOfRequiredSkillElements.map(async elem => await browserAPI.getTextFromElement(elem)));
 

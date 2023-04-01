@@ -4,22 +4,26 @@ import IJobScraper from "./interfaces/IJobScraper";
 import AdzunaScraper from "./jobScrapers/adzunaScraper";
 import ArbeitNowScraper from "./jobScrapers/arbeitNowScraper";
 import CareerBuilderScraper from "./jobScrapers/careerBuilderScraper";
+import CareerJetScraper from "./jobScrapers/careerJetScraper";
 
 @Service()
 export default class JobScraperHelper {
     private adzunaScraper: AdzunaScraper;
     private arbeitNowScraper: ArbeitNowScraper;
     private careerBuilderScraper: CareerBuilderScraper;
+    private careerJetScraper: CareerJetScraper;
 
     constructor(
         @Inject() adzunaScraper: AdzunaScraper,
         @Inject() arbeitNowScraper: ArbeitNowScraper,
         @Inject() careerBuilderScraper: CareerBuilderScraper,
+        @Inject() careerJetScraper: CareerJetScraper,
     )
     {
         this.adzunaScraper = adzunaScraper;
         this.arbeitNowScraper = arbeitNowScraper;
         this.careerBuilderScraper = careerBuilderScraper;
+        this.careerJetScraper = careerJetScraper;
     }
 
     /**
@@ -36,6 +40,8 @@ export default class JobScraperHelper {
                 return this.arbeitNowScraper;
             case JobAdSource.CAREER_BUILDER:
                 return this.careerBuilderScraper;
+            case JobAdSource.CAREER_JET:
+                return this.careerJetScraper;
             default:
                 return null;
         }

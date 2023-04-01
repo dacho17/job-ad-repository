@@ -51,6 +51,35 @@ export default class Utils {
     }
 
     /**
+     * @description Function that formats postedAgo property from CareerJet ad (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
+    public getPostedDate4CareerJet(textContainingPostedAgo: string): Date {
+        const [postedAgoText, timeframe, _] = textContainingPostedAgo.trim().split(Constants.WHITESPACE)
+        const postedAgo = parseInt(postedAgoText);
+
+        if (timeframe.includes(JobAdPostedAgoTimeframe.NOW)) {
+            return new Date(Date.now());
+        }
+
+        if (isNaN(postedAgo)) {
+            return new Date();
+        } else if (timeframe.includes(JobAdPostedAgoTimeframe.HOUR)) {
+            return addHours(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.DAY)) {
+            return addDays(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.MONTH)) {
+            return addMonths(Date.now(), -postedAgo);
+        }
+        else {
+            return new Date();
+        }
+    }
+
+    /**
      * @description Function that formats postedAgo property from EuroJobSites ad (Format=TODO).
      * @param {string} textContainingPostedAgo
      * @returns {Date} Returns Date object based on the string, or a default Date object.
