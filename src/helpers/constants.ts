@@ -24,6 +24,7 @@ export default {
     // common html selectors
     HREF_SELECTOR: 'href',
     ARIALABEL_SELECTOR: 'aria-label',
+    DATETIME_SELECTOR: 'datetime',
     NAME_SELECTOR: 'name',
     VALUE_SELECTOR: 'value',
 
@@ -67,6 +68,14 @@ export default {
     ADZUNA_DETAILS_SUBTITLE_SECTION_SELECTOR: 'div > div > table > tbody > tr > td',
     ADZUNA_DETAILS_COMPANY_LINK_SELECTOR: 'div > div > table > tbody > tr > td > a',
     ADZUNA_DETAILS_JOB_DESCRIPTION_SELECTOR: '.ui-foreign-click-description > section',
+
+    ARBEITNOW_DETAILS_JOB_TITLE_SELECTOR: 'a[itemprop="url"]',
+    ARBEITNOW_DETAILS_COMPANY_NAME_SELECTOR: 'a[itemprop="hiringOrganization"]',
+    ARBEITNOW_DETAILS_COMPANY_LOCATION_SELECTOR: '.list-none > div > div > div > div > div > div > p',
+    ARBEITNOW_DETAILS_JOB_DETAILS_SELECTOR: '.list-none > div > div > div > div > div:nth-child(2) > div',
+    ARBEITNOW_DETAILS_SALARY_INFORMATION: 'div[title="Salary Information"]',
+    ARBEITNOW_DETAILS_POSTED_DATE_SELECTOR: 'time',
+    ARBEITNOW_DETAILS_JOB_DESCRIPTION_SELECTOR: 'div[itemprop="description"]',
 
     // Commonly used strings
     COMMA_SIGN: ',',

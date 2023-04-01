@@ -2,16 +2,20 @@ import { Inject, Service } from "typedi";
 import { JobAdSource } from "../../helpers/enums/jobAdSource";
 import IJobScraper from "./interfaces/IJobScraper";
 import AdzunaScraper from "./jobScrapers/adzunaScraper";
+import ArbeitNowScraper from "./jobScrapers/arbeitNowScraper";
 
 @Service()
 export default class JobScraperHelper {
     private adzunaScraper: AdzunaScraper;
+    private arbeitNowScraper: ArbeitNowScraper;
 
     constructor(
-        @Inject() adzunaScraper: AdzunaScraper
+        @Inject() adzunaScraper: AdzunaScraper,
+        @Inject() arbeitNowScraper: ArbeitNowScraper
     )
     {
         this.adzunaScraper = adzunaScraper;
+        this.arbeitNowScraper = arbeitNowScraper;
     }
 
     /**
@@ -24,6 +28,8 @@ export default class JobScraperHelper {
         switch (jobAdSouce) {
             case JobAdSource.ADZUNA:
                 return this.adzunaScraper;
+            case JobAdSource.ARBEIT_NOW:
+                return this.arbeitNowScraper;
             default:
                 return null;
         }

@@ -8,7 +8,7 @@ import IJobScraper from "../interfaces/IJobScraper";
 export default class AdzunaScraper implements IJobScraper {
 
     /**
-   * @description Function that accepts client form, and based on it starts the jobAd scraping.
+   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on Adzuna in the scrape is (jobTitle, companyName, companyLocation, timeEngagement, description, companyLink).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI

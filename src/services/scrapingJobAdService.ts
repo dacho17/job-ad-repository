@@ -26,6 +26,7 @@ import { WeWorkRemotelyAdScraper } from './scrapers/jobAdScrapers/weWorkRemotely
 export class ScrapingJobAdService {
     private scrapingJobAdRepository: ScrapingJobAdRepository;
     private jobAdMapper: JobAdMapper;
+
     private adzunaAdScraper: AdzunaAdScraper;
     private arbeitNowAdScraper: ArbeitNowAdScraper;
     private careerJetAdScraper: CarerJetAdScraper;
@@ -91,7 +92,7 @@ export class ScrapingJobAdService {
    */
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
         // const jobAdScrapers = this.getScrapers();
-        const jobAdScrapers = [this.adzunaAdScraper];
+        const jobAdScrapers = [this.arbeitNowAdScraper];
 
         let totalAdsScraped = 0;
 
