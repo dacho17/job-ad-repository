@@ -14,6 +14,21 @@ export default class Utils {
     }
 
     /**
+     * @description Function which expects string in format DD.MM.YYYY and transforms it to the date object.
+     * @param {string} strDate
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
+    public getDateFromDottedDateString(strDate: string | null): Date {
+        const dividedDate = strDate?.trim().split(Constants.DOT);
+        if (dividedDate?.length === 3) {
+            const numericDividedDate = dividedDate.map(part => parseInt(part));
+            const monthIndex = numericDividedDate[1] - 1;
+            return new Date(numericDividedDate[2], monthIndex, numericDividedDate[0]);
+        }
+        return new Date();
+    }
+
+    /**
      * @description Function that formats postedAgo property from JobFluent ad (Format=TODO).
      * @param {string} textContainingPostedAgo
      * @returns {Date} Returns Date object based on the string, or a default Date object.

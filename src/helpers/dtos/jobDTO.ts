@@ -1,3 +1,5 @@
+import Constants from "../constants";
+
 // TODO: trim this class
 export default class JobDTO {
     jobTitle: string;
@@ -12,6 +14,8 @@ export default class JobDTO {
     isInternship?: boolean;
     requiredSkills?: string;
     additionalJobLink?: string;
+    euWorkPermitRequired?: boolean;
+    deadline?: Date;
 
     companyName: string;
     companyLocation?: string;

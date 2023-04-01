@@ -20,6 +20,8 @@ export class Job extends Model {
     isInternship?: boolean;
     requiredSkills?: string;
     additionalJobLink?: string;
+    euWorkPermitRequired?: boolean;
+    deadline?: Date;
 
     companyName: string;
     companyLocation?: string;
@@ -86,6 +88,14 @@ export const JobMAP = (sequelize: Sequelize) => {
         },
         isInternship: {
             type: DataTypes.BOOLEAN,
+            allowNull: true,
+        },
+        euWorkPermitRequired: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true,
+        },
+        deadline: {
+            type: DataTypes.DATE,
             allowNull: true,
         },
         requiredSkills: {

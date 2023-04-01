@@ -44,7 +44,7 @@ export default class CareerBuilderScraper implements IJobScraper {
         let secondSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[1]);
         if (jobSubtitleElement.length === 3) {
             const thirdSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[2]);
-            newJob.companyName = firstSubtitleProperty?.trim() || 'Unrevealed';
+            newJob.companyName = firstSubtitleProperty?.trim() || Constants.UNDISLOSED_COMPANY;
             newJob.companyLocation = secondSubtitleProperty?.trim()
             newJob.timeEngagement = thirdSubtitleProperty?.trim();
         } else {

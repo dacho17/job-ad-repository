@@ -88,7 +88,16 @@ export default {
     CAREER_JET_DETAILS_POSTED_AGO_SELECTOR: '#job > div > header > .tags > li > span',
     CAREER_JET_DETAILS_JOB_DESCRIPTION_SELECTOR: '#job > div > .content',
 
-    // Commonly used strings
+    EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR: '.listingInfo > h2',
+    EURO_JOBS_DETAILS_JOB_DETAILS_KEY_SELECTOR: '.displayFieldBlock > h3',
+    EURO_JOBS_DETAILS_JOB_DETAILS_VALUE_SELECTOR: '.displayField',
+    EURO_JOBS_DETAILS_JOB_DESCRIPTION_SELECTOR: '#listingsResults > div > fieldset > div > div',
+
+    // Commonly used string
+    DOT: '.',
+    UNDERSCORE: '_',
+    COMMA: ',',
+    EQUALS: '=',
     COMMA_SIGN: ',',
     MINUS_SIGN: '-',
     PLUS_SIGN: '+',
@@ -104,8 +113,17 @@ export default {
     AD_SOURCE_NOT_RECOGNIZED: 'AdSource not recognized',
     JOB_TITLE_INVALID: 'The job title you provided is invalid',
     NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
+    UNDISLOSED_COMPANY: 'Undisclosed',
     UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',
     WORK_FROM_HOME_INVALID: 'The "Work From Home" value is invalid',
+
+    // Words appearing
+    CLIENT: 'Client:',
+    LOCATION: 'Location:',
+    EU_WORK_PERMIT_REQ: 'EU work permit required:',
+    POSTED: 'Posted:',
+    EXPIRY_DATE: 'Expiry Date:',
+    YES: 'Yes',
 
     // HTTP codes
     OK: 200,

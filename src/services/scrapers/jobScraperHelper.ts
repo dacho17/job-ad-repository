@@ -5,6 +5,7 @@ import AdzunaScraper from "./jobScrapers/adzunaScraper";
 import ArbeitNowScraper from "./jobScrapers/arbeitNowScraper";
 import CareerBuilderScraper from "./jobScrapers/careerBuilderScraper";
 import CareerJetScraper from "./jobScrapers/careerJetScraper";
+import EuroJobsScraper from "./jobScrapers/euroJobsScraper";
 
 @Service()
 export default class JobScraperHelper {
@@ -12,18 +13,21 @@ export default class JobScraperHelper {
     private arbeitNowScraper: ArbeitNowScraper;
     private careerBuilderScraper: CareerBuilderScraper;
     private careerJetScraper: CareerJetScraper;
+    private euroJobScraper: EuroJobsScraper;
 
     constructor(
         @Inject() adzunaScraper: AdzunaScraper,
         @Inject() arbeitNowScraper: ArbeitNowScraper,
         @Inject() careerBuilderScraper: CareerBuilderScraper,
         @Inject() careerJetScraper: CareerJetScraper,
+        @Inject() euroJobScraper: EuroJobsScraper,
     )
     {
         this.adzunaScraper = adzunaScraper;
         this.arbeitNowScraper = arbeitNowScraper;
         this.careerBuilderScraper = careerBuilderScraper;
         this.careerJetScraper = careerJetScraper;
+        this.euroJobScraper = euroJobScraper;
     }
 
     /**
@@ -42,6 +46,8 @@ export default class JobScraperHelper {
                 return this.careerBuilderScraper;
             case JobAdSource.CAREER_JET:
                 return this.careerJetScraper;
+            case JobAdSource.EURO_JOBS:
+                return this.euroJobScraper;
             default:
                 return null;
         }
