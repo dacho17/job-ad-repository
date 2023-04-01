@@ -77,6 +77,11 @@ export default {
     ARBEITNOW_DETAILS_POSTED_DATE_SELECTOR: 'time',
     ARBEITNOW_DETAILS_JOB_DESCRIPTION_SELECTOR: 'div[itemprop="description"]',
 
+    CAREER_BUILDER_DETAILS_JOB_TITLE_SELECTOR: '.data-display-header_info-content > h2',
+    CAREER_BUILDER_DETAILS_JOB_SUBTITLE_SELECTOR: '.data-display-header_info-content > .data-details > span',
+    CAREER_BUILDER_DETAILS_JOB_DESCRIPTION_SELECTOR: '.jdp-left-content',
+    CAREER_BUILDER_DETAILS_REQUIRED_SKILLS_SELECTOR: '.jdp-required-skills > ul > li',
+
     // Commonly used strings
     COMMA_SIGN: ',',
     MINUS_SIGN: '-',

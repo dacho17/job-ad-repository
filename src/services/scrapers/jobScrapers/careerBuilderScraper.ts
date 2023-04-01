@@ -1,0 +1,55 @@
+import { Service } from "typedi";
+import Constants from "../../../helpers/constants";
+import JobDTO from "../../../helpers/dtos/jobDTO";
+import BrowserAPI from "../../browserAPI";
+import IJobScraper from "../interfaces/IJobScraper";
+
+
+@Service()
+export default class CareerBuilderScraper implements IJobScraper {
+    /**
+   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+   * Data available on CareerBuilder in the scrape is (jobTitle, companyName, companyLocation, timeEngagement, jobDescription, requiredSkills).
+   * @param {number} jobAdId
+   * @param {BrowserAPI} browserAPI
+   * @returns {Promise<JobDTO>} Returns the a JobDTO.
+   */
+    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+        const jobTitle = await browserAPI.getText(Constants.CAREER_BUILDER_DETAILS_JOB_TITLE_SELECTOR);
+        const jobDescription = await browserAPI.getText(Constants.CAREER_BUILDER_DETAILS_JOB_DESCRIPTION_SELECTOR);
+
+        const newJob: JobDTO = {
+            jobTitle: jobTitle!.trim(),
+            description: jobDescription!.trim(),
+            jobAdId: jobAdId,
+            companyName: 'Unrevealed'
+        }
+
+        await this.scrapeSubtitleSection(newJob, browserAPI);
+        await this.scrapeRequiredSkills(newJob, browserAPI);
+
+        return newJob;
+    }
+
+    private async scrapeSubtitleSection(newJob: JobDTO, browserAPI: BrowserAPI) {
+        const jobSubtitleElement = await browserAPI.findElements(Constants.CAREER_BUILDER_DETAILS_JOB_SUBTITLE_SELECTOR);
+        let firstSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[0]); 
+        let secondSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[1]);
+        if (jobSubtitleElement.length === 3) {
+            const thirdSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[2]);
+            newJob.companyName = firstSubtitleProperty?.trim() || 'Unrevealed';
+            newJob.companyLocation = secondSubtitleProperty?.trim()
+            newJob.timeEngagement = thirdSubtitleProperty?.trim();
+        } else {
+            newJob.companyLocation = firstSubtitleProperty?.trim();
+            newJob.timeEngagement = secondSubtitleProperty?.trim();
+        }
+    }
+
+    private async scrapeRequiredSkills(newJob: JobDTO, browserAPI: BrowserAPI) {
+        const listOfRequiredSkillElements = await browserAPI.findElements(Constants.CAREER_BUILDER_DETAILS_REQUIRED_SKILLS_SELECTOR);
+        const requiredSkills = await Promise.all(listOfRequiredSkillElements.map(async elem => await browserAPI.getTextFromElement(elem)));
+
+        newJob.requiredSkills = requiredSkills.join(Constants.COMMA_SIGN + Constants.WHITESPACE);
+    }
+}

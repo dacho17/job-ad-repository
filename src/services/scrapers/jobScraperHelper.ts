@@ -3,19 +3,23 @@ import { JobAdSource } from "../../helpers/enums/jobAdSource";
 import IJobScraper from "./interfaces/IJobScraper";
 import AdzunaScraper from "./jobScrapers/adzunaScraper";
 import ArbeitNowScraper from "./jobScrapers/arbeitNowScraper";
+import CareerBuilderScraper from "./jobScrapers/careerBuilderScraper";
 
 @Service()
 export default class JobScraperHelper {
     private adzunaScraper: AdzunaScraper;
     private arbeitNowScraper: ArbeitNowScraper;
+    private careerBuilderScraper: CareerBuilderScraper;
 
     constructor(
         @Inject() adzunaScraper: AdzunaScraper,
-        @Inject() arbeitNowScraper: ArbeitNowScraper
+        @Inject() arbeitNowScraper: ArbeitNowScraper,
+        @Inject() careerBuilderScraper: CareerBuilderScraper,
     )
     {
         this.adzunaScraper = adzunaScraper;
         this.arbeitNowScraper = arbeitNowScraper;
+        this.careerBuilderScraper = careerBuilderScraper;
     }
 
     /**
@@ -30,6 +34,8 @@ export default class JobScraperHelper {
                 return this.adzunaScraper;
             case JobAdSource.ARBEIT_NOW:
                 return this.arbeitNowScraper;
+            case JobAdSource.CAREER_BUILDER:
+                return this.careerBuilderScraper;
             default:
                 return null;
         }

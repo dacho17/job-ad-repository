@@ -56,10 +56,19 @@ export default class BrowserAPI {
     /**
    * @description Function that returns an element found on the page based on the passed selector
    * @param {string} selector
-   * @returns {Promise<ElementHandle<Element>[]>} Returns the first element which matches the selector.
+   * @returns {Promise<ElementHandle<Element>>} Returns the first element which matches the selector.
    */
     public async findElement(selector: string): Promise<ElementHandle<Element> | null> {
         return await this.page.$(selector);
+    }
+
+     /**
+   * @description Function that returns elements found on the page based on the passed selector
+   * @param {string} selector
+   * @returns {Promise<ElementHandle<Element>[]>} Returns the list of elements which matches the selector.
+   */
+    public async findElements(selector: string): Promise<ElementHandle<Element>[]> {
+        return await this.page.$$(selector);
     }
 
     /**
