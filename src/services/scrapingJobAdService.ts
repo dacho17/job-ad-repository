@@ -24,42 +24,65 @@ import { WeWorkRemotelyAdScraper } from './scrapers/jobAdScrapers/weWorkRemotely
 
 @Service()
 export class ScrapingJobAdService {
-    @Inject()
     private scrapingJobAdRepository: ScrapingJobAdRepository;
-    @Inject()
     private jobAdMapper: JobAdMapper;
-    @Inject()
     private adzunaAdScraper: AdzunaAdScraper;
-    @Inject()
     private arbeitNowAdScraper: ArbeitNowAdScraper;
-    @Inject()
     private careerJetAdScraper: CarerJetAdScraper;
-    @Inject()
     private careerBuilderScraper: CareerBuilderScraper;
-    @Inject()
     private cvLibraryAdScraper: CvLibraryAdScraper;
-    @Inject()
     private euroJobsAdScraper: EuroJobsAdScraper;
-    @Inject()
     private euroJobSitesAdScraper: EuroJobSitesAdScraper;
-    @Inject()
     private graduatelandAdScraper: GraduatelandAdScraper;
-    @Inject()
     private jobFluentAdScraper: JobFluentAdScraper;
-    @Inject()
     private linkedinAdScraper: LinkedInAdScraper;
-    @Inject()
     private noFluffAdScraper: NoFluffAdScraper;
-    @Inject()
     private qreerAdScraper: QreerAdScraper;
-    @Inject()
     private simplyHiredAdScraper: SimplyHiredAdScraper;
-    @Inject()
     private snaphuntAdScraper: SnaphuntAdScraper;
-    @Inject()
     private tybaAdScraper: TybaAdScraper;
-    @Inject()
     private weWorkRemotelyAdScraper: WeWorkRemotelyAdScraper;
+
+    constructor(
+        @Inject() scrapingJobAdRepository: ScrapingJobAdRepository,
+        @Inject() jobAdMapper: JobAdMapper,
+        @Inject() adzunaAdScraper: AdzunaAdScraper,
+        @Inject() arbeitNowAdScraper: ArbeitNowAdScraper,
+        @Inject() careerJetAdScraper: CarerJetAdScraper,
+        @Inject() careerBuilderScraper: CareerBuilderScraper,
+        @Inject() cvLibraryAdScraper: CvLibraryAdScraper,
+        @Inject() euroJobsAdScraper: EuroJobsAdScraper,
+        @Inject() euroJobSitesAdScraper: EuroJobSitesAdScraper,
+        @Inject() graduatelandAdScraper: GraduatelandAdScraper,
+        @Inject() jobFluentAdScraper: JobFluentAdScraper,
+        @Inject() linkedinAdScraper: LinkedInAdScraper,
+        @Inject() noFluffAdScraper: NoFluffAdScraper,
+        @Inject() qreerAdScraper: QreerAdScraper,
+        @Inject() simplyHiredAdScraper: SimplyHiredAdScraper,
+        @Inject() snaphuntAdScraper: SnaphuntAdScraper,
+        @Inject() tybaAdScraper: TybaAdScraper,
+        @Inject() weWorkRemotelyAdScraper: WeWorkRemotelyAdScraper,
+    )
+    {
+        this.scrapingJobAdRepository = scrapingJobAdRepository;
+        this.jobAdMapper = jobAdMapper;
+        this.adzunaAdScraper = adzunaAdScraper;
+        this.arbeitNowAdScraper = arbeitNowAdScraper;
+        this.careerJetAdScraper = careerJetAdScraper;
+        this.careerBuilderScraper = careerBuilderScraper;
+        this.cvLibraryAdScraper = cvLibraryAdScraper;
+        this.euroJobsAdScraper = euroJobsAdScraper;
+        this.euroJobSitesAdScraper = euroJobSitesAdScraper;
+        this.graduatelandAdScraper = graduatelandAdScraper;
+        this.jobFluentAdScraper = jobFluentAdScraper;
+        this.linkedinAdScraper = linkedinAdScraper;
+        this.noFluffAdScraper = noFluffAdScraper;
+        this.qreerAdScraper = qreerAdScraper;
+        this.simplyHiredAdScraper = simplyHiredAdScraper;
+        this.snaphuntAdScraper = snaphuntAdScraper;
+        this.tybaAdScraper = tybaAdScraper;
+        this.weWorkRemotelyAdScraper = weWorkRemotelyAdScraper;
+    }
 
     /**
    * @description Function accepts client form, and based on the data provided scrapes jobs across the jobsites defined in the getScrapers() function.
@@ -68,7 +91,7 @@ export class ScrapingJobAdService {
    */
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
         // const jobAdScrapers = this.getScrapers();
-        const jobAdScrapers = [this.linkedinAdScraper];
+        const jobAdScrapers = [this.adzunaAdScraper];
 
         let totalAdsScraped = 0;
 

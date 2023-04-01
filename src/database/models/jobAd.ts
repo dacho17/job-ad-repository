@@ -65,14 +65,6 @@ export const JobAdMAP = (sequelize: Sequelize) => {
         postedDateTimestamp: {
             type: DataTypes.BIGINT,
             allowNull: true,
-        },
-        JobAdSourceId: {
-            type: DataTypes.INTEGER,
-            allowNull: true
-        },
-        JobId: {
-            type: DataTypes.INTEGER,
-            allowNull: true
         }
     }, {
         sequelize,

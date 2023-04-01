@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import { Sequelize } from 'sequelize';
+import { JobMAP, Job } from './models/job';
 import { JobAdMAP, JobAd } from './models/jobAd';
 
 const sequelize = new Sequelize(process.env.DATABASE_NAME!, process.env.DB_USERNAME!, process.env.DB_PASSWORD, {
@@ -15,6 +16,12 @@ const sequelize = new Sequelize(process.env.DATABASE_NAME!, process.env.DB_USERN
 });
 
 JobAdMAP(sequelize);
+JobMAP(sequelize);
+
+// NOTE: define the associations here!
+Job.belongsTo(JobAd, {
+    foreignKey: 'jobAdId'
+});
 
 sequelize.authenticate().then(() => {
     console.log('Connected to the database.')
@@ -24,5 +31,7 @@ sequelize.authenticate().then(() => {
 
 // NOTE: define the tables here!
 export default {
+    sequelize: sequelize,
     JobAd: JobAd,
+    Job: Job,
 }

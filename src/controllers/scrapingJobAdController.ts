@@ -21,6 +21,8 @@ export class ScrapingJobAdController extends BaseController {
         this.respondIfRequestInvalid(isValid, errorMessage, res);
 
         const result = await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!);
-        res.status(200).json(result);
+        res.status(200).json({
+            numberOfScrapedAds: result
+        });
     }
 }

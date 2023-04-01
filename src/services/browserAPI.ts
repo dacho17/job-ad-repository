@@ -44,6 +44,16 @@ export default class BrowserAPI {
     }
 
     /**
+   * @description Click on the element connected to the passed selector.
+   * @param {string} selector
+   * @returns {Promise<void>}
+   */
+    public async clickButton(selector: string): Promise<void> {
+        const extendAdButton = await this.findElement(selector);
+        await extendAdButton?.click();
+    }
+
+    /**
    * @description Function that returns an element found on the page based on the passed selector
    * @param {string} selector
    * @returns {Promise<ElementHandle<Element>[]>} Returns the first element which matches the selector.

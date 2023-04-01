@@ -21,26 +21,6 @@ export default {
 
     SNAPHUNT_REMOTE_QUERY_PARAMETER: `&jobLocationType=remote&urlJobLocationType=remote`,
 
-
-    // Commonly used strings
-    COMMA_SIGN: ',',
-    MINUS_SIGN: '-',
-    PLUS_SIGN: '+',
-    UNDERSCORE_SIGN: '_',
-    QUESTIONMARK_SIGN: '?',
-    EMPTY_STRING: '',
-    WHITESPACE: ' ',
-    WHITESPACE_URL_ENCODING: '%20',
-    UFT_PLUS_SIGN_ENCODING: '%2B',
-    ASCII_COMMA_SIGN_ENCODING: '%2C',
-
-    // Messages
-    AD_SOURCE_NOT_RECOGNIZED: 'AdSource not recognized',
-    JOB_TITLE_INVALID: 'The job title you provided is invalid',
-    NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
-    UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',
-    WORK_FROM_HOME_INVALID: 'The "Work From Home" value is invalid',
-
     // common html selectors
     HREF_SELECTOR: 'href',
     ARIALABEL_SELECTOR: 'aria-label',
@@ -80,6 +60,32 @@ export default {
     LINKEDIN_POSTED_AGO_SELECTOR: 'time',
     WE_WORK_REMOTELY_JOB_SECTION_SELECTOR: '.jobs-container > .jobs',
     WE_WORK_REMOTELY_VIEW_ALL_JOBS_SELECTOR: 'article > ul > .view-all > a',
+
+    // job scraping selectors
+    ADZUNA_DETAILS_EXTEND_AD_BUTTON_SELECTOR: '.ui-foreign-click-description-toggle > a',
+    ADZUNA_DETAILS_JOB_TITLE_SELECTOR: 'h1',
+    ADZUNA_DETAILS_SUBTITLE_SECTION_SELECTOR: 'div > div > table > tbody > tr > td',
+    ADZUNA_DETAILS_COMPANY_LINK_SELECTOR: 'div > div > table > tbody > tr > td > a',
+    ADZUNA_DETAILS_JOB_DESCRIPTION_SELECTOR: '.ui-foreign-click-description > section',
+
+    // Commonly used strings
+    COMMA_SIGN: ',',
+    MINUS_SIGN: '-',
+    PLUS_SIGN: '+',
+    UNDERSCORE_SIGN: '_',
+    QUESTIONMARK_SIGN: '?',
+    EMPTY_STRING: '',
+    WHITESPACE: ' ',
+    WHITESPACE_URL_ENCODING: '%20',
+    UFT_PLUS_SIGN_ENCODING: '%2B',
+    ASCII_COMMA_SIGN_ENCODING: '%2C',
+
+    // Messages
+    AD_SOURCE_NOT_RECOGNIZED: 'AdSource not recognized',
+    JOB_TITLE_INVALID: 'The job title you provided is invalid',
+    NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
+    UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',
+    WORK_FROM_HOME_INVALID: 'The "Work From Home" value is invalid',
 
     // HTTP codes
     OK: 200,
