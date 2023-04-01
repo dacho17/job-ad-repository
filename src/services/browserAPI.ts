@@ -35,6 +35,14 @@ export default class BrowserAPI {
     }
 
     /**
+   * @description Returns the currently openned url.
+   * @returns {string}
+   */
+    public getUrl(): string {
+        return this.page.url();
+    }
+
+    /**
    * @description Click on the passed element on the current page
    * @param {any} element
    * @returns {Promise<void>}

@@ -93,10 +93,17 @@ export default {
     EURO_JOBS_DETAILS_JOB_DETAILS_VALUE_SELECTOR: '.displayField',
     EURO_JOBS_DETAILS_JOB_DESCRIPTION_SELECTOR: '#listingsResults > div > fieldset > div > div',
 
+    EURO_JOB_SITES_DETAILS_ADDITIONAL_JOB_LINK_SELECTOR: '.job-header > div > h2 > a',
+    EURO_JOB_SITES_DETAILS_HEADER_SELECTOR: '.job-header > div > h2',
+    EURO_JOB_SITES_DETAILS_AD_SELECTOR: '.job-header > div',
+    EURO_JOB_SITES_DETAILS_JOB_DETAILS_SELECTOR: '.job-header > div > p',
+    EURO_JOB_SITES_DETAILS_JOB_DETAILS_KEYS_SELECTOR: '.job-header > div > p > strong',
+
     // Commonly used string
     DOT: '.',
     UNDERSCORE: '_',
     COMMA: ',',
+    COLON: ':',
     EQUALS: '=',
     COMMA_SIGN: ',',
     MINUS_SIGN: '-',
