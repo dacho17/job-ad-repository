@@ -75,6 +75,7 @@ export class BaseAdScraper {
    */
     protected async scrapeJobAdElements(scraperTracker: AdScraperTracker, adSource: JobAdSource, jobAdElements: ElementHandle<Element>[], postedAgoList: (string | null)[]): Promise<number> {
         let nOfScrapedAds = 0;
+        console.log(`${jobAdElements.length} job ads to be scraped`);
         for (let i = 0; i < jobAdElements.length; i++) {
             let jobLink = await this.browserAPI.getDataFromAttr(jobAdElements[i], Constants.HREF_SELECTOR);
             if (!jobLink) continue;

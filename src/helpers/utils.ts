@@ -138,4 +138,31 @@ export default class Utils {
             return new Date();
         }
     }
+
+    /**
+     * @description Function that formats postedAgo property from Simplyhired ad (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
+    public getPostedDate4SimplyHired(textContainingPostedAgo: string): Date {
+        const [postedAgoText, timeframe, _] = textContainingPostedAgo.trim().split(Constants.WHITESPACE)
+        const postedAgo = parseInt(postedAgoText);
+    
+        if (isNaN(postedAgo)) return new Date();
+    
+        if (timeframe.includes(JobAdPostedAgoTimeframe.HOUR)) {
+            return addHours(Date.now(), -postedAgo);
+        } else if (timeframe.includes(JobAdPostedAgoTimeframe.DAY)) {
+            return addDays(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.WEEK)) {
+            return addWeeks(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.MONTH)) {
+            return addMonths(Date.now(), -postedAgo);
+        }
+        else {
+            return new Date();
+        }
+    }
 }
