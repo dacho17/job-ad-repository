@@ -74,7 +74,7 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true
         },
         workLocation: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(1024),
             allowNull: true
         },
         details: {

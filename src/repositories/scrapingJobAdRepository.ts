@@ -51,8 +51,8 @@ export class ScrapingJobAdRepository {
             const jobAdsWithoutScrapedDetails = await JobAd.findAll({
                 where: {
                     areDetailsScraped: false,
-                    // source: { [Op.not]: [JobAdSource.INDEED.valueOf(), JobAdSource.NO_FLUFF_JOBS.valueOf()] },   // not parsing indeed at the moment since they deny me access
-                    source: JobAdSource.LINKEDIN
+                    // source: { [Op.not]: [JobAdSource.CV_LIBRARY.valueOf(), JobAdSource.NO_FLUFF_JOBS.valueOf()] },
+                    source: JobAdSource.NO_FLUFF_JOBS
                 },
                 limit: this.FETCH_JOB_AD_BATCH,
                 offset: offset

@@ -2,7 +2,6 @@ import { Service } from "typedi";
 import { addMinutes, addHours, addDays, addWeeks, addMonths} from 'date-fns';
 import Constants from "./constants";
 import { JobAdPostedAgoTimeframe } from "./enums/jobAdPostedAgoTimeframe";
-import { JobAdSource } from "./enums/jobAdSource";
 
 @Service()
 export default class Utils {
@@ -145,6 +144,35 @@ export default class Utils {
             return addHours(Date.now(), -postedAgo);
         }
         else if (timeframe.includes(JobAdPostedAgoTimeframe.DAY)) {
+            return addDays(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.WEEK)) {
+            return addWeeks(Date.now(), -postedAgo);
+        }
+        else if (timeframe.includes(JobAdPostedAgoTimeframe.MONTH)) {
+            return addMonths(Date.now(), -postedAgo);
+        }
+        else {
+            return new Date();
+        }
+    }
+
+    /**
+     * @description Function that formats postedAgo property from NoFluff job page (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
+    public  getPostedDate4NoFluff(textContainingPostedAgo: string): Date {
+        const splitEntry = textContainingPostedAgo.trim().split(Constants.WHITESPACE)
+
+        if (splitEntry.length < 6) return new Date();
+        const postedAgoText = splitEntry[4];
+        const timeframe = splitEntry[5];
+        const postedAgo = parseInt(postedAgoText);
+
+        if (isNaN(postedAgo)) return new Date();
+    
+        if (timeframe.includes(JobAdPostedAgoTimeframe.DAY)) {
             return addDays(Date.now(), -postedAgo);
         }
         else if (timeframe.includes(JobAdPostedAgoTimeframe.WEEK)) {
