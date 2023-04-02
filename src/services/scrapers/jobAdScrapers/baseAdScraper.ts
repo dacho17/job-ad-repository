@@ -31,6 +31,22 @@ export class BaseAdScraper {
         await this.browserAPI.run();
         while (scraperTracker.nOfScrapedAds < urlParams.reqNofAds) {
             const jobAdSelector = this.getSiteData(urlParams, scraperTracker, adSource);
+            if (adSource === JobAdSource.SIMPLY_HIRED && scraperTracker.currentPage !== 1) {    // this snippet navigates to a new page after visiting the first one for SimplyHired ad scraper. I am using navigation buttons instead of passing a page query parameter
+                const navigationButtons = await this.browserAPI.findMultiple(Constants.SIMPLY_HIRED_NAVIGATION_BUTTONS_SELECTOR);
+                for (let i = 0; i < navigationButtons.length; i++) {
+                    const candidateUrl = await this.browserAPI.getDataFromAttr(navigationButtons[i], Constants.HREF_SELECTOR);
+                    const candidateButtonPageContent = await this.browserAPI.getTextFromElement(navigationButtons[i]);
+                    console.log(`${candidateButtonPageContent} is the value in navigation button. Url=${candidateUrl}`);
+                    if (!candidateButtonPageContent || !candidateUrl) continue;
+                    const pageNumberCandidate = parseInt(candidateButtonPageContent.trim());
+                    if (isNaN(pageNumberCandidate)) continue;
+                    console.log(`Current page=${scraperTracker.currentPage} and candidate page=${pageNumberCandidate}`);
+                    if (pageNumberCandidate === scraperTracker.currentPage + 1) {
+                        scraperTracker.url = candidateUrl;
+                        break;
+                    }
+                }
+            }
             await this.browserAPI.openPage(scraperTracker.url!);
             
             let postedAgoList: (string | null)[] = [];  // gathering postedAgo information for several websites which contain it
@@ -40,6 +56,7 @@ export class BaseAdScraper {
 
             const numberOfAdsScraped = await this.scrapePage(scraperTracker, adSource, jobAdSelector, postedAgoList);
             if (numberOfAdsScraped === 0) break;
+
             scraperTracker.currentPage += 1;
         }
     
@@ -66,6 +83,10 @@ export class BaseAdScraper {
         return scraperTracker.scrapedAds;
     }
 
+    public delay(delayInms: number) {
+        return new Promise(resolve => setTimeout(resolve, delayInms));
+      }
+
     /**
    * @description Main function of the class, that extracts and formats data from the website, finally attaching
    * it to the newly created JobAdDTO object. 
@@ -75,7 +96,7 @@ export class BaseAdScraper {
    */
     protected async scrapeJobAdElements(scraperTracker: AdScraperTracker, adSource: JobAdSource, jobAdElements: ElementHandle<Element>[], postedAgoList: (string | null)[]): Promise<number> {
         let nOfScrapedAds = 0;
-        console.log(`${jobAdElements.length} job ads to be scraped`);
+        console.log(`${jobAdElements.length} job ads to be scraped from ${scraperTracker.url}`);
         for (let i = 0; i < jobAdElements.length; i++) {
             let jobLink = await this.browserAPI.getDataFromAttr(jobAdElements[i], Constants.HREF_SELECTOR);
             if (!jobLink) continue;
@@ -93,24 +114,6 @@ export class BaseAdScraper {
             scraperTracker.nOfScrapedAds += 1;
             nOfScrapedAds += 1;
             await jobAdElements[i].dispose();
-
-            if (adSource === JobAdSource.SIMPLY_HIRED) {
-                const navigationButtons = await this.browserAPI.findMultiple(Constants.SIMPLY_HIRED_NAVIGATION_BUTTONS_SELECTOR);
-                for (let i = 0; i < navigationButtons.length; i++) {
-                    const candidateButtonPageContent = await this.browserAPI.getDataFromAttr(navigationButtons[i], Constants.ARIALABEL_SELECTOR);
-                    const candidateUrl = await this.browserAPI.getDataFromAttr(navigationButtons[i], Constants.HREF_SELECTOR);
-                    if (!candidateButtonPageContent || !candidateUrl) continue;
-                    const pageElementSegments = candidateButtonPageContent.split(Constants.WHITESPACE);
-                    const pageNumberCandidate = parseInt(pageElementSegments[1].trim());
-                    if (isNaN(pageNumberCandidate)) continue;
-                    if (pageNumberCandidate == scraperTracker.currentPage) {
-                        scraperTracker.url = candidateUrl;
-                        break;
-                    }
-                }
-
-                await this.browserAPI.openPage(scraperTracker.url!);
-            }
         }
 
         return nOfScrapedAds;

@@ -44,7 +44,7 @@ export default {
     LN_JOBLINKS_SELECTOR: '.base-card__full-link',
     NO_FLUFF_JOBS_JOBLINKS_SELECTOR: '.list-container > .posting-list-item',
     QREER_JOBLINKS_SELECTOR: '.jobs-list > ul > li > .job',
-    SIMPLY_HIRED_JOBLINKS_SELECTOR: 'h3[data-testid="searchSerpJobTitle"] > a',
+    SIMPLY_HIRED_JOBLINKS_SELECTOR: 'h3[data-testid="searchSerpJobTitle"] > a',  // li > div > div > h3 > a
     TYBA_JOBLINKS_SELECTOR: '#timeline > .section-view-list > .bem-enabled > a',
     WE_WORK_REMOTELY_JOBLINKS_SELECTOR: 'li > a',
     WE_WORK_REMOTELY_JOBLINKS_SELECTOR_TWO: '.jobs > article > ul > li > a',

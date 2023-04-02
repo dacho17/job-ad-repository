@@ -1,4 +1,4 @@
-import puppeteer, { Browser, ElementHandle, Page } from 'puppeteer';
+import puppeteer, { Browser, ElementHandle, JSHandle, Page } from 'puppeteer';
 import { Service } from 'typedi';
 
 @Service()
@@ -115,7 +115,7 @@ export default class BrowserAPI {
         try {
             return await this.page.evaluate((el, sel) => el.getAttribute(sel), element, selector);
         } catch (exception) {
-            console.log(`Not able to detect an element using the attribute selector ${selector} on ${this.page.url()}`);
+            console.log(`Not able to detect an element using the attribute selector ${selector}`);
             return null;
         }
     }
