@@ -23,6 +23,8 @@ export default {
 
     // common html selectors
     HREF_SELECTOR: 'href',
+    TD_SELECTOR: 'td',
+    SPAN_SELECTOR: 'span',
     ARIALABEL_SELECTOR: 'aria-label',
     CONTENT_SELECTOR: 'content',
     DATETIME_SELECTOR: 'datetime',
@@ -129,7 +131,26 @@ export default {
     SIMPLY_HIRED_DETAILS_JOB_DESCRIPTION_SELECTOR: 'div[data-testid="viewJobBodyJobFullDescriptionContent"]',
     SIMPLY_HIRED_DETAILS_SALARY_SELECTOR: 'span[data-testid="viewJobBodyJobCompensation"]',
 
-    
+    QREER_DETAILS_JOB_TITLE_SELECTOR: 'header > h1',
+    QREER_DETAILS_COMPANY_INFO_SELECTOR: '.company-info',
+    QREER_DETAILS_COMPANY_NAME_SELECTOR: '.company-info > h3',
+    QREER_DETAILS_COMPANY_LOCATION_SELECTOR: '.company-info > div',
+    QREER_DETAILS_JOB_DETAILS_SELECTOR: '.job-info-block > p',
+    QREER_DETAILS_JOB_DESCRIPTION_SELECTOR: '.job-description',
+    QREER_DETAILS_JOB_SKILLS_KEY_VALUE_SELECTOR: '.skillsTable > tbody > tr',
+
+
+    QREER_DETAILS_COMPANY_LINK_SELECTOR: '.company-info > a',
+    QREER_DETAILS_ALT_COMPANY_LINK_SELECTOR: '.company-logo > a',
+    QREER_DETAILS_REGISTER_FORM_BUTTON_SELECTOR: '#qreerRegisterSuggClose',
+
+    SNAPHUNT_DETAILS_JOB_TITLE_SELECTOR: 'h1[class="JobDetailsPage-jobRole"]',
+    SNAPHUNT_DETAILS_WORK_LOCATION_SELECTOR: '.JobDetailsPage-section1 > div:nth-child(2)',
+    SNAPHUNT_DETAILS_JOB_DETAILS_SELECTOR: '.JobDetailsPageWrapper > div:nth-child(4) > div > div > div > div',
+    SNAPHUNT_DETAILS_JOB_OFFER_SELECTOR: '.jobDetails',
+    SNAPHUNT_DETAILS_JOB_DESCRIPTION_SELECTOR: '.JobDetailsPageWrapper > div:nth-child(4) > div > div > div > div:nth-child(3)',
+    SNAPHUNT_DETAILS_JOB_REQUIREMENTS_SELECTOR: '.JobDetailsPageWrapper > div:nth-child(4) > div > div > div > div:nth-child(4)',
+
     TYBA_DETAILS_JOB_TITLE_SELECTOR: '.job-title > h1',
     TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR: '.at-company > a',
     TYBA_DETAILS_JOB_DETAILS_KEYS_SELECTOR: '.content-description > h3',
@@ -173,22 +194,31 @@ export default {
 
     // Words appearing
     CATEGORY: 'Category',
-    CLIENT: 'Client:',
+    CLIENT_COL: 'Client:',
     COMPANY_SIZE: 'Company Size',
+    DEADLINE_COL: 'Deadline:',
+    EDUCATION_COL: 'Education Backgrounds:',
+    EDUCATION_LEVEL_COL: 'Education Level:',
+    EXPERIENCE_COL: 'Experience:',
     FOUNDED: 'Founded',
     HEADQUARTERS: 'Headquarters',
     INDUSTRY: 'Industry',
-    LOCATION_VARIANT: 'Location:',
+    JOB: 'Job',
+    JOB_LOCATION_COL: 'Job Location:',
+    LANGUAGES_SPOKEN_COL: 'Languages spoken:',
+    LOCATION_COL: 'Location:',
     LOCATION: 'Location',
-    EU_WORK_PERMIT_REQ: 'EU work permit required:',
+    EU_WORK_PERMIT_REQ_COL: 'EU work permit required:',
     MUST_HAVE_LANGUAGE: 'Must-have language',
-    POSTED: 'Posted:',
+    POSTED_COL: 'Posted:',
     SKILLS: 'Skills',
+    SPECIALTIES_COL: 'Specialties:',
     TYPE: 'Type',
-    EXPIRY_DATE: 'Expiry Date:',
+    TYPE_COL: 'Type:',
+    EXPIRY_DATE_COL: 'Expiry Date:',
     WEBISTE: 'Website',
     YES: 'Yes',
-    
+
     // HTTP codes
     OK: 200,
     BAD_REQUEST: 400,

@@ -201,4 +201,80 @@ export default class Utils {
 
         return nOfApplicantsCandidateTwo.toString();
     }
+
+    /**
+     * @description Function that accepts a date in string format (e.g. 2nd June 2023) and returns the date object.
+     * @param {string} qreerDate
+     * @returns {Date}
+     */
+    public transformQreerDate(qreerDate: string): Date {
+        const partsOfDate = qreerDate.trim().split(Constants.WHITESPACE);
+        const tranformedDay = this.transformStrDayToNumber(partsOfDate[0]);
+        const transformedMonth = this.transformStrMonthToNumber(partsOfDate[1]);
+        const transformedYear = parseInt(partsOfDate[2]);
+
+        if (tranformedDay && transformedMonth && transformedYear) {
+            return new Date(transformedYear, transformedMonth - 1, tranformedDay); 
+        }
+
+        return new Date();
+    }
+
+    /**
+     * @description Function that accepts a day in string format and returns its ordinary number.
+     * @param {string} day
+     * @returns {number | null}
+     */
+    private transformStrDayToNumber(day: string): number | null {
+        let dayNum = parseInt(day.slice(0, -2));
+
+        return isNaN(dayNum) ? null : dayNum;
+    }
+    
+    /**
+     * @description Function that accepts a month in string format and returns its ordinary number.
+     * @param {string} month
+     * @returns {number | null}
+     */
+    private transformStrMonthToNumber(month: string): number | null {
+        switch (month) {
+            case 'Jan':
+            case 'January':
+                return 1
+            case 'Feb':
+            case 'February':
+                return 2
+            case 'Mar':
+            case 'March':
+                return 3
+            case 'Apr':
+            case 'April':
+                return 4
+            case 'May':
+                return 5
+            case 'Jun':
+            case 'June':
+                return 6
+            case 'Jul':
+            case 'July':
+                return 7
+            case 'Aug':
+            case 'August':
+                return 8
+            case 'Sep':
+            case 'September':
+                return 9
+            case 'Oct':
+            case 'October':
+                return 10
+            case 'Nov':
+            case 'November':
+                return 11
+            case 'Dec':
+            case 'December':
+                return 12
+            default:
+                return null;
+        }
+    }
 }

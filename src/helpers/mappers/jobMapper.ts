@@ -22,6 +22,7 @@ export default class JobMapper {
             description: jobDTO.description,
             isRemote: jobDTO.isRemote,
             isInternship: jobDTO.isInternship,
+            deadline: jobDTO.deadline,
             requiredSkills: jobDTO.requiredSkills,
             additionalJobLink: jobDTO.additionalJobLink,
         

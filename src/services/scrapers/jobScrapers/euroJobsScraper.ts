@@ -49,19 +49,19 @@ export default class EuroJobsScraper implements IJobScraper {
             const key = await browserAPI.getTextFromElement(jobDetailsKeysElement[i]);
             const value = await browserAPI.getTextFromElement(jobDetailsValuesElement[i]);
             switch (key?.trim()) {
-                case Constants.CLIENT:
+                case Constants.CLIENT_COL:
                     newJob.companyName = value?.trim() || newJob.companyName;
                     break;
-                case Constants.LOCATION_VARIANT:
+                case Constants.LOCATION_COL:
                     newJob.companyLocation = value?.trim();
                     break;
-                case Constants.EU_WORK_PERMIT_REQ:
+                case Constants.EU_WORK_PERMIT_REQ_COL:
                     newJob.euWorkPermitRequired = value?.trim() === Constants.YES;
                     break;
-                case Constants.POSTED:
+                case Constants.POSTED_COL:
                     newJob.postedDate = this.utils.getDateFromDottedDateString(value);
                     break;
-                case Constants.EXPIRY_DATE:
+                case Constants.EXPIRY_DATE_COL:
                     newJob.deadline = this.utils.getDateFromDottedDateString(value);
                     break;
             }

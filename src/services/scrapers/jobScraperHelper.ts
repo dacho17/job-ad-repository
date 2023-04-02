@@ -9,6 +9,7 @@ import EuroJobSitesScraper from "./jobScrapers/euroJobSitesScraper";
 import EuroJobsScraper from "./jobScrapers/euroJobsScraper";
 import GraduatelandScraper from "./jobScrapers/graduatelandScraper";
 import JobFluentScraper from "./jobScrapers/jobFluentScraper";
+import QreerScraper from "./jobScrapers/qreerScraper";
 import SimplyHiredScraper from "./jobScrapers/simplyHiredScraper";
 import TybaScraper from "./jobScrapers/tybaScraper";
 import WeWorkRemotelyScraper from "./jobScrapers/weWorkRemotelyScraper";
@@ -24,6 +25,7 @@ export default class JobScraperHelper {
     private graduatelandScraper: GraduatelandScraper;
     private jobFluentScraper: JobFluentScraper;
 
+    private qreerScraper: QreerScraper;
     private simplyHiredScraper: SimplyHiredScraper;
 
     private tybaScraper: TybaScraper;
@@ -39,6 +41,7 @@ export default class JobScraperHelper {
         @Inject() graduatelandScraper: GraduatelandScraper,
         @Inject() jobFluentScraper: JobFluentScraper,
         
+        @Inject() qreerScraper: QreerScraper,
         @Inject() simplyHiredScraper: SimplyHiredScraper,
 
         @Inject() tybaScraper: TybaScraper,
@@ -54,6 +57,7 @@ export default class JobScraperHelper {
         this.graduatelandScraper = graduatelandScraper;
         this.jobFluentScraper = jobFluentScraper;
 
+        this.qreerScraper = qreerScraper;
         this.simplyHiredScraper = simplyHiredScraper;
 
         this.tybaScraper = tybaScraper;
@@ -88,6 +92,8 @@ export default class JobScraperHelper {
             case JobAdSource.JOB_FLUENT:
                 return this.jobFluentScraper;
 
+            case JobAdSource.QREER:
+                return this.qreerScraper;
             case JobAdSource.SIMPLY_HIRED:
                 return this.simplyHiredScraper;
 
