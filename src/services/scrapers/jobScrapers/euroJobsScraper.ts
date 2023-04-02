@@ -52,7 +52,7 @@ export default class EuroJobsScraper implements IJobScraper {
                 case Constants.CLIENT:
                     newJob.companyName = value?.trim() || newJob.companyName;
                     break;
-                case Constants.LOCATION:
+                case Constants.LOCATION_VARIANT:
                     newJob.companyLocation = value?.trim();
                     break;
                 case Constants.EU_WORK_PERMIT_REQ:

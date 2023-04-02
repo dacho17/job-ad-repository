@@ -44,11 +44,11 @@ export class ScrapingJobService {
         await this.browserAPI.run();
         for (;;) {
             const jobAdsWithoutScrapedJobs = await this.jobAdRepository.getAdsWithUnscrapedJobs(jobAdQueryOffset);
-            if (jobAdsWithoutScrapedJobs.length === 0) break;
+            if (jobAdsWithoutScrapedJobs.length === 0 || succStored == 1) break;    // TESTING PURPOSES! || succStored == 1 part is for testing purposes!
 
             const jobsAndAdsToBeStored: [Job, JobAd][] = [];
             console.log(`${jobAdsWithoutScrapedJobs.length} jobads to be scraped`)
-            for (let i = 0; i < jobAdsWithoutScrapedJobs.length; i++) {
+            for (let i = 0; i < 1; i++) {    // TESTING PURPOSES! jobAdsWithoutScrapedJobs.length instead of 1
                 const jobScraper = this.jobScraperHelper.getScraperFor(jobAdsWithoutScrapedJobs[i].source);
                 if (!jobScraper) {
                     jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
@@ -56,7 +56,7 @@ export class ScrapingJobService {
                     continue;
                 }
                 
-                console.log(`${jobAdsWithoutScrapedJobs[i].jobLink} to be scraped`)
+                console.log(`${jobAdQueryOffset + succStored + i}: ${jobAdsWithoutScrapedJobs[i].jobLink} to be scraped`)
                 await this.browserAPI.openPage(jobAdsWithoutScrapedJobs[i].jobLink);
                 const newJobDTO = await jobScraper.scrape(jobAdsWithoutScrapedJobs[i].id, this.browserAPI);
                 const newJobMAP = this.jobMapper.toMap(newJobDTO);

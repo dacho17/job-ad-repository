@@ -112,6 +112,25 @@ export default class Utils {
     }
 
     /**
+     * @description Function that formats postedAgo property from Graduateland ad (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
+    public getPostedDate4Graduateland(textContainingPostedAgo: string): Date {
+        const [_, firstPart, secondPart] = textContainingPostedAgo.trim().split(Constants.WHITESPACE);
+
+        if (!secondPart) return new Date();
+
+        if (secondPart.includes(JobAdPostedAgoTimeframe.DAY)) {
+            return addDays(Date.now(), -parseInt(firstPart))
+        } else if (secondPart.includes(JobAdPostedAgoTimeframe.WEEK)) {
+            return addWeeks(Date.now(), -parseInt(firstPart));
+        } else {
+            return new Date();
+        }
+    }
+
+    /**
      * @description Function that formats postedAgo property from LinkedIn ad (Format=TODO).
      * @param {string} textContainingPostedAgo
      * @returns {Date} Returns Date object based on the string, or a default Date object.

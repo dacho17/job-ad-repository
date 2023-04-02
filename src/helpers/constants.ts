@@ -99,7 +99,13 @@ export default {
     EURO_JOB_SITES_DETAILS_JOB_DETAILS_SELECTOR: '.job-header > div > p',
     EURO_JOB_SITES_DETAILS_JOB_DETAILS_KEYS_SELECTOR: '.job-header > div > p > strong',
 
-    
+    GRADUATELAND_DETAILS_JOB_TITLE_SELECTOR: '.job-title > h1',
+    GRADUATELAND_DETAILS_COMPANY_NAME_SELECTOR: '.job-title > h1 > span > a',
+    GRADUATELAND_DETAILS_POSTED_AGO_SELECTOR: '.date',
+    GRADUATELAND_DETAILS_JOB_DETAILS_KEY_SELECTOR: '.content-description > h3',
+    GRADUATELAND_DETAILS_JOB_DETAILS_VALUES_SELECTOR: '.content-description > p',
+    GRADUATELAND_DETAILS_JOB_DESCRIPTION_SELECTOR: '.job-content',
+    // GRADUATELAND_DETAILS_JOB_ '.content-description',
 
     SIMPLY_HIRED_DETAILS_JOB_TITLE_SELECTOR: 'h2[data-testid="viewJobTitle"]',
     SIMPLY_HIRED_DETAILS_COMPANY_NAME_SELECTOR: 'span[data-testid="viewJobCompanyName"] > span > span',
@@ -137,13 +143,18 @@ export default {
     WORK_FROM_HOME_INVALID: 'The "Work From Home" value is invalid',
 
     // Words appearing
+    CATEGORY: 'Category',
     CLIENT: 'Client:',
-    LOCATION: 'Location:',
+    LOCATION_VARIANT: 'Location:',
+    LOCATION: 'Location',
     EU_WORK_PERMIT_REQ: 'EU work permit required:',
+    MUST_HAVE_LANGUAGE: 'Must-have language',
     POSTED: 'Posted:',
+    SKILLS: 'Skills',
+    TYPE: 'Type',
     EXPIRY_DATE: 'Expiry Date:',
     YES: 'Yes',
-
+    
     // HTTP codes
     OK: 200,
     BAD_REQUEST: 400,
