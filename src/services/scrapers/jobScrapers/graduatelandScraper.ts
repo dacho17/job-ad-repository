@@ -56,7 +56,6 @@ export default class GraduatelandScraper implements IJobScraper {
             jobDetailsValues.push(value!.trim());
         }
 
-        newJob.details = Constants.EMPTY_STRING;
         newJob.requiredSkills = Constants.EMPTY_STRING;
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.GRADUATELAND_DETAILS_JOB_DETAILS_KEY_SELECTOR);
         for (let i = 0; i < jobDetailsKeyElements.length; i++) {
@@ -66,7 +65,7 @@ export default class GraduatelandScraper implements IJobScraper {
                     newJob.workLocation = jobDetailsValues[i];
                     break;
                 case Constants.CATEGORY:
-                    newJob.details += jobDetailsValues[i] + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+                    newJob.companyIndustry = jobDetailsValues[i];
                     break;
                 case Constants.TYPE:
                     newJob.timeEngagement = jobDetailsValues[i];

@@ -24,6 +24,7 @@ export default {
     // common html selectors
     HREF_SELECTOR: 'href',
     ARIALABEL_SELECTOR: 'aria-label',
+    CONTENT_SELECTOR: 'content',
     DATETIME_SELECTOR: 'datetime',
     NAME_SELECTOR: 'name',
     VALUE_SELECTOR: 'value',
@@ -106,6 +107,18 @@ export default {
     GRADUATELAND_DETAILS_JOB_DETAILS_VALUES_SELECTOR: '.content-description > p',
     GRADUATELAND_DETAILS_JOB_DESCRIPTION_SELECTOR: '.job-content',
 
+    JOB_FLUENT_DETAILS_JOB_TITLE_SELECTOR: 'span[itemprop="title"]',
+    JOB_FLUENT_DETAILS_COMPANY_LOCATION_SELECTOR: 'span[itemprop="jobLocation"]',
+    JOB_FLUENT_DETAILS_COMPANY_NAME_SELECTOR: 'span[itemprop="hiringOrganization"] > span', 
+    JOB_FLUENT_DETAILS_COMPANY_LINK_SELECTOR: '.company-features > ul > li > p > a',
+    JOB_FLUENT_DETAILS_COMPANY_DETAILS_KEYS_SELECTOR: '.company-features > ul > li > label',
+    JOB_FLUENT_DETAILS_COMPANY_DETAILS_VALUES_SELECTOR: '.company-features > ul > li > p',
+    JOB_FLUENT_DETAILS_REMOTE_SELECTOR: 'span[data-original-title="Remote"]',
+    JOB_FLUENT_DETAILS_TIME_ENGAGEMENT_SELECTOR: 'b[itemprop="employmentType"]',
+    JOB_FLUENT_DETAILS_INTERNSHIP_SELECTOR: 'span[data-original-title="No internship"]',
+    JOB_FLUENT_DETAILS_REQUIRED_SKILLS_SELECTOR: 'meta[itemprop="skills"]',
+    JOB_FLUENT_DETAILS_JOB_DESCRIPTION_SELECTOR: 'div[itemprop="description"]',
+
     SIMPLY_HIRED_DETAILS_JOB_TITLE_SELECTOR: 'h2[data-testid="viewJobTitle"]',
     SIMPLY_HIRED_DETAILS_COMPANY_NAME_SELECTOR: 'span[data-testid="viewJobCompanyName"] > span > span',
     SIMPLY_HIRED_DETAILS_COMPANY_LOCATION_SELECTOR: 'span[data-testid="viewJobCompanyLocation"]',
@@ -156,6 +169,10 @@ export default {
     // Words appearing
     CATEGORY: 'Category',
     CLIENT: 'Client:',
+    COMPANY_SIZE: 'Company Size',
+    FOUNDED: 'Founded',
+    HEADQUARTERS: 'Headquarters',
+    INDUSTRY: 'Industry',
     LOCATION_VARIANT: 'Location:',
     LOCATION: 'Location',
     EU_WORK_PERMIT_REQ: 'EU work permit required:',
@@ -164,6 +181,7 @@ export default {
     SKILLS: 'Skills',
     TYPE: 'Type',
     EXPIRY_DATE: 'Expiry Date:',
+    WEBISTE: 'Website',
     YES: 'Yes',
     
     // HTTP codes

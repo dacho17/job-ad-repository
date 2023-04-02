@@ -26,6 +26,9 @@ export class Job extends Model {
     companyName: string;
     companyLocation?: string;
     companyLink?: string;
+    companySize?: string;
+    companyFounded?: string;
+    companyIndustry?: string;
     companyDescription?: string;
     companyDetails?: string;
     companyWebsite?: string;
@@ -117,6 +120,18 @@ export const JobMAP = (sequelize: Sequelize) => {
         companyLink: {
             type: DataTypes.TEXT,
             allowNull: true,
+        },
+        companySize: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        companyFounded: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        companyIndustry: {
+            type: DataTypes.STRING,
+            allowNull: false
         },
         companyDescription: {
             type: DataTypes.STRING(4096),
