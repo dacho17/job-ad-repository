@@ -7,6 +7,7 @@ import AdzunaScraper from "./jobScrapers/adzunaScraper";
 import ArbeitNowScraper from "./jobScrapers/arbeitNowScraper";
 import CareerBuilderScraper from "./jobScrapers/careerBuilderScraper";
 import CareerJetScraper from "./jobScrapers/careerJetScraper";
+import CvLibraryScraper from "./jobScrapers/cvLibrary";
 import EuroJobSitesScraper from "./jobScrapers/euroJobSitesScraper";
 import EuroJobsScraper from "./jobScrapers/euroJobsScraper";
 import GraduatelandScraper from "./jobScrapers/graduatelandScraper";
@@ -25,6 +26,7 @@ export default class JobScraperHelper {
     private arbeitNowScraper: ArbeitNowScraper;
     private careerBuilderScraper: CareerBuilderScraper;
     private careerJetScraper: CareerJetScraper;
+    private cvLibraryScraper: CvLibraryScraper;
     private euroJobScraper: EuroJobsScraper;
     private euroJobSitesScraper: EuroJobSitesScraper;
     private graduatelandScraper: GraduatelandScraper;
@@ -42,6 +44,7 @@ export default class JobScraperHelper {
         @Inject() arbeitNowScraper: ArbeitNowScraper,
         @Inject() careerBuilderScraper: CareerBuilderScraper,
         @Inject() careerJetScraper: CareerJetScraper,
+        @Inject() cvLibraryScraper: CvLibraryScraper,
         @Inject() euroJobScraper: EuroJobsScraper,
         @Inject() euroJobSitesScraper: EuroJobSitesScraper,
         @Inject() graduatelandScraper: GraduatelandScraper,
@@ -59,6 +62,7 @@ export default class JobScraperHelper {
         this.arbeitNowScraper = arbeitNowScraper;
         this.careerBuilderScraper = careerBuilderScraper;
         this.careerJetScraper = careerJetScraper;
+        this.cvLibraryScraper = cvLibraryScraper;
         this.euroJobScraper = euroJobScraper;
         this.euroJobSitesScraper = euroJobSitesScraper;
         this.graduatelandScraper = graduatelandScraper;
@@ -88,6 +92,8 @@ export default class JobScraperHelper {
                 return this.careerBuilderScraper;
             case JobAdSource.CAREER_JET:
                 return this.careerJetScraper;
+            case JobAdSource.CV_LIBRARY:
+                return this.cvLibraryScraper;
             case JobAdSource.EURO_JOBS:
                 return this.euroJobScraper;
             case JobAdSource.EURO_ENGINEER_JOBS:

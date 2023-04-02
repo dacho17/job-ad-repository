@@ -94,6 +94,43 @@ export default class Utils {
     }
 
     /**
+     * @description Function that formats postedAgo property from CvLibrary job page (Format=TODO).
+     * @param {string} textContainingPostedAgo
+     * @returns {Date} Returns Date object based on the string, or a default Date object.
+     */
+    public getPostedDate4CvLibrary(textContainingPostedAgo: string): Date {
+        const [firstPart, secondPart, _] = textContainingPostedAgo.trim().split(Constants.WHITESPACE);
+        
+        // check if textContainingPostedAgo is string of format DD/MM/YYYY
+        const candidateDate = firstPart.split('/');
+        if (candidateDate.length === 3) {
+            return new Date(parseInt(candidateDate[2]), parseInt(candidateDate[1]) - 1, parseInt(candidateDate[0]));
+        }
+
+        if (!isNaN(Date.parse(firstPart))) {
+            return new Date(Date.parse(firstPart));
+        } else if (firstPart.includes(JobAdPostedAgoTimeframe.TODAY)) {
+            return new Date(Date.now());
+        } else if (firstPart.includes(JobAdPostedAgoTimeframe.YESTERDAY)) {
+            return addDays(Date.now(), -1);
+        } else if (firstPart.includes('a')) {
+            console.log('about to read addweeks');
+            const newDate =  addWeeks(Date.now(), -1);
+            console.log(newDate)
+            return newDate;
+        } else if (!isNaN(parseInt(firstPart))) {
+            if (secondPart.includes(JobAdPostedAgoTimeframe.DAY)) {
+                return addDays(Date.now(), -parseInt(firstPart))
+            } else if (secondPart.includes(JobAdPostedAgoTimeframe.WEEK)) {
+                return addWeeks(Date.now(), -parseInt(firstPart));
+            } else {
+                return new Date();
+            }
+        }
+        return new Date();
+    }
+
+    /**
      * @description Function that formats postedAgo property from EuroJobSites ad (Format=TODO).
      * @param {string} textContainingPostedAgo
      * @returns {Date} Returns Date object based on the string, or a default Date object.

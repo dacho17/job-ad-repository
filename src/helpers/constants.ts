@@ -91,6 +91,14 @@ export default {
     CAREER_JET_DETAILS_POSTED_AGO_SELECTOR: '#job > div > header > .tags > li > span',
     CAREER_JET_DETAILS_JOB_DESCRIPTION_SELECTOR: '#job > div > .content',
 
+    CV_LIBRARY_DETAILS_JOB_TITLE_SELECTOR: '.job__title > span',
+    CV_LIBRARY_DETAILS_POSTED_AGO_SELECTOR: '.job__header-posted > span',
+    CV_LIBRARY_DETAILS_COMPANY_NAME_SELECTOR: '.job__header-posted > span > a',
+    CV_LIBRARY_DETAILS_REMOTE_POSITION_SELECTOR: 'job__icon--remote',
+    CV_LIBRARY_DETAILS_JOB_DESCRIPTION_SELECTOR: '.job__description',
+    CV_LIBRARY_DETAILS_JOB_DETAILS_KEY_SELECTOR: '.job__details-term',
+    CV_LIBRARY_DETAILS_JOB_DETAILS_VALUE_SELECTOR: '.job__details-value',
+
     EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR: '.listingInfo > h2',
     EURO_JOBS_DETAILS_JOB_DETAILS_KEY_SELECTOR: '.displayFieldBlock > h3',
     EURO_JOBS_DETAILS_JOB_DETAILS_VALUE_SELECTOR: '.displayField',
