@@ -92,7 +92,7 @@ export class ScrapingJobAdService {
    */
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
         // const jobAdScrapers = this.getScrapers();
-        const jobAdScrapers = [this.jobFluentAdScraper];
+        const jobAdScrapers = [this.tybaAdScraper];
 
         let totalAdsScraped = 0;
 

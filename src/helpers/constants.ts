@@ -130,6 +130,11 @@ export default {
     SIMPLY_HIRED_DETAILS_SALARY_SELECTOR: 'span[data-testid="viewJobBodyJobCompensation"]',
 
     
+    TYBA_DETAILS_JOB_TITLE_SELECTOR: '.job-title > h1',
+    TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR: '.at-company > a',
+    TYBA_DETAILS_JOB_DETAILS_KEYS_SELECTOR: '.content-description > h3',
+    TYBA_DETAILS_JOB_DETAILS_VALUES_SELECTOR: '.content-description > p',
+    TYBA_DETAILS_JOB_DESCRIPTION_SELECTOR: '.job-content',
 
     WE_WORK_REMOTELY_DETAIL_JOB_TITLE_SELECTOR: '.listing-header-container > h1',
     WE_WORK_REMOTELY_POSTED_DATE_SELECTOR: '.listing-header-container > h3:nth-child(1) > time',

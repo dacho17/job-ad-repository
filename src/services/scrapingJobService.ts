@@ -97,6 +97,7 @@ export class ScrapingJobService {
                 await transaction.commit();
                 storedCounter += 1;
             } catch (exception) {
+                console.log(`An exception occurred while storing a pair (job, jobAd) - [${exception}]`);
                 await transaction.rollback();
                 notStoredCounter += 1;
             }

@@ -10,6 +10,7 @@ import EuroJobsScraper from "./jobScrapers/euroJobsScraper";
 import GraduatelandScraper from "./jobScrapers/graduatelandScraper";
 import JobFluentScraper from "./jobScrapers/jobFluentScraper";
 import SimplyHiredScraper from "./jobScrapers/simplyHiredScraper";
+import TybaScraper from "./jobScrapers/tybaScraper";
 import WeWorkRemotelyScraper from "./jobScrapers/weWorkRemotelyScraper";
 
 @Service()
@@ -25,6 +26,7 @@ export default class JobScraperHelper {
 
     private simplyHiredScraper: SimplyHiredScraper;
 
+    private tybaScraper: TybaScraper;
     private weWorkRemotely: WeWorkRemotelyScraper;
 
     constructor(
@@ -39,6 +41,7 @@ export default class JobScraperHelper {
         
         @Inject() simplyHiredScraper: SimplyHiredScraper,
 
+        @Inject() tybaScraper: TybaScraper,
         @Inject() weWorkRemotely: WeWorkRemotelyScraper,
     )
     {
@@ -53,6 +56,7 @@ export default class JobScraperHelper {
 
         this.simplyHiredScraper = simplyHiredScraper;
 
+        this.tybaScraper = tybaScraper;
         this.weWorkRemotely = weWorkRemotely;
     }
 
@@ -87,6 +91,8 @@ export default class JobScraperHelper {
             case JobAdSource.SIMPLY_HIRED:
                 return this.simplyHiredScraper;
 
+            case JobAdSource.TYBA:
+                return this.tybaScraper;
             case JobAdSource.WE_WORK_REMOTELY:
                 return this.weWorkRemotely;
             default:

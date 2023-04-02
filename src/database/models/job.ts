@@ -123,15 +123,15 @@ export const JobMAP = (sequelize: Sequelize) => {
         },
         companySize: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
         companyFounded: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
         companyIndustry: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
         companyDescription: {
             type: DataTypes.STRING(4096),
