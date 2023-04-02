@@ -105,7 +105,6 @@ export default {
     GRADUATELAND_DETAILS_JOB_DETAILS_KEY_SELECTOR: '.content-description > h3',
     GRADUATELAND_DETAILS_JOB_DETAILS_VALUES_SELECTOR: '.content-description > p',
     GRADUATELAND_DETAILS_JOB_DESCRIPTION_SELECTOR: '.job-content',
-    // GRADUATELAND_DETAILS_JOB_ '.content-description',
 
     SIMPLY_HIRED_DETAILS_JOB_TITLE_SELECTOR: 'h2[data-testid="viewJobTitle"]',
     SIMPLY_HIRED_DETAILS_COMPANY_NAME_SELECTOR: 'span[data-testid="viewJobCompanyName"] > span > span',
@@ -116,6 +115,17 @@ export default {
     SIMPLY_HIRED_DETAILS_JOB_REQUIREMENTS_SELECTOR: 'div[data-testid="viewJobQualificationsContainer"]',
     SIMPLY_HIRED_DETAILS_JOB_DESCRIPTION_SELECTOR: 'div[data-testid="viewJobBodyJobFullDescriptionContent"]',
     SIMPLY_HIRED_DETAILS_SALARY_SELECTOR: 'span[data-testid="viewJobBodyJobCompensation"]',
+
+    
+
+    WE_WORK_REMOTELY_DETAIL_JOB_TITLE_SELECTOR: '.listing-header-container > h1',
+    WE_WORK_REMOTELY_POSTED_DATE_SELECTOR: '.listing-header-container > h3:nth-child(1) > time',
+    WE_WORK_REMOTELY_NUMBER_OF_APPLICANTS_SELECTOR: '.listing-header-container > h3:nth-child(2)',
+    WE_WORK_REMOTELY_JOB_DETAILS_SELECTOR: '.listing-header-container',
+    WE_WORK_REMOTELY_JOB_DESCRIPTION_SELECTOR: '.listing-container',
+    WE_WORK_REMOTELY_COMPANY_NAME_AND_LINK_SELECTOR: '.company-card > h2 > a',
+    WE_WORK_REMOTELY_COMPANY_LOCATION_SELECTOR: '.company-card > h3',
+    WE_WORK_REMOTELY_COMPANY_WEBSITE_SELECTOR: '.company-card > h3 > a',
 
     // Commonly used string
     DOT: '.',
@@ -140,6 +150,7 @@ export default {
     NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
     UNDISLOSED_COMPANY: 'Undisclosed',
     UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',
+    UNKNOWN_NUMBER_OF_APPLICANTS: 'Unknown number of applicants',
     WORK_FROM_HOME_INVALID: 'The "Work From Home" value is invalid',
 
     // Words appearing

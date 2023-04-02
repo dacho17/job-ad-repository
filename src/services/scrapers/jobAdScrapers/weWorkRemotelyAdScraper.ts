@@ -19,16 +19,17 @@ export class WeWorkRemotelyAdScraper extends BaseAdScraper implements IJobAdScra
    * @returns {Promise<JobAdDTO[]>} Returns the list of scraped JobAdDTOs.
    */
     public async scrape(_: ScrapeJobAdsForm): Promise<JobAdDTO[]> {
-        const url = `${Constants.WE_WORK_REMOTELY_URL}/remote-jobs/`;
-        await this.browserAPI.run();
-        await this.browserAPI.openPage(url);
-
-        const [allJobSections, sectionsToBeScrapedFromMain, seeMoreUrls] = await this.divideIntoMainAndSeeMorePages();
         const scraperTracker: AdScraperTracker = {
             nOfScrapedAds: 0,
             scrapedAds: [],
-            currentPage: 1
+            currentPage: 1,
+            url: `${Constants.WE_WORK_REMOTELY_URL}/remote-jobs/`
         }
+        await this.browserAPI.run();
+        await this.browserAPI.openPage(scraperTracker.url!);
+
+        const [allJobSections, sectionsToBeScrapedFromMain, seeMoreUrls] = await this.divideIntoMainAndSeeMorePages();
+        
         for (let i = 0; i < sectionsToBeScrapedFromMain.length; i++) {
             const jobAdElements = await this.browserAPI.findElementsOnElement(allJobSections[sectionsToBeScrapedFromMain[i]], Constants.WE_WORK_REMOTELY_JOBLINKS_SELECTOR);
             await this.scrapeJobAdElements(scraperTracker, JobAdSource.WE_WORK_REMOTELY, jobAdElements, []);            

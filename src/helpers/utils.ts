@@ -184,4 +184,21 @@ export default class Utils {
             return new Date();
         }
     }
+
+    /**
+     * @description Function that formats and returns data on the number of applicants for a job at WeWorkRemotely site.
+     * @param {string} textContainingNofApplicants
+     * @returns {string} Returns information on number of applicants as a string.
+     */
+    public getNumberOfApplicantsWWR(textContainingNofApplicants: string): string {
+        const [numberCandidate, numberCandidateTwo, _] = textContainingNofApplicants.trim().split(Constants.WHITESPACE);
+
+        const nOfApplicantsCandidate = parseInt(numberCandidate);
+        const nOfApplicantsCandidateTwo = parseInt(numberCandidateTwo);
+        if (isNaN(nOfApplicantsCandidate) && isNaN(nOfApplicantsCandidateTwo))  return Constants.UNKNOWN_NUMBER_OF_APPLICANTS;
+        if (isNaN(nOfApplicantsCandidate))
+            return nOfApplicantsCandidateTwo.toString();
+
+        return nOfApplicantsCandidateTwo.toString();
+    }
 }

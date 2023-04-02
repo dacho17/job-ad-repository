@@ -9,6 +9,7 @@ import EuroJobSitesScraper from "./jobScrapers/euroJobSitesScraper";
 import EuroJobsScraper from "./jobScrapers/euroJobsScraper";
 import GraduatelandScraper from "./jobScrapers/graduatelandScraper";
 import SimplyHiredScraper from "./jobScrapers/simplyHiredScraper";
+import WeWorkRemotelyScraper from "./jobScrapers/weWorkRemotelyScraper";
 
 @Service()
 export default class JobScraperHelper {
@@ -22,6 +23,8 @@ export default class JobScraperHelper {
 
     private simplyHiredScraper: SimplyHiredScraper;
 
+    private weWorkRemotely: WeWorkRemotelyScraper;
+
     constructor(
         @Inject() adzunaScraper: AdzunaScraper,
         @Inject() arbeitNowScraper: ArbeitNowScraper,
@@ -32,6 +35,8 @@ export default class JobScraperHelper {
         @Inject() graduatelandScraper: GraduatelandScraper,
         
         @Inject() simplyHiredScraper: SimplyHiredScraper,
+
+        @Inject() weWorkRemotely: WeWorkRemotelyScraper,
     )
     {
         this.adzunaScraper = adzunaScraper;
@@ -43,6 +48,8 @@ export default class JobScraperHelper {
         this.graduatelandScraper = graduatelandScraper;
 
         this.simplyHiredScraper = simplyHiredScraper;
+
+        this.weWorkRemotely = weWorkRemotely;
     }
 
     /**
@@ -73,6 +80,9 @@ export default class JobScraperHelper {
 
             case JobAdSource.SIMPLY_HIRED:
                 return this.simplyHiredScraper;
+
+            case JobAdSource.WE_WORK_REMOTELY:
+                return this.weWorkRemotely;
             default:
                 return null;
         }
