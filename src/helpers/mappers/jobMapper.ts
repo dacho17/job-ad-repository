@@ -28,6 +28,7 @@ export default class JobMapper {
         
             companyName: jobDTO.companyName,
             companyLocation: jobDTO.companyLocation,
+            companyLogo: jobDTO.companyLogo,
             companyLink: jobDTO.companyLink,
             companyDescription: jobDTO.companyDescription,
             companyDetails: jobDTO.companyDetails,

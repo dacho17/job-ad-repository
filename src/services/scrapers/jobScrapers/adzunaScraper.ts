@@ -2,10 +2,10 @@ import { Service } from "typedi";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import BrowserAPI from "../../browserAPI";
 import Constants from "../../../helpers/constants";
-import IJobScraper from "../interfaces/IJobScraper";
+import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 
 @Service()
-export default class AdzunaScraper implements IJobScraper {
+export default class AdzunaScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.

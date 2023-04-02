@@ -227,4 +227,5 @@ export default {
     // other
     CV_LIBRARY_JOBLINK_SUFFIX: '-jobs',
     JOB_DESCRIPTION_COMPOSITION_DELIMITER: ';; ',
+    SNAPHUNT_REDUNDANT_ADDRESS_MARK: '||&&||',
 }

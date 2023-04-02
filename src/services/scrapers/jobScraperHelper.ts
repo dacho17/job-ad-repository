@@ -1,5 +1,7 @@
 import { Inject, Service } from "typedi";
 import { JobAdSource } from "../../helpers/enums/jobAdSource";
+import IJobApiScraper from "./interfaces/IJobApiScraper";
+import IJobBrowserScraper from "./interfaces/IJobBrowserScraper";
 import IJobScraper from "./interfaces/IJobScraper";
 import AdzunaScraper from "./jobScrapers/adzunaScraper";
 import ArbeitNowScraper from "./jobScrapers/arbeitNowScraper";
@@ -11,6 +13,7 @@ import GraduatelandScraper from "./jobScrapers/graduatelandScraper";
 import JobFluentScraper from "./jobScrapers/jobFluentScraper";
 import QreerScraper from "./jobScrapers/qreerScraper";
 import SimplyHiredScraper from "./jobScrapers/simplyHiredScraper";
+import SnaphuntScraper from "./jobScrapers/snaphuntDetailsAPIScraper";
 import TybaScraper from "./jobScrapers/tybaScraper";
 import WeWorkRemotelyScraper from "./jobScrapers/weWorkRemotelyScraper";
 
@@ -27,7 +30,7 @@ export default class JobScraperHelper {
 
     private qreerScraper: QreerScraper;
     private simplyHiredScraper: SimplyHiredScraper;
-
+    private snaphuntScraper: SnaphuntScraper;
     private tybaScraper: TybaScraper;
     private weWorkRemotely: WeWorkRemotelyScraper;
 
@@ -43,7 +46,7 @@ export default class JobScraperHelper {
         
         @Inject() qreerScraper: QreerScraper,
         @Inject() simplyHiredScraper: SimplyHiredScraper,
-
+        @Inject() snaphuntScraper: SnaphuntScraper,
         @Inject() tybaScraper: TybaScraper,
         @Inject() weWorkRemotely: WeWorkRemotelyScraper,
     )
@@ -59,18 +62,18 @@ export default class JobScraperHelper {
 
         this.qreerScraper = qreerScraper;
         this.simplyHiredScraper = simplyHiredScraper;
-
+        this.snaphuntScraper = snaphuntScraper;
         this.tybaScraper = tybaScraper;
         this.weWorkRemotely = weWorkRemotely;
     }
 
     /**
-   * @description Function that accepts jobAdSource and returns the scraper to scrape the job from that source.
+   * @description Function that accepts jobAdSource and returns the browser scraper to scrape the job from that source.
    * If no scraper is connected to the provided jobAdSource, the function returns null. 
    * @param {JobAdSource} jobAdSouce
-   * @returns {IJobScraper | null}
+   * @returns {IJobBrowserScraper | null}
    */
-    public getScraperFor(jobAdSouce: JobAdSource): IJobScraper | null {
+    public getBrowserScraperFor(jobAdSouce: JobAdSource): IJobScraper | null {
         switch (jobAdSouce) {
             case JobAdSource.ADZUNA:
                 return this.adzunaScraper;
@@ -96,11 +99,25 @@ export default class JobScraperHelper {
                 return this.qreerScraper;
             case JobAdSource.SIMPLY_HIRED:
                 return this.simplyHiredScraper;
-
             case JobAdSource.TYBA:
                 return this.tybaScraper;
             case JobAdSource.WE_WORK_REMOTELY:
                 return this.weWorkRemotely;
+            default:
+                return null;
+        }
+    }
+
+    /**
+   * @description Function that accepts jobAdSource and returns the api scraper to scrape the job from that source.
+   * If no scraper is connected to the provided jobAdSource, the function returns null. 
+   * @param {JobAdSource} jobAdSouce
+   * @returns {IJobApiScraper | null}
+   */
+    public getApiScraperFor(jobAdSource: JobAdSource): IJobScraper | null {
+        switch (jobAdSource) {
+            case JobAdSource.SNAPHUNT:
+                return this.snaphuntScraper;
             default:
                 return null;
         }

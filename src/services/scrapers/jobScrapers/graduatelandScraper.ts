@@ -3,10 +3,10 @@ import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import Utils from "../../../helpers/utils";
 import BrowserAPI from "../../browserAPI";
-import IJobScraper from "../interfaces/IJobScraper";
+import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 
 @Service()
-export default class GraduatelandScraper implements IJobScraper {
+export default class GraduatelandScraper implements IJobBrowserScraper {
     @Inject()
     private utils: Utils;
 

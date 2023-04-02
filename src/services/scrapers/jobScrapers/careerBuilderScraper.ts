@@ -2,11 +2,11 @@ import { Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import BrowserAPI from "../../browserAPI";
-import IJobScraper from "../interfaces/IJobScraper";
+import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 
 
 @Service()
-export default class CareerBuilderScraper implements IJobScraper {
+export default class CareerBuilderScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on CareerBuilder in the scrape is (jobTitle, companyName, companyLocation, timeEngagement, jobDescription, requiredSkills).

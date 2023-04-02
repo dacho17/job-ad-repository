@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 import { Inject, Service } from "typedi";
 import db from "../database/db";
 import { Job } from "../database/models/job";
@@ -7,6 +9,8 @@ import JobMapper from "../helpers/mappers/jobMapper";
 import { ScrapingJobAdRepository } from "../repositories/scrapingJobAdRepository";
 import ScrapingJobRepository from "../repositories/scrapingJobRepository";
 import BrowserAPI from "./browserAPI";
+import IJobApiScraper from './scrapers/interfaces/IJobApiScraper';
+import IJobBrowserScraper from './scrapers/interfaces/IJobBrowserScraper';
 import JobScraperHelper from "./scrapers/jobScraperHelper";
 
 @Service()
@@ -49,16 +53,29 @@ export class ScrapingJobService {
             const jobsAndAdsToBeStored: [Job, JobAd][] = [];
             console.log(`${jobAdsWithoutScrapedJobs.length} jobads to be scraped`)
             for (let i = 0; i < 1; i++) {    // TESTING PURPOSES! jobAdsWithoutScrapedJobs.length instead of 1
-                const jobScraper = this.jobScraperHelper.getScraperFor(jobAdsWithoutScrapedJobs[i].source);
+
+                // first attempt to get a browserScraper
+                let jobScraper = this.jobScraperHelper.getBrowserScraperFor(jobAdsWithoutScrapedJobs[i].source);
+                // if browser scraper is not found try getting apiScraper
+                if (!jobScraper) {
+                    jobScraper = this.jobScraperHelper.getApiScraperFor(jobAdsWithoutScrapedJobs[i].source);
+                }
                 if (!jobScraper) {
                     jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
 
                     continue;
                 }
                 
-                console.log(`${jobAdQueryOffset + succStored + i}: ${jobAdsWithoutScrapedJobs[i].jobLink} to be scraped`)
-                await this.browserAPI.openPage(jobAdsWithoutScrapedJobs[i].jobLink);
-                const newJobDTO = await jobScraper.scrape(jobAdsWithoutScrapedJobs[i].id, this.browserAPI);
+                console.log(`${jobAdQueryOffset + succStored + i}: ${jobAdsWithoutScrapedJobs[i].jobLink} to be scraped`);
+
+                let newJobDTO;
+                // differentiating between IJobBrowserScrapers and IJobApiScrapers
+                if (jobAdsWithoutScrapedJobs[i].source !== JobAdSource.SNAPHUNT) {
+                    await this.browserAPI.openPage(jobAdsWithoutScrapedJobs[i].jobLink);
+                    newJobDTO = await (jobScraper as IJobBrowserScraper).scrape(jobAdsWithoutScrapedJobs[i].id, this.browserAPI);
+                } else {
+                    newJobDTO = await (jobScraper as IJobApiScraper).scrape(jobAdsWithoutScrapedJobs[i].id, jobAdsWithoutScrapedJobs[i].jobLink);                    
+                }
                 const newJobMAP = this.jobMapper.toMap(newJobDTO);
                 newJobMAP.postedDate = newJobMAP.postedDate || jobAdsWithoutScrapedJobs[i].postedDate;  // inheriting from jobAd if not found on the job post
                 // FK should already be set -> newJobMAP.jobAdId = jobAdsWithoutScrapedJobs[i].id; // setting a FK-jobAdId

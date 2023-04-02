@@ -20,6 +20,7 @@ export default class JobDTO {
     companyName: string;
     companyLocation?: string;
     companyLink?: string;
+    companyLogo?: string;
     companyDescription?: string;
     companyDetails?: string;
     companySize?: string;

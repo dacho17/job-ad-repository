@@ -117,6 +117,10 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.TEXT,
             allowNull: true,
         },
+        companyLogo: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
         companyLink: {
             type: DataTypes.TEXT,
             allowNull: true,
