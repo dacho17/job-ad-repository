@@ -26,7 +26,7 @@ export default class SnaphuntAdScraper implements IJobAdScraper {
    */
     public async scrape(clientForm: ScrapeJobAdsForm): Promise<JobAdDTO[]> {
         // TODO: how to target a page, I only have pageSize right Now
-        const jobTitle = clientForm.jobTitle.replace(Constants.WHITESPACE, Constants.WHITESPACE_URL_ENCODING);
+        clientForm.jobTitle = clientForm.jobTitle.replace(Constants.WHITESPACE, Constants.WHITESPACE_URL_ENCODING);
         let urlRemotePart = clientForm.scrapeOnlyRemote ? Constants.SNAPHUNT_REMOTE_QUERY_PARAMETER : Constants.EMPTY_STRING;
         // let locationPart = clientForm.location
         //     ? `&location=${clientForm.location.replace(Constants.WHITESPACE, Constants.WHITESPACE_URL_ENCODING).replace(Constants.COMMA_SIGN, Constants.ASCII_COMMA_SIGN_ENCODING)}`
