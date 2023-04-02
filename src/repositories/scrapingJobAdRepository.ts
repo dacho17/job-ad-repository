@@ -52,7 +52,7 @@ export class ScrapingJobAdRepository {
                 where: {
                     areDetailsScraped: false,
                     // source: { [Op.not]: [JobAdSource.INDEED.valueOf(), JobAdSource.NO_FLUFF_JOBS.valueOf()] },   // not parsing indeed at the moment since they deny me access
-                    source: JobAdSource.QREER
+                    source: JobAdSource.LINKEDIN
                 },
                 limit: this.FETCH_JOB_AD_BATCH,
                 offset: offset

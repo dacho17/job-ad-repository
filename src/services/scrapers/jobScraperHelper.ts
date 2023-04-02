@@ -11,6 +11,7 @@ import EuroJobSitesScraper from "./jobScrapers/euroJobSitesScraper";
 import EuroJobsScraper from "./jobScrapers/euroJobsScraper";
 import GraduatelandScraper from "./jobScrapers/graduatelandScraper";
 import JobFluentScraper from "./jobScrapers/jobFluentScraper";
+import LinkedInScraper from "./jobScrapers/linkedinScraper";
 import QreerScraper from "./jobScrapers/qreerScraper";
 import SimplyHiredScraper from "./jobScrapers/simplyHiredScraper";
 import SnaphuntScraper from "./jobScrapers/snaphuntDetailsAPIScraper";
@@ -27,7 +28,7 @@ export default class JobScraperHelper {
     private euroJobSitesScraper: EuroJobSitesScraper;
     private graduatelandScraper: GraduatelandScraper;
     private jobFluentScraper: JobFluentScraper;
-
+    private linkedinScraper: LinkedInScraper;
     private qreerScraper: QreerScraper;
     private simplyHiredScraper: SimplyHiredScraper;
     private snaphuntScraper: SnaphuntScraper;
@@ -43,7 +44,7 @@ export default class JobScraperHelper {
         @Inject() euroJobSitesScraper: EuroJobSitesScraper,
         @Inject() graduatelandScraper: GraduatelandScraper,
         @Inject() jobFluentScraper: JobFluentScraper,
-        
+        @Inject() linkedinScraper: LinkedInScraper,
         @Inject() qreerScraper: QreerScraper,
         @Inject() simplyHiredScraper: SimplyHiredScraper,
         @Inject() snaphuntScraper: SnaphuntScraper,
@@ -59,7 +60,7 @@ export default class JobScraperHelper {
         this.euroJobSitesScraper = euroJobSitesScraper;
         this.graduatelandScraper = graduatelandScraper;
         this.jobFluentScraper = jobFluentScraper;
-
+        this.linkedinScraper = linkedinScraper;
         this.qreerScraper = qreerScraper;
         this.simplyHiredScraper = simplyHiredScraper;
         this.snaphuntScraper = snaphuntScraper;
@@ -94,7 +95,8 @@ export default class JobScraperHelper {
                 return this.graduatelandScraper;
             case JobAdSource.JOB_FLUENT:
                 return this.jobFluentScraper;
-
+            case JobAdSource.LINKEDIN:
+                return this.linkedinScraper;
             case JobAdSource.QREER:
                 return this.qreerScraper;
             case JobAdSource.SIMPLY_HIRED:
