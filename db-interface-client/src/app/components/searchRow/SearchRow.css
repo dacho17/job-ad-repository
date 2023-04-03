@@ -1,0 +1,21 @@
+.search-row {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.search-row > .search-row-item {
+    margin-right: 20px; 
+}
+
+@media only screen and (max-width: 650px) {
+    .search-row {
+        flex-direction: column;
+    }
+
+    .search-row > .search-row-item {
+        margin-bottom: 20px; 
+    }
+}

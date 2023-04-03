@@ -1,5 +1,4 @@
-// TODO: trim this class
-export default class JobDTO {
+export default interface Job {
     jobTitle: string;
     postedDate?: Date;
     timeEngagement?: string;
@@ -25,6 +24,4 @@ export default class JobDTO {
     companyFounded?: string;
     companyIndustry?: string;
     companyWebsite?: string;
-
-    jobAdId: number;
 }
