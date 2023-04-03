@@ -219,6 +219,8 @@ export default {
     // Messages
     AD_SOURCE_NOT_RECOGNIZED: 'AdSource not recognized',
     JOB_TITLE_INVALID: 'The job title you provided is invalid',
+    INVALID_PARAMETERS: 'Some parameters received are faulty',
+    MISSING_PARAMETERS: 'Not all required parameters have been received',
     NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
     UNDISLOSED_COMPANY: 'Undisclosed',
     UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',

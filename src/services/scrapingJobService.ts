@@ -1,9 +1,9 @@
-import axios from 'axios';
-
 import { Inject, Service } from "typedi";
 import db from "../database/db";
 import { Job } from "../database/models/job";
 import { JobAd } from "../database/models/jobAd";
+import { GetJobsRequest } from '../helpers/dtos/getJobsRequest';
+import JobDTO from '../helpers/dtos/jobDTO';
 import { JobAdSource } from "../helpers/enums/jobAdSource";
 import JobMapper from "../helpers/mappers/jobMapper";
 import { ScrapingJobAdRepository } from "../repositories/scrapingJobAdRepository";
@@ -91,6 +91,18 @@ export class ScrapingJobService {
 
         await this.browserAPI.close();
         return [succStored, jobAdQueryOffset];
+    }
+
+    /**
+   * @description Function fetches jobs from jobRepository given limit, offset and searchWord.
+   * @param {GetJobsRequest} getJobsReq
+   * @returns {Promise<JobDTO[]>} Promise resolving to the jobDTO list
+   */
+    public async getJobsPaginated(getJobsReq: GetJobsRequest): Promise<JobDTO[]> {
+        const jobs = await this.jobRepository.getJobsPaginated(getJobsReq);
+        const jobDtos = jobs.map(jobMAP => this.jobMapper.toDTO(jobMAP));
+
+        return jobDtos;
     }
 
     /**

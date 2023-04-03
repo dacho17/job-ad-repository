@@ -2,15 +2,12 @@ import Constants from "../helpers/constants";
 
 export class BaseController {
      /**
-   * @description Function which responds with the errorMessage if the client's form sent in request for scraping job ads is invalid.
-   * @param {boolean} isValid @param {string} errorMessage @param {any} res
-   * @returns {Promise<{success: boolean, error: *}|{success: boolean, body: *}>}
+   * @description Function which responds with the errorMessage.
+   * @param {string} errorMessage @param {any} res
    */
-    protected respondIfRequestInvalid(isValid: boolean, errorMessage: string, res: any) {
-        if (!isValid) {
-            res.status(Constants.BAD_REQUEST).json({
-                message: errorMessage
-            });
-        }
+    protected respondToInvalidRequest(errorMessage: string, res: any) {
+        res.status(Constants.BAD_REQUEST).json({
+            message: errorMessage
+        });
     }
 }

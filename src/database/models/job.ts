@@ -25,6 +25,7 @@ export class Job extends Model {
 
     companyName: string;
     companyLocation?: string;
+    companyLogo?: string;
     companyLink?: string;
     companySize?: string;
     companyFounded?: string;

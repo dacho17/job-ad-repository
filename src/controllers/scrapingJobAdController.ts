@@ -18,11 +18,13 @@ export class ScrapingJobAdController extends BaseController {
    */
     public async scrapeJobAds(req: any, res: any) {
         const [isValid, data, errorMessage] = this.requestValidator.validateScrapeJobAdsForm(req.body.jobTitle, req.body.numberOfAds, req.body.location, req.body.workFromHome);
-        this.respondIfRequestInvalid(isValid, errorMessage, res);
-
-        const result = await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!);
-        res.status(200).json({
-            numberOfScrapedAds: result
-        });
+        if (!isValid) {
+            this.respondToInvalidRequest(errorMessage, res);
+        } else {
+            const result = await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!);
+            res.status(200).json({
+                numberOfScrapedAds: result
+            });
+        }
     }
 }
