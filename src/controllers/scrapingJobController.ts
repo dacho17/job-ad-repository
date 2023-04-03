@@ -33,13 +33,15 @@ export default class ScrapingJobController extends BaseController {
         // 
         console.log(`Attempt to getJobs with queryParams=${req.query.searchWord} ${req.query.batchSize} ${req.query.offset}!`);
         const [isValid, getJobsReq, errorMessage] = this.requestValidator.validateGetJobsRequest(req.query);
-        this.respondIfRequestInvalid(isValid, errorMessage, res);
-
-        try {
-            const jobs = await this.scrapingJobService.getJobsPaginated(getJobsReq!);
-            res.status(200).json({jobs: jobs});    
-        } catch (exception) {
-            res.status(500).json({message: 'an error occurred'});
+        if (!isValid) {
+            this.respondToInvalidRequest(errorMessage, res);
+        } else {
+            try {
+                const jobs = await this.scrapingJobService.getJobsPaginated(getJobsReq!);
+                res.status(200).json({jobs: jobs});    
+            } catch (exception) {
+                res.status(500).json({message: 'an error occurred'});
+            }
         }
     }
 }
