@@ -91,8 +91,7 @@ export class ScrapingJobAdService {
    * @returns {Promise<number>} Promise resolving to the number of stored job ads.
    */
     public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
-        // const jobAdScrapers = this.getScrapers();
-        const jobAdScrapers = [this.adzunaAdScraper];
+        const jobAdScrapers = this.getScrapers();
 
         let totalAdsScraped = 0;
 

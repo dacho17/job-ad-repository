@@ -37,13 +37,12 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         const companyWebsite = await browserAPI.getDataSelectorAndAttr(Constants.WE_WORK_REMOTELY_COMPANY_WEBSITE_SELECTOR, Constants.HREF_SELECTOR);
         const companyLocation = await browserAPI.getText(Constants.WE_WORK_REMOTELY_COMPANY_LOCATION_SELECTOR)
         const postedDate = await browserAPI.getDataSelectorAndAttr(Constants.WE_WORK_REMOTELY_POSTED_DATE_SELECTOR, Constants.DATETIME_SELECTOR);
-        const jobDetails = await browserAPI.getText(Constants.WE_WORK_REMOTELY_JOB_DETAILS_SELECTOR);
 
         newJob.companyWebsite = companyWebsite?.trim();
         newJob.companyLocation = companyLocation?.trim();
         newJob.postedDate = postedDate ? new Date(postedDate.trim()) : undefined;
-        newJob.details = jobDetails?.trim();
-
+        
+        await this.scrapeJobDetails(newJob, browserAPI);
 
         const numberOfApplicants = await browserAPI.getText(Constants.WE_WORK_REMOTELY_NUMBER_OF_APPLICANTS_SELECTOR);
         if (numberOfApplicants) {
@@ -51,5 +50,34 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         }
 
         return newJob;
+    }
+
+    /**
+    * @description Function which scrapes JobDetails part of the page, formats it and stores it into 
+    * isRemote, timeEngagement and details properties of the newJob.
+    * @param {JobDTO} newJob
+    * @param {BrowserAPI} browserAPI
+    * @returns {Promise<void>}
+    */
+    private async scrapeJobDetails(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
+        let jobDetailElements = await browserAPI.findElements(Constants.WE_WORK_REMOTELY_JOB_DETAILS_SELECTOR);
+        jobDetailElements.shift(); jobDetailElements.shift();  // first two elements of the list are irrelevant
+        let jobDetails = Constants.EMPTY_STRING;
+        for (let i = 0; i < jobDetailElements.length; i++) {
+            let jobDetail = await browserAPI.getTextFromElement(jobDetailElements[i]);
+            jobDetail = jobDetail!.trim();
+            switch(jobDetail) {
+                case Constants.ANYWHERE_IN_THE_WORLD:
+                    newJob.isRemote = true;
+                    break;
+                case Constants.FULL_TIME:
+                    newJob.timeEngagement = Constants.FULL_TIME;
+                    break;
+                default:
+                    jobDetails += jobDetail + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+            }
+        }
+
+        newJob.details = jobDetails;
     }
 }

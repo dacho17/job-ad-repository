@@ -223,7 +223,7 @@ export default {
     WE_WORK_REMOTELY_DETAIL_JOB_TITLE_SELECTOR: '.listing-header-container > h1',
     WE_WORK_REMOTELY_POSTED_DATE_SELECTOR: '.listing-header-container > h3:nth-child(1) > time',
     WE_WORK_REMOTELY_NUMBER_OF_APPLICANTS_SELECTOR: '.listing-header-container > h3:nth-child(2)',
-    WE_WORK_REMOTELY_JOB_DETAILS_SELECTOR: '.listing-header-container',
+    WE_WORK_REMOTELY_JOB_DETAILS_SELECTOR: '.listing-header-container > a',
     WE_WORK_REMOTELY_JOB_DESCRIPTION_SELECTOR: '.listing-container',
     WE_WORK_REMOTELY_COMPANY_NAME_AND_LINK_SELECTOR: '.company-card > h2 > a',
     WE_WORK_REMOTELY_COMPANY_LOCATION_SELECTOR: '.company-card > h3',
@@ -261,6 +261,7 @@ export default {
     DEFAULT_GET_JOBS_BATCH_SIZE: 20,
 
     // Words appearing
+    ANYWHERE_IN_THE_WORLD: 'Anywhere in the World',
     CATEGORY: 'Category',
     CLIENT_COL: 'Client:',
     COMPANY_SIZE: 'Company Size',
@@ -273,6 +274,7 @@ export default {
     FOUNDED_IN: 'Founded in',
     FOUNDED: 'Founded',
     FULLY_REMOTE: 'Fully remote',
+    FULL_TIME: 'Full-Time',
     HEADQUARTERS: 'Headquarters',
     INDUSTRY: 'Industry',
     INDUSTRIES: 'Industries',
