@@ -114,6 +114,10 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.STRING(4096),
             allowNull: true,
         },
+        requiredLanguages: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
         requirements: {
             type: DataTypes.STRING(4096),
             allowNull: true,

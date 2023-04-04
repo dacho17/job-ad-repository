@@ -10,6 +10,7 @@ export default class JobDTO {
     description: string;
     isRemote?: boolean;
     isInternship?: boolean;
+    requiredLanguages?: string;
     requiredSkills?: string;
     goodToHaveSkills?: string;
     requirements?: string;

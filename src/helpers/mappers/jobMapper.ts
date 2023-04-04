@@ -91,6 +91,7 @@ export default class JobMapper {
             deadline: jobDTO.deadline,
             requiredSkills: jobDTO.requiredSkills,
             goodToHaveSkills: jobDTO.goodToHaveSkills,
+            requiredLanguages: jobDTO.requiredLanguages,
             requirements: jobDTO.requirements,
             benefits: jobDTO.benefits,
             equipmentProvided: jobDTO.equipmentProvided,
