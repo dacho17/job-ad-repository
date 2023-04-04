@@ -39,17 +39,19 @@ export class RequestValidator {
    * @returns {[boolean, GetJobsRequest | null, string]} Triplet (isFormValid, validGetJobsRequest, errorMessage)
    */
     public validateGetJobsRequest(queryParams: any): [boolean, GetJobsRequest | null, string] {
-        let { searchWord, offset, batchSize } = queryParams;
-        if (!searchWord || !offset || !batchSize)   // for now all parameters must be received
-            return [false, null, Constants.MISSING_PARAMETERS];
+        console.log(queryParams);
+        let { companyNameSearch, jobTitleSearch, offset, batchSize } = queryParams;
+        console.log(companyNameSearch); console.log(jobTitleSearch);
         
-        searchWord = searchWord.trim();
-        const offsetNum = parseInt(offset);
-        const batchSizeNum = parseInt(batchSize);
-        if (searchWord === Constants.EMPTY_STRING || isNaN(offsetNum) || offset < 0 || isNaN(batchSizeNum) || batchSize < 1)
-            return [false, null, Constants.INVALID_PARAMETERS];
+        let companyNameQueryWord = companyNameSearch?.trim() || Constants.EMPTY_STRING;
+        let jobTitleQueryWord = jobTitleSearch?.trim() || Constants.EMPTY_STRING;
+        console.log(companyNameQueryWord); console.log(jobTitleQueryWord);
+        
+        const offsetNum = offset ? parseInt(offset) : 0;
+        const batchSizeNum = batchSize ? parseInt(batchSize) : Constants.DEFAULT_GET_JOBS_BATCH_SIZE;
 
-        const getJobAdRequest: GetJobsRequest = new GetJobsRequest(searchWord, offset, batchSize);
+        const getJobAdRequest: GetJobsRequest
+            = new GetJobsRequest(jobTitleQueryWord, companyNameQueryWord, offsetNum, batchSizeNum);
         return [true, getJobAdRequest, Constants.EMPTY_STRING];
     }
 }

@@ -11,5 +11,6 @@ export default (app: any) => {
 
     router.post('/scrape-job-ads', async (req: any, res: any, next: any) => await jobAdScrapingController.scrapeJobAds(req, res));
     router.get('/scrape-jobs', async (req: any, res: any, next: any) => await jobScrapingController.scrapeJobs(req, res));
+    router.post('/scrape-from-url', async (req: any, res: any, next: any) => await jobScrapingController.scrapeUrl(req, res));
     app.use(router);
 }

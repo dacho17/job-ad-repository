@@ -90,6 +90,11 @@ export default class JobMapper {
             isInternship: jobDTO.isInternship,
             deadline: jobDTO.deadline,
             requiredSkills: jobDTO.requiredSkills,
+            goodToHaveSkills: jobDTO.goodToHaveSkills,
+            requirements: jobDTO.requirements,
+            benefits: jobDTO.benefits,
+            equipmentProvided: jobDTO.equipmentProvided,
+            responsibilities: jobDTO.responsibilities,
             additionalJobLink: jobDTO.additionalJobLink,
         
             companyName: jobDTO.companyName,

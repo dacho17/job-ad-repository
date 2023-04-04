@@ -17,7 +17,7 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {    
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {    
         const jobTitle = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_JOB_TITLE_SELECTOR);
         const companyName = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_COMPANY_NAME_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_JOB_DESCRIPTION_SELECTOR);
@@ -25,7 +25,7 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
         }
 

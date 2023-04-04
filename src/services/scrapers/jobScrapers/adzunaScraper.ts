@@ -14,7 +14,7 @@ export default class AdzunaScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         await browserAPI.clickButton(Constants.ADZUNA_DETAILS_EXTEND_AD_BUTTON_SELECTOR);
     
         let jobTitle = await browserAPI.getText(Constants.ADZUNA_DETAILS_JOB_TITLE_SELECTOR);
@@ -30,7 +30,7 @@ export default class AdzunaScraper implements IJobBrowserScraper {
             companyName: companyName!.trim(),
             timeEngagement: timeEngagement?.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId
+            jobAdId: jobAdId ?? undefined
         }
 
         let companyLinkElement = await browserAPI.findElement(Constants.ADZUNA_DETAILS_COMPANY_LINK_SELECTOR);

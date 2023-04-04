@@ -17,7 +17,7 @@ export default class CareerJetScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText(Constants.CAREER_JET_DETAILS_JOB_TITLE_SELECTOR);
         const companyName = await browserAPI.getText(Constants.CAREER_JET_DETAILS_COMPANY_NAME_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.CAREER_JET_DETAILS_JOB_DESCRIPTION_SELECTOR);
@@ -26,7 +26,7 @@ export default class CareerJetScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             companyName: companyName!.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId
+            jobAdId: jobAdId ?? undefined,
         }
 
         const postedAgo = await browserAPI.getText(Constants.CAREER_JET_DETAILS_POSTED_AGO_SELECTOR);

@@ -1,4 +1,5 @@
 export enum JobAdSource {
+    UNKNOWN = 0,
     ADZUNA = 1,
     ARBEIT_NOW = 2,
     CAREER_BUILDER = 3,

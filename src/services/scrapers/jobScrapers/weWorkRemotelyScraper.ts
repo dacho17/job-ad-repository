@@ -18,7 +18,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText(Constants.WE_WORK_REMOTELY_DETAIL_JOB_TITLE_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.WE_WORK_REMOTELY_JOB_DESCRIPTION_SELECTOR);
         const companyNameAndLinkElement = await browserAPI.findElement(Constants.WE_WORK_REMOTELY_COMPANY_NAME_AND_LINK_SELECTOR);
@@ -29,7 +29,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
             companyLink: companyLink ? Constants.WE_WORK_REMOTELY_URL + companyLink.trim() : undefined
         }

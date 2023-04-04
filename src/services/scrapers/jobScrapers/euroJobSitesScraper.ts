@@ -13,14 +13,14 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const [jobTitle, companyName, companyLocation] = await this.scrapeHeader(browserAPI);
         const jobDescription = await browserAPI.getText(Constants.EURO_JOB_SITES_DETAILS_AD_SELECTOR);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle,
             description: jobDescription!.trim(),
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             companyName: companyName || Constants.UNDISLOSED_COMPANY,
         }
         newJob.companyLocation = companyLocation;

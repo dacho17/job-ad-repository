@@ -2,7 +2,9 @@ import { Op } from "sequelize";
 import { Transaction } from "sequelize";
 import { Service } from "typedi";
 import { Job } from "../database/models/job";
+import { JobAd } from "../database/models/jobAd";
 import { GetJobsRequest } from "../helpers/dtos/getJobsRequest";
+import { JobAdSource } from "../helpers/enums/jobAdSource";
 
 @Service()
 export default class ScrapingJobRepository {
@@ -13,7 +15,7 @@ export default class ScrapingJobRepository {
    * @param {Transaction} t Function can be executed as a part of transaction
    * @returns {Promise<Job>} Promise containing the stored job.
    */
-    public async create(job: Job, t: Transaction): Promise<Job> {
+    public async create(job: Job, t?: Transaction): Promise<Job> {
         try {
             const res = await job.save({ transaction: t });
             return res;    
@@ -33,9 +35,17 @@ export default class ScrapingJobRepository {
             const paginatedJobs = await Job.findAll({
                 where: {
                     jobTitle: {
-                        [Op.iLike]: `%${getJobsReq.searchWord}%`
+                        [Op.iLike]: `%${getJobsReq.jobTitleSearchWord}%`
+                    },
+                    companyName: {
+                        [Op.iLike]: `%${getJobsReq.companyNameSearchWord}%`
                     },
                 },
+                include: [{
+                    model: JobAd,
+                    where: {source: JobAdSource.ADZUNA},
+                    required: true,
+                }],
                 limit: getJobsReq.batchSize > this.MAX_BATCH_SIZE ? this.MAX_BATCH_SIZE : getJobsReq.batchSize,
                 offset: getJobsReq.offset
             });

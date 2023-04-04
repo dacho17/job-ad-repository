@@ -52,7 +52,7 @@ export class ScrapingJobAdRepository {
                 where: {
                     areDetailsScraped: false,
                     // source: { [Op.not]: [JobAdSource.CV_LIBRARY.valueOf(), JobAdSource.NO_FLUFF_JOBS.valueOf()] },
-                    source: JobAdSource.CV_LIBRARY
+                    source: JobAdSource.ADZUNA
                 },
                 limit: this.FETCH_JOB_AD_BATCH,
                 offset: offset

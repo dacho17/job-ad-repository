@@ -11,6 +11,11 @@ export default class JobDTO {
     isRemote?: boolean;
     isInternship?: boolean;
     requiredSkills?: string;
+    goodToHaveSkills?: string;
+    requirements?: string;
+    benefits?: string;
+    equipmentProvided?: string;
+    responsibilities?: string;
     additionalJobLink?: string;
     euWorkPermitRequired?: boolean;
     deadline?: Date;
@@ -26,5 +31,5 @@ export default class JobDTO {
     companyIndustry?: string;
     companyWebsite?: string;
 
-    jobAdId: number;
+    jobAdId?: number;
 }

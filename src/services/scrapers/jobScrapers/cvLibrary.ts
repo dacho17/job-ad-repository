@@ -18,7 +18,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_JOB_TITLE_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_JOB_DESCRIPTION_SELECTOR);
         const companyName = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_COMPANY_NAME_SELECTOR);
@@ -27,7 +27,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
-            jobAdId: jobAdId
+            jobAdId: jobAdId ?? undefined,
         }
 
         const postedAgo = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_POSTED_AGO_SELECTOR);

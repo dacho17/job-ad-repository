@@ -17,16 +17,12 @@ export default class NoFluffScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
-        const showMoreButton = await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_SHOW_MORE_SELECTOR);
-        if (showMoreButton) {
-            console.log('show more button found')
-            await showMoreButton.click();
-        }
-
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText((Constants.NO_FLUFF_DETAILS_JOB_TITLE_SELECTOR));
-        const jobDescription = await this.scrapeJobDescription(browserAPI);
-        const locations = await browserAPI.getText((Constants.NO_FLUFF_DETAILS_LOCATION_SELECTOR));
+
+        await this.clickShowMore(Constants.NO_FLUFF_DETAILS_JOB_DESCRIPTION_SHOW_MORE_SELECTOR, browserAPI);
+        const jobDescription = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_JOB_DESCRIPTION_SELECTOR);
+
         const companyNameLinkEl = await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
         const companyLink = await browserAPI.getDataFromAttr(companyNameLinkEl!, Constants.HREF_SELECTOR);
         const companyName = await browserAPI.getTextFromElement(companyNameLinkEl!);
@@ -34,58 +30,152 @@ export default class NoFluffScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
             companyLink: companyLink ? Constants.NO_FLUFF_JOBS_URL + companyLink.trim() : undefined,
-            workLocation: locations ?? undefined,
         }
 
         const postedAgo = await browserAPI.getText((Constants.NO_FLUFF_DETAILS_POSTED_AGO_SELECTOR));
         if (postedAgo) {
             newJob.postedDate = this.utils.getPostedDate4NoFluff(postedAgo.trim());
         }
+        
+        const salary = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_SALARY_SELECTOR);
+        const companyDescription = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_COMPANY_DESCRIPTION_SELECTOR);        
+        newJob.salary = salary?.trim();
+        newJob.companyDescription = companyDescription?.trim();
 
+        await this.scrapeCompanyDetails(newJob, browserAPI);
+        await this.scrapeJobSkills(newJob, browserAPI);
+        await this.scrapeJobDetails(newJob, browserAPI);
+        newJob.requirements = await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_JOB_REQUIREMENTS_CONTENT_SELECTOR, browserAPI);
+        newJob.benefits =  await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_JOB_BENEFITS_SELECTOR, browserAPI);
+        newJob.equipmentProvided = await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_EQUIPMENT_SUPPLIED_SELECTOR, browserAPI);
+        newJob.workLocation = await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_LOCATIONS_SELECTOR, browserAPI);
+        const showMoreResponsibilitiesButton = await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_SHOW_MORE_RESPONSIBILITIES_SELECTOR);
+        if (showMoreResponsibilitiesButton) {
+            await showMoreResponsibilitiesButton.click();
+        }
+        newJob.responsibilities = await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_JOB_RESPONSIBILITIES_SELECTOR, browserAPI);
+
+        // there are two places on the page where information about 'remoteness' of the job is displayed. I am checking both places.
+        // first in the element with the selector NO_FLUFF_DETAILS_REMOTE_SELECTOR, second in job details
         const remoteElement = await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_REMOTE_SELECTOR);
         if (remoteElement) {
             newJob.isRemote = true;
         }
-        
-        const salary = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_SALARY_SELECTOR);
-        const companyInfo = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_COMPANY_INFO_SELECTOR);
-
-        const reqSkillsEls = await browserAPI.findElements(Constants.NO_FLUFF_DETAILS_REQUIRED_SKILLS_SELECTOR);
-        const jobDetailsEls = await browserAPI.findElements(Constants.NO_FLUFF_DETAILS_JOB_DETAILS_SELECTOR);
-
-        let requiredSkills = await Promise.all(await reqSkillsEls.map(async el => await browserAPI.getTextFromElement(el)));
-        let jobDetails = await Promise.all(jobDetailsEls.map(async el => await browserAPI.getTextFromElement(el)));
-        const requiredSkillsStr = requiredSkills.map(el => el?.trim()).join(Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER);
-        const jobDetailsStr = jobDetails.map(el => el?.trim()).join(Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER);
-
-        newJob.salary = salary?.trim();
-        newJob.requiredSkills = requiredSkillsStr;
-        newJob.details = jobDetailsStr;
-        newJob.companyDescription = companyInfo?.trim();
 
         return newJob;
     }
 
     /**
-   * @description Function scrapes and formats description from several sections of the noFluff job posting. The description is returned as a string.
-   * @param {number} jobAdId
+   * @description Function attempts to click the button on the page if found by selecor.
+   * @param {string} selector
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<string>} Returns jobDescription as string.
+   * @returns {Promise<void>}
    */
-    private async scrapeJobDescription(browserAPI: BrowserAPI): Promise<string> {
-        const jobDescriptionTotal = [];
-        jobDescriptionTotal.push(await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_JOB_REQUIREMENTS_SELECTOR));
-        jobDescriptionTotal.push(await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_JOB_DESCRIPTION_SELECTOR));
-        jobDescriptionTotal.push(await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_JOB_RESPONSIBILITIES_SELECTOR));
-        jobDescriptionTotal.push(await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_EQUIPMENT_SUPPLIED_SELECTOR));
-        jobDescriptionTotal.push(await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_JOB_BENEFITS_SELECTOR));
-    
-        const descriptonTexts = await Promise.all(jobDescriptionTotal.map(async element => await browserAPI.getTextFromElement(element!)));
-        const description = descriptonTexts.join('\n');
+    private async clickShowMore(selector: string, browserAPI: BrowserAPI): Promise<void> {
+        const showMoreButton = await browserAPI.findElement(selector);
+        if (showMoreButton) {
+            await showMoreButton.click();
+        }
+    }
 
-        return description;
+    /**
+    * @description Function which scrapes JobDetails part of the page, formats it and stores it into the 
+    * details property of the newJob.
+    * @param {JobDTO} newJob
+    * @param {BrowserAPI} browserAPI
+    * @returns {Promise<void>}
+    */
+    private async scrapeJobDetails(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
+        const jobDetailValuesElements = await browserAPI.findElements(Constants.NO_FLUFF_DETAILS_JOB_DETAILS_SELECTOR);
+        let jobDetails = Constants.EMPTY_STRING;
+        for (let i = 0; i < jobDetailValuesElements.length; i++) {
+            let value = await browserAPI.getTextFromElement(jobDetailValuesElements[i]);
+            value = value?.trim() || Constants.EMPTY_STRING;
+            switch (value) {
+                case Constants.FULLY_REMOTE:
+                    newJob.isRemote = true;
+                    break;
+                case Constants.PERMANENT_CONTRACT:
+                    newJob.timeEngagement = value;
+                    break;
+                default:
+                    jobDetails += value + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+            }
+        }
+
+        newJob.details = jobDetails;
+    }
+
+    /**
+    * @description Function which scrapes companyDetails part of the page, formats it and stores it into the 
+    * companyFounded, companySize, and companyLocation properties of the newJob.
+    * @param {JobDTO} newJob
+    * @param {BrowserAPI} browserAPI
+    * @returns {Promise<void>}
+    */
+    private async scrapeCompanyDetails(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
+        const companyDetailsElements = await browserAPI.findElements(Constants.NO_FLUFF_DETAILS_COMPANY_DETAILS_SELECTOR);
+        for (let i = 0; i < companyDetailsElements.length; i++) {
+            const companyDetailsKeyElement = await browserAPI.findElementOnElement(companyDetailsElements[i], Constants.SPAN_SELECTOR);
+            if (!companyDetailsKeyElement) continue;
+            let companyDetailsKey = await browserAPI.getTextFromElement(companyDetailsKeyElement);
+            companyDetailsKey = companyDetailsKey!.trim();
+            const companyDetailsKeyAndValueStr = await browserAPI.getTextFromElement(companyDetailsElements[i]);
+            
+            switch(companyDetailsKey) {
+                case Constants.FOUNDED_IN:
+                    newJob.companyFounded = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                case Constants.COMPANY_SIZE_NOFLUFF:
+                    newJob.companySize = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                case Constants.MAIN_LOCATION:
+                    newJob.companyLocation = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+            }
+        }
+    }
+
+    /**
+    * @description Function which scrapes Skills part of the page - required and 'nice to have'. Formats the gathered skills 
+    * and stores them into the requiredSkills and goodToHaveSkills of the newJob.
+    * @param {JobDTO} newJob
+    * @param {BrowserAPI} browserAPI
+    * @returns {Promise<void>}
+    */
+    private async scrapeJobSkills(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
+        const reqSkillsTitleEls = await browserAPI.findElements(Constants.NO_FLUFF_DETAILS_SKILL_TITLES_SELECTOR);
+        const reqSkillsSectionEls = await browserAPI.findElements(Constants.NO_FLUFF_DETAILS_SKILLS_SECTION_SELECTOR);
+
+        for (let i = 0; i < reqSkillsTitleEls.length; i++) {
+            const skillSectionTitle = await browserAPI.getTextFromElement(reqSkillsTitleEls[i]);
+            const skillsElementsInSection = await browserAPI.findElementsOnElement(reqSkillsSectionEls[i], Constants.LI_SELECTOR);
+            let listOfSkills = await Promise.all(skillsElementsInSection.map(async el => (await browserAPI.getTextFromElement(el))?.trim()));
+
+            if (skillSectionTitle?.trim() === 'Nice to have') {
+                newJob.goodToHaveSkills = listOfSkills.join(Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER);
+            } else {
+                newJob.requiredSkills = listOfSkills.join(Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER);
+            }
+        }
+    }
+
+    /**
+   * @description Function scrapes and formats part of the webiste determined by the passed selector.
+   * Function then returns the resulting value.
+   * @param {JobDTO} newJob
+   * @param {BrowserAPI} browserAPI
+   * @returns {Promise<string>}
+   */
+    private async scrapeNoFluffListOfElements(selector: string, browserAPI: BrowserAPI): Promise<string> {
+        const selectedElemList = await browserAPI.findElements(selector);
+
+        let selectedJobProperty = Constants.EMPTY_STRING;
+        for (let i = 0; i < selectedElemList.length; i++) {
+            const benefit = await browserAPI.getTextFromElement(selectedElemList[i]);
+            selectedJobProperty += benefit?.trim() + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+        }
+
+        return selectedJobProperty.trim();
     }
 }

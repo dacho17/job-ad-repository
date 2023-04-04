@@ -13,7 +13,7 @@ export default class TybaScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText(Constants.TYBA_DETAILS_JOB_TITLE_SELECTOR);
         const companyNameElem = await browserAPI.findElement(Constants.TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
         const companyLink = await browserAPI.getDataFromAttr(companyNameElem!, Constants.HREF_SELECTOR)
@@ -23,7 +23,7 @@ export default class TybaScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             description: jobDescription!.trim(),
             companyLink: companyLink ? Constants.TYBA_URL + companyLink.trim() : undefined
         }

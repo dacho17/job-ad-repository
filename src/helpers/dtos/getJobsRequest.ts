@@ -1,10 +1,12 @@
 export class GetJobsRequest {
-    searchWord: string;
+    companyNameSearchWord: string;
+    jobTitleSearchWord: string;
     offset: number;
     batchSize: number;
 
-    constructor(searchWord: string, offset: number, batchSize: number,) {
-        this.searchWord = searchWord;
+    constructor(jobTitleSearchWord: string, companyNameSearchWord: string, offset: number, batchSize: number,) {
+        this.jobTitleSearchWord = jobTitleSearchWord;
+        this.companyNameSearchWord = companyNameSearchWord;
         this.offset = offset;
         this.batchSize = batchSize;
     }

@@ -16,7 +16,7 @@ export default class SnaphuntScraper implements IJobApiScraper {
    * @param {string} jobUrl
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, jobUrl: string): Promise<JobDTO> {    
+    public async scrape(jobAdId: number | null, jobUrl: string): Promise<JobDTO> {    
         let jsonResponse = null;
         try {
             console.log(`accessing ${jobUrl}`);
@@ -38,7 +38,7 @@ export default class SnaphuntScraper implements IJobApiScraper {
                 data.jobListing.roleDescription +
                 data.jobListing.candidateDescription +
                 data.jobListing.employerDescription,
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             requiredSkills: 'Minimum ' +  data.minimumYearsOfExperience + ' years of experience',
             workLocation: data.jobLocationType 
                 + JSON.stringify(data.location)

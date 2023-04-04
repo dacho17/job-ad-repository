@@ -17,7 +17,7 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         // 
 
         const jobTitle = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_JOB_TITLE_SELECTOR)
@@ -35,7 +35,7 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
             salary: salary?.trim(),
             details: jobDetails?.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId
+            jobAdId: jobAdId ?? undefined,
         }
 
         const postedDateStr = await browserAPI.getDataSelectorAndAttr(Constants.ARBEITNOW_DETAILS_POSTED_DATE_SELECTOR, Constants.DATETIME_SELECTOR)

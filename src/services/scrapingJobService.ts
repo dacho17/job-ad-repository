@@ -6,6 +6,7 @@ import { GetJobsRequest } from '../helpers/dtos/getJobsRequest';
 import JobDTO from '../helpers/dtos/jobDTO';
 import { JobAdSource } from "../helpers/enums/jobAdSource";
 import JobMapper from "../helpers/mappers/jobMapper";
+import Utils from "../helpers/utils";
 import { ScrapingJobAdRepository } from "../repositories/scrapingJobAdRepository";
 import ScrapingJobRepository from "../repositories/scrapingJobRepository";
 import BrowserAPI from "./browserAPI";
@@ -20,6 +21,7 @@ export class ScrapingJobService {
     private jobScraperHelper: JobScraperHelper;
     private jobMapper: JobMapper;
     private browserAPI: BrowserAPI;
+    private utils: Utils;
 
     constructor(
         @Inject() jobAdRepository: ScrapingJobAdRepository,
@@ -27,6 +29,7 @@ export class ScrapingJobService {
         @Inject() jobScraperHelper: JobScraperHelper,
         @Inject() jobMapper: JobMapper,
         @Inject() broserAPI: BrowserAPI,
+        @Inject() utils: Utils,
     )
     {
         this.jobAdRepository = jobAdRepository;
@@ -34,6 +37,7 @@ export class ScrapingJobService {
         this.jobScraperHelper = jobScraperHelper;
         this.jobMapper = jobMapper;
         this.browserAPI = broserAPI;
+        this.utils = utils;
     }
 
     /**
@@ -48,21 +52,14 @@ export class ScrapingJobService {
         await this.browserAPI.run();
         for (;;) {
             const jobAdsWithoutScrapedJobs = await this.jobAdRepository.getAdsWithUnscrapedJobs(jobAdQueryOffset);
-            if (jobAdsWithoutScrapedJobs.length === 0 || succStored == 1) break;    // TESTING PURPOSES! || succStored == 1 part is for testing purposes!
+            if (jobAdsWithoutScrapedJobs.length === 0) break;
 
             const jobsAndAdsToBeStored: [Job, JobAd][] = [];
             console.log(`${jobAdsWithoutScrapedJobs.length} jobads to be scraped`)
-            for (let i = 0; i < 1; i++) {    // TESTING PURPOSES! jobAdsWithoutScrapedJobs.length instead of 1
-
-                // first attempt to get a browserScraper
-                let jobScraper = this.jobScraperHelper.getBrowserScraperFor(jobAdsWithoutScrapedJobs[i].source);
-                // if browser scraper is not found try getting apiScraper
-                if (!jobScraper) {
-                    jobScraper = this.jobScraperHelper.getApiScraperFor(jobAdsWithoutScrapedJobs[i].source);
-                }
+            for (let i = 0; i < jobAdsWithoutScrapedJobs.length; i++) {
+                const jobScraper = this.getScraperFor(jobAdsWithoutScrapedJobs[i].source);
                 if (!jobScraper) {
                     jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
-
                     continue;
                 }
                 
@@ -93,6 +90,26 @@ export class ScrapingJobService {
         return [succStored, jobAdQueryOffset];
     }
 
+    public async scrapeJobFromUrl(url: string): Promise<JobDTO> {
+        await this.browserAPI.run();
+        const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(url);
+        const scraper = this.getScraperFor(jobSource);
+        if (!scraper) throw `Scraper not found for the provided url=${url}`;
+
+        let newJobDTO;
+        // differentiating between IJobBrowserScrapers and IJobApiScrapers
+        if (jobSource !== JobAdSource.SNAPHUNT) {
+            await this.browserAPI.openPage(url);
+            newJobDTO = await (scraper as IJobBrowserScraper).scrape(null, this.browserAPI);
+        } else {
+            newJobDTO = await (scraper as IJobApiScraper).scrape(null, url);                    
+        }
+        const newJobMAP = this.jobMapper.toMap(newJobDTO);                
+        await this.jobRepository.create(newJobMAP);
+
+        return newJobDTO;
+    }
+
     /**
    * @description Function fetches jobs from jobRepository given limit, offset and searchWord.
    * @param {GetJobsRequest} getJobsReq
@@ -103,6 +120,17 @@ export class ScrapingJobService {
         const jobDtos = jobs.map(jobMAP => this.jobMapper.toDTO(jobMAP));
 
         return jobDtos;
+    }
+
+    private getScraperFor(adSource: JobAdSource) {
+        // first attempt to get a browserScraper
+        let jobScraper = this.jobScraperHelper.getBrowserScraperFor(adSource);
+        // if browser scraper is not found try getting apiScraper
+        if (!jobScraper) {
+            jobScraper = this.jobScraperHelper.getApiScraperFor(adSource);
+        }
+
+        return jobScraper;
     }
 
     /**

@@ -19,6 +19,10 @@ export class Job extends Model {
     isRemote?: boolean;
     isInternship?: boolean;
     requiredSkills?: string;
+    goodToHaveSkills?: string;
+    requirements?: string;
+    equipmentProvided?: string;
+    responsibilities?: string;
     additionalJobLink?: string;
     euWorkPermitRequired?: boolean;
     deadline?: Date;
@@ -34,7 +38,7 @@ export class Job extends Model {
     companyDetails?: string;
     companyWebsite?: string;
 
-    jobAdId: number;
+    jobAdId?: number;
 }
 
 export const JobMAP = (sequelize: Sequelize) => {
@@ -103,6 +107,26 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true,
         },
         requiredSkills: {
+            type: DataTypes.STRING(4096),
+            allowNull: true,
+        },
+        goodToHaveSkills: {
+            type: DataTypes.STRING(4096),
+            allowNull: true,
+        },
+        requirements: {
+            type: DataTypes.STRING(4096),
+            allowNull: true,
+        },
+        benefits: {
+            type: DataTypes.STRING(4096),
+            allowNull: true,
+        },
+        equipmentProvided: {
+            type: DataTypes.STRING(4096),
+            allowNull: true,
+        },
+        responsibilities: {
             type: DataTypes.STRING(4096),
             allowNull: true,
         },

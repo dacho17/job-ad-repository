@@ -17,7 +17,7 @@ export default class QreerScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {    
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {    
         const jobTitle = await browserAPI.getText(Constants.QREER_DETAILS_JOB_TITLE_SELECTOR);
         const companyName = await browserAPI.getText(Constants.QREER_DETAILS_COMPANY_NAME_SELECTOR);
         const companyLocation = await browserAPI.getText(Constants.QREER_DETAILS_COMPANY_LOCATION_SELECTOR);
@@ -32,7 +32,7 @@ export default class QreerScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
             companyLocation: companyLocation?.trim()
         }

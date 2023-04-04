@@ -14,7 +14,7 @@ export default class JobFluentScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_JOB_TITLE_SELECTOR);
         const timeEngagement = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_TIME_ENGAGEMENT_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_JOB_DESCRIPTION_SELECTOR);
@@ -30,7 +30,7 @@ export default class JobFluentScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
             companyLink: Constants.GRADUATELAND_URL + companyLink?.trim(),
             companyLocation: companyLocation?.trim(),

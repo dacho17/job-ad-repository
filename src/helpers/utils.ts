@@ -2,9 +2,12 @@ import { Service } from "typedi";
 import { addMinutes, addHours, addDays, addWeeks, addMonths} from 'date-fns';
 import Constants from "./constants";
 import { JobAdPostedAgoTimeframe } from "./enums/jobAdPostedAgoTimeframe";
+import { JobAdSource } from "./enums/jobAdSource";
 
 @Service()
 export default class Utils {
+    private urlValidationRegex = /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i;
+
     public transformToTimestamp(date: string): number {
         const timestamp = Date.parse(date);
         if (isNaN(timestamp)) return Date.parse((new Date().toString()));
@@ -283,6 +286,55 @@ export default class Utils {
         }
 
         return new Date();
+    }
+
+    public validateUrl(url: string) {
+        return url && this.urlValidationRegex.test(url.trim());
+    }
+
+    public getJobAdSourceBasedOnTheUrl(url: string): JobAdSource {
+        switch(true) {
+            case url.includes(Constants.ADZUNA):
+                return JobAdSource.ADZUNA;
+            case url.includes(Constants.ARBEIT_NOW):
+                return JobAdSource.ARBEIT_NOW;
+            case url.includes(Constants.CAREER_BUILDER):
+                return JobAdSource.CAREER_BUILDER;
+            case url.includes(Constants.CAREER_JET):
+                return JobAdSource.CAREER_JET;
+            case url.includes(Constants.CV_LIBRARY):
+                return JobAdSource.CV_LIBRARY;
+            case url.includes(Constants.EURO_JOBS):
+                return JobAdSource.EURO_JOBS;
+            case url.includes(Constants.EURO_ENGINEERING):
+                return JobAdSource.EURO_ENGINEER_JOBS;
+            case url.includes(Constants.EURO_SCIENCE):
+                return JobAdSource.EURO_SCIENCE_JOBS;
+            case url.includes(Constants.EURO_SPACE_CAREERS):
+                return JobAdSource.EURO_SPACE_CAREERS;
+            case url.includes(Constants.EURO_TECH):
+                return JobAdSource.EURO_TECH_JOBS;
+            case url.includes(Constants.GRADUATELAND):
+                return JobAdSource.GRADUATELAND;
+            case url.includes(Constants.JOB_FLUENT):
+                return JobAdSource.JOB_FLUENT;
+            case url.includes(Constants.LINKEDIN):
+                return JobAdSource.LINKEDIN;
+            case url.includes(Constants.NO_FLUFF_JOBS):
+                return JobAdSource.NO_FLUFF_JOBS;
+            case url.includes(Constants.QREER):
+                return JobAdSource.QREER;
+            case url.includes(Constants.SIMPLY_HIRED):
+                return JobAdSource.SIMPLY_HIRED;
+            case url.includes(Constants.SNAPHUNT):
+                return JobAdSource.SNAPHUNT;
+            case url.includes(Constants.TYBA):
+                return JobAdSource.TYBA;
+            case url.includes(Constants.WE_WORK_REMOTELY):
+                return JobAdSource.WE_WORK_REMOTELY;
+            default:
+                return JobAdSource.UNKNOWN;
+        }
     }
 
     /**

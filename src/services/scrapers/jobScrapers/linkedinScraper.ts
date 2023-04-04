@@ -17,7 +17,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
      * @param {BrowserAPI} browserAPI
      * @returns {Promise<JobDTO>} Returns the a JobDTO.
      */
-    public async scrape(jobAdId: number, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
 
         const showMoreButton = await browserAPI.findElement(Constants.LN_DETAILS_SHOW_MORE_BUTTON_SELECTOR);
         if (showMoreButton) {
@@ -42,7 +42,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId,
+            jobAdId: jobAdId ?? undefined,
             companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
             companyLocation: companyLocation?.trim(),
             companyLink: companyLink?.trim(),
