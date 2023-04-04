@@ -51,12 +51,12 @@ export default class CareerJetScraper implements IJobBrowserScraper {
         const jobSubtitleElements = await browserAPI.findElements(Constants.CAREER_JET_DETAILS_JOB_SUBTITLE_SELECTOR);
         const jobSubtitleData = await Promise.all(jobSubtitleElements.map(async elem => await browserAPI.getTextFromElement(elem)));
 
-        newJob.companyLocation = jobSubtitleData[0]!;
+        newJob.companyLocation = jobSubtitleData[0]!.trim();
         if (jobSubtitleData.length === 3) {
-            newJob.timeEngagement = jobSubtitleData[1] + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER +  jobSubtitleData[2];
+            newJob.timeEngagement = jobSubtitleData[1]!.trim() + Constants.COMMA + Constants.WHITESPACE +  jobSubtitleData[2]!.trim();
         } else if (jobSubtitleData.length === 4) {
-            newJob.salary = jobSubtitleData[1]!;
-            newJob.timeEngagement = jobSubtitleData[2] + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER +  jobSubtitleData[3];
+            newJob.salary = jobSubtitleData[1]!.trim();
+            newJob.timeEngagement = jobSubtitleData[2]!.trim() + Constants.COMMA + Constants.WHITESPACE +  jobSubtitleData[3]!.trim();
         } else {
             throw `During CareerJetDetails Scraping - unexpected number of elements appeared ${jobSubtitleData.length}`;
         }
