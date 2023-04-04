@@ -303,6 +303,7 @@ export default {
     SHOW_LESS: 'Show less',
     SKILLS: 'Skills',
     SPECIALTIES_COL: 'Specialties:',
+    START_DATE_COL: 'Start Date:',
     TYPE: 'Type',
     TYPE_COL: 'Type:',
     EXPIRY_DATE_COL: 'Expiry Date:',

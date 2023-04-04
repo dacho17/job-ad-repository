@@ -47,7 +47,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
 
     /**
    * @description Function scrapes and formats jobDetails section of the page. After formatting,
-   * the properties salary, workLocation, and details of JobDTO are set.
+   * the properties salary, workLocation, timeEngagement and startDate of JobDTO are set.
    * @param {BrowserAPI} browserAPI
    * @param {JobDTO} newJob
    * @returns {Promise<void>}
@@ -57,17 +57,28 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.CV_LIBRARY_DETAILS_JOB_DETAILS_KEY_SELECTOR);
         const jobDetailsValueElements = await browserAPI.findElements(Constants.CV_LIBRARY_DETAILS_JOB_DETAILS_VALUE_SELECTOR);
 
-        let details = '';
+        // first scraping workLocation and salary as they are on separate part of the page
         const workLocation = await browserAPI.getTextFromElement(jobDetailsValueElements[0]);
         const salary = await browserAPI.getTextFromElement(jobDetailsValueElements[1]);
-        for (let i = 2; i < jobDetailsKeyElements.length; i++) {
-            const key = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
-            const value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-            details += key + Constants.EQUALS + value + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
-        }
-
         newJob.salary = salary?.trim();
         newJob.workLocation = workLocation?.trim();
-        newJob.details = details.trim();
+
+        for (let i = 2; i < jobDetailsKeyElements.length; i++) {
+            if (!jobDetailsKeyElements[i] || !jobDetailsValueElements[i]) continue;
+
+            let title = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
+            let value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
+            title = title!.trim();
+            value = value!.trim();
+            
+            switch(title) {
+                case Constants.TYPE_COL:
+                    newJob.timeEngagement = value.trim();
+                    break;
+                case Constants.START_DATE_COL:
+                    newJob.startDate = this.utils.getStartDate4CvLibrary(value.trim())
+                    break;
+            }
+        }
     }
 }

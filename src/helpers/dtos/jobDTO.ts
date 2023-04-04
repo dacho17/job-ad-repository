@@ -6,6 +6,7 @@ export default class JobDTO {
     salary?: string;
     nOfApplicants?: string;
     workLocation?: string;
+    startDate?: Date;
     details?: string;
     description: string;
     isRemote?: boolean;

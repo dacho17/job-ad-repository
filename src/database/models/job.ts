@@ -13,6 +13,7 @@ export class Job extends Model {
     timeEngagement?: string;
     salary?: string;
     nOfApplicants?: string;
+    startDate?: Date;
     workLocation?: string;
     details?: string;
     description: string
@@ -78,6 +79,10 @@ export const JobMAP = (sequelize: Sequelize) => {
         },
         nOfApplicants: {
             type: DataTypes.STRING,
+            allowNull: true
+        },
+        startDate: {
+            type: DataTypes.DATE,
             allowNull: true
         },
         workLocation: {

@@ -1,4 +1,4 @@
-import { Service } from "typedi";
+import Container, { Service } from "typedi";
 import { addMinutes, addHours, addDays, addWeeks, addMonths} from 'date-fns';
 import Constants from "./constants";
 import { JobAdPostedAgoTimeframe } from "./enums/jobAdPostedAgoTimeframe";
@@ -251,6 +251,18 @@ export default class Utils {
         else {
             return new Date();
         }
+    }
+
+
+    public getStartDate4CvLibrary(textContainingNofApplicants: string): Date {
+        const [year, month, day] = textContainingNofApplicants.split(Constants.MINUS_SIGN);
+        if (!year || !month || !day) return new Date();
+        const yearNum = parseInt(year);
+        const monthNum = parseInt(month);
+        const dayNum = parseInt(day);
+        if (isNaN(yearNum) || isNaN(monthNum) || isNaN(dayNum)) return new Date(); 
+
+        return new Date(yearNum, monthNum - 1, dayNum);
     }
 
     /**
