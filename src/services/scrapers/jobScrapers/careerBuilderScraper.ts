@@ -9,7 +9,7 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 export default class CareerBuilderScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on CareerBuilder in the scrape is (jobTitle, companyName, companyLocation, timeEngagement, jobDescription, requiredSkills).
+   * Data available on CareerBuilder in the scrape is (jobTitle, companyName, companyLocation, timeEngagement, salary, jobDescription, requiredSkills).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -24,6 +24,9 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
             jobAdId: jobAdId ?? undefined,
             companyName: 'Unrevealed'
         }
+
+        const salaryInfo = await browserAPI.getText(Constants.CAREER_BUILDER_DETAILS_SALARY_SELECTOR);
+        newJob.salary = salaryInfo?.trim();
 
         await this.scrapeSubtitleSection(newJob, browserAPI);
         await this.scrapeRequiredSkills(newJob, browserAPI);
