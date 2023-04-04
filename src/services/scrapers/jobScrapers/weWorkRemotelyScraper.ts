@@ -62,7 +62,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
     private async scrapeJobDetails(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
         let jobDetailElements = await browserAPI.findElements(Constants.WE_WORK_REMOTELY_JOB_DETAILS_SELECTOR);
         jobDetailElements.shift(); jobDetailElements.shift();  // first two elements of the list are irrelevant
-        let jobDetails = Constants.EMPTY_STRING;
+        let jobDetails = [];
         for (let i = 0; i < jobDetailElements.length; i++) {
             let jobDetail = await browserAPI.getTextFromElement(jobDetailElements[i]);
             jobDetail = jobDetail!.trim();
@@ -74,10 +74,10 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
                     newJob.timeEngagement = Constants.FULL_TIME;
                     break;
                 default:
-                    jobDetails += jobDetail + Constants.COMMA + Constants.WHITESPACE;
+                    jobDetails.push(jobDetail);
             }
         }
 
-        newJob.details = jobDetails;
+        newJob.details = jobDetails.join(Constants.COMMA + Constants.WHITESPACE);
     }
 }

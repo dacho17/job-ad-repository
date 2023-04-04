@@ -21,6 +21,8 @@ export class Job extends Model {
     requiredSkills?: string;
     goodToHaveSkills?: string;
     requirements?: string;
+    requiredExperience?: string;
+    requiredEducation?: string;
     equipmentProvided?: string;
     responsibilities?: string;
     additionalJobLink?: string;
@@ -115,6 +117,14 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true,
         },
         requiredLanguages: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        requiredExperience: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        requiredEducation: {
             type: DataTypes.STRING,
             allowNull: true,
         },

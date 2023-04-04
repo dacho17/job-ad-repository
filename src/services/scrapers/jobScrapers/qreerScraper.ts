@@ -119,20 +119,25 @@ export default class QreerScraper implements IJobBrowserScraper {
     */
     private async scrapeJobSkills(browserAPI: BrowserAPI, newJob: JobDTO): Promise<void> {
         const keyValPairElements = await browserAPI.findElements(Constants.QREER_DETAILS_JOB_SKILLS_KEY_VALUE_SELECTOR);
-        let requiredSkills = Constants.EMPTY_STRING;
-
+        let educationReq = [];
         for (let i = 0; i < keyValPairElements.length; i++) {
             const [keyElement, valElement] = await browserAPI.findElementsOnElement(keyValPairElements[i], Constants.TD_SELECTOR);
             const jobDetailsKey = await browserAPI.getTextFromElement(keyElement);
             const jobDetailsVal = await browserAPI.getTextFromElement(valElement);
-            
+
             switch (jobDetailsKey?.trim()) {
                 case Constants.EDUCATION_COL:
-                case Constants.SPECIALTIES_COL:
                 case Constants.EDUCATION_LEVEL_COL:
+                    educationReq.push(jobDetailsVal?.trim());
+                    break;
+                case Constants.SPECIALTIES_COL:
+                    newJob.requiredSkills = jobDetailsVal?.trim();
+                    break;
                 case Constants.EXPERIENCE_COL:
+                    newJob.requiredExperience = jobDetailsVal?.trim();
+                    break;
                 case Constants.LANGUAGES_SPOKEN_COL:
-                requiredSkills += jobDetailsVal?.trim() + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+                    newJob.requiredLanguages = jobDetailsVal?.trim();
                     break;
                 case Constants.JOB_LOCATION_COL:
                     newJob.workLocation = jobDetailsVal?.trim();   
@@ -140,6 +145,6 @@ export default class QreerScraper implements IJobBrowserScraper {
             }
         }
 
-        newJob.requiredSkills = requiredSkills;
+        newJob.requiredEducation = educationReq.join(Constants.COMMA + Constants.WHITESPACE);
     }
 }

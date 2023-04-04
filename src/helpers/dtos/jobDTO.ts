@@ -12,6 +12,8 @@ export default class JobDTO {
     isInternship?: boolean;
     requiredLanguages?: string;
     requiredSkills?: string;
+    requiredExperience?: string;
+    requiredEducation?: string;
     goodToHaveSkills?: string;
     requirements?: string;
     benefits?: string;

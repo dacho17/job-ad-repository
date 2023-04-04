@@ -90,7 +90,7 @@ export default class NoFluffScraper implements IJobBrowserScraper {
     */
     private async scrapeJobDetails(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
         const jobDetailValuesElements = await browserAPI.findElements(Constants.NO_FLUFF_DETAILS_JOB_DETAILS_SELECTOR);
-        let jobDetails = Constants.EMPTY_STRING;
+        let jobDetails = [];
         for (let i = 0; i < jobDetailValuesElements.length; i++) {
             let value = await browserAPI.getTextFromElement(jobDetailValuesElements[i]);
             value = value?.trim() || Constants.EMPTY_STRING;
@@ -102,11 +102,11 @@ export default class NoFluffScraper implements IJobBrowserScraper {
                     newJob.timeEngagement = value;
                     break;
                 default:
-                    jobDetails += value + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+                    jobDetails.push(value);
             }
         }
 
-        newJob.details = jobDetails;
+        newJob.details = jobDetails.join(Constants.COMMA + Constants.WHITESPACE);
     }
 
     /**
@@ -171,12 +171,12 @@ export default class NoFluffScraper implements IJobBrowserScraper {
     private async scrapeNoFluffListOfElements(selector: string, browserAPI: BrowserAPI): Promise<string> {
         const selectedElemList = await browserAPI.findElements(selector);
 
-        let selectedJobProperty = Constants.EMPTY_STRING;
+        let selectedJobProperty = [];
         for (let i = 0; i < selectedElemList.length; i++) {
             const benefit = await browserAPI.getTextFromElement(selectedElemList[i]);
-            selectedJobProperty += benefit?.trim() + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+            selectedJobProperty.push(benefit?.trim());
         }
 
-        return selectedJobProperty.trim();
+        return selectedJobProperty.join(Constants.COMMA + Constants.WHITESPACE);
     }
 }
