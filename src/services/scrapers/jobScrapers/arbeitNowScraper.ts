@@ -32,7 +32,7 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             companyName: companyName!.trim(),
             companyLocation: companyLocation?.trim(),
-            salary: salary?.trim(),
+            salary: salary?.replace(Constants.SALARY_ICON, Constants.EMPTY_STRING).trim(),
             details: jobDetails?.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,

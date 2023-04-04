@@ -299,6 +299,7 @@ export default {
     MUST_HAVE_LANGUAGE: 'Must-have language',
     PERMANENT_CONTRACT: 'Permanent contract',
     POSTED_COL: 'Posted:',
+    SALARY_ICON: 'Salary Icon',
     SENIORITY_LEVEL: 'Seniority level',
     SHOW_MORE: 'Show more',
     SHOW_LESS: 'Show less',
