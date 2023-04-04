@@ -32,11 +32,9 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
         const companyLocation = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_COMPANY_LOCATION_SELECTOR);
         const timeEngagement = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_TIME_ENGAGEMENT_SELECTOR);
         const salary = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_SALARY_SELECTOR);
-        const jobBenefits = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR);
         newJob.companyLocation = companyLocation?.trim();
         newJob.timeEngagement = timeEngagement?.trim();
         newJob.salary = salary?.trim();
-        newJob.benefits = jobBenefits?.trim();
 
         const postedAgo = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_POSTED_AGO_SELECTOR);
         if (postedAgo) {
@@ -44,15 +42,23 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
             newJob.postedDate = postedDate;
         }
         
-        await this.scrapeRequiredSkills(newJob, browserAPI);
+        newJob.requiredSkills = await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_REQUIRED_SKILLS_SELECTOR, browserAPI);
+        newJob.benefits = await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR, browserAPI);
 
         return newJob;
     }
 
-    private async scrapeRequiredSkills(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
-        const requiredSkillElems = await browserAPI.findElements(Constants.SIMPLY_HIRED_DETAILS_JOB_REQUIRED_SKILLS_SELECTOR);
-        let requiredSkills = await Promise.all(requiredSkillElems.map(async elem => (await browserAPI.getTextFromElement(elem))!.trim()));
-
-        newJob.requiredSkills = requiredSkills.join(Constants.COMMA + Constants.WHITESPACE);       
+    /**
+   * @description Function scrapes and formats part of the webiste determined by the passed selector.
+   * Function then returns the resulting value.
+   * @param {string} selector
+   * @param {BrowserAPI} browserAPI
+   * @returns {Promise<string>}
+   */
+    private async scrapeSimplyHiredListOfElements(selector: string, browserAPI: BrowserAPI): Promise<string> {
+        const requiredSkillElems = await browserAPI.findElements(selector);
+        let requiredElements = await Promise.all(requiredSkillElems.map(async elem => (await browserAPI.getTextFromElement(elem))!.trim()));
+        
+        return requiredElements.join(Constants.COMMA + Constants.WHITESPACE);
     }
 }

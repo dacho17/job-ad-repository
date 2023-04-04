@@ -163,6 +163,7 @@ export default class NoFluffScraper implements IJobBrowserScraper {
     /**
    * @description Function scrapes and formats part of the webiste determined by the passed selector.
    * Function then returns the resulting value.
+   * @param {string} selector
    * @param {JobDTO} newJob
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<string>}

@@ -191,8 +191,9 @@ export default {
     SIMPLY_HIRED_DETAILS_COMPANY_LOCATION_SELECTOR: 'span[data-testid="viewJobCompanyLocation"]',
     SIMPLY_HIRED_DETAILS_TIME_ENGAGEMENT_SELECTOR:'span[data-testid="viewJobBodyJobDetailsJobType"]',
     SIMPLY_HIRED_DETAILS_POSTED_AGO_SELECTOR: 'span[data-testid="viewJobBodyJobPostingTimestamp"]',
-    SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR: 'div[data-testid="viewJobBodyJobBenefits"]',
+    SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR: 'span[data-testid="viewJobBenefitItem"]',
     SIMPLY_HIRED_DETAILS_JOB_REQUIRED_SKILLS_SELECTOR: 'span[data-testid="viewJobQualificationItem"]',
+    
     
     SIMPLY_HIRED_DETAILS_JOB_DESCRIPTION_SELECTOR: 'div[data-testid="viewJobBodyJobFullDescriptionContent"]',
     SIMPLY_HIRED_DETAILS_SALARY_SELECTOR: 'span[data-testid="viewJobBodyJobCompensation"]',
