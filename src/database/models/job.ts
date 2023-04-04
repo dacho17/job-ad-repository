@@ -85,11 +85,11 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true
         },
         details: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.STRING(10000),
             allowNull: true
         },
         description: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.STRING(10000),
             allowNull: false
         },
         isRemote: {

@@ -44,6 +44,8 @@ export default {
     SNAPHUNT_REMOTE_QUERY_PARAMETER: `&jobLocationType=remote&urlJobLocationType=remote`,
 
     // common html selectors
+    DIV_SELECTOR: 'div',
+    H3_SELECTOR: 'h3',
     HREF_SELECTOR: 'href',
     TD_SELECTOR: 'td',
     LI_SELECTOR: 'li',
@@ -123,8 +125,11 @@ export default {
     CV_LIBRARY_DETAILS_JOB_DETAILS_VALUE_SELECTOR: '.job__details-value',
 
     EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR: '.listingInfo > h2',
+    EURO_JOBS_DETAILS_COMPANY_NAME_SELECTOR: '.company-name',
+    EURO_JOBS_DETAILS_COMPANY_WEBSITE_SELECTOR: '.comp-profile-content > a',
     EURO_JOBS_DETAILS_JOB_DETAILS_KEY_SELECTOR: '.displayFieldBlock > h3',
     EURO_JOBS_DETAILS_JOB_DETAILS_VALUE_SELECTOR: '.displayField',
+    EURO_JOBS_DETAILS_ENGAGEMENT_AND_REQUIREMENTS_SELECTOR: '.listingInfo > fieldset > .displayFieldBlock',
     EURO_JOBS_DETAILS_JOB_DESCRIPTION_SELECTOR: '#listingsResults > div > fieldset > div > div',
 
     EURO_JOB_SITES_DETAILS_ADDITIONAL_JOB_LINK_SELECTOR: '.job-header > div > h2 > a',
@@ -272,6 +277,7 @@ export default {
     EDUCATION_COL: 'Education Backgrounds:',
     EDUCATION_LEVEL_COL: 'Education Level:',
     EMPLOYMENT_TYPE: 'Employment type',
+    EMPLOYMENT_TYPE_COL: 'Employment Type:',
     EXPERIENCE_COL: 'Experience:',
     FOUNDED_IN: 'Founded in',
     FOUNDED: 'Founded',
@@ -283,6 +289,7 @@ export default {
     JOB: 'Job',
     JOB_FUNCTION: 'Job function',
     JOB_LOCATION_COL: 'Job Location:',
+    JOB_REQUIREMENTS_COL: 'Job Requirements:',
     LANGUAGES_SPOKEN_COL: 'Languages spoken:',
     LOCATION_COL: 'Location:',
     MAIN_LOCATION: 'Main location',

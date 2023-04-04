@@ -21,28 +21,32 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {    
         const jobTitle = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_DESCRIPTION_SELECTOR);
+        const companyName = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_COMPANY_NAME_SELECTOR);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: Constants.UNDISLOSED_COMPANY,  // set as a default value
+            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
         }
+        
+        const companyWebsite = await browserAPI.getDataSelectorAndAttr(Constants.EURO_JOBS_DETAILS_COMPANY_WEBSITE_SELECTOR, Constants.HREF_SELECTOR);
+        newJob.companyWebsite = companyWebsite?.trim();
 
         await this.scrapeJobDetails(newJob, browserAPI);
+        await this.scrapeRequirementsAndEngagement(newJob, browserAPI);
 
         return newJob;
     }
 
     /**
-   * @description Function which looks to scrape companuName, companyLocation, euWorkPermit, postedDate and deadline,
+   * @description Function which looks to scrape companyName, companyLocation, euWorkPermit, postedDate and deadline,
    * The function also sets details property as a composition of all the properties mentioned above and some additional ones.
    * @param {JobDTO} newJob
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<JobDTO>} Returns the JobDTO.
+   * @returns {Promise<void>}
    */
     private async scrapeJobDetails(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
-        let details = '';
         const jobDetailsKeysElement = await browserAPI.findElements(Constants.EURO_JOBS_DETAILS_JOB_DETAILS_KEY_SELECTOR);
         const jobDetailsValuesElement = await browserAPI.findElements(Constants.EURO_JOBS_DETAILS_JOB_DETAILS_VALUE_SELECTOR);
         for (let i = 0; i < jobDetailsKeysElement.length; i++) {
@@ -65,9 +69,38 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
                     newJob.deadline = this.utils.getDateFromDottedDateString(value);
                     break;
             }
-
-            details += key + Constants.EQUALS + value + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
         }
-        newJob.details = details;
+    }
+
+    /**
+   * @description Function which looks to scrape requirements and timeEngagement from the page.
+   * The function also sets those properties to the newJob.
+   * @param {JobDTO} newJob
+   * @param {BrowserAPI} browserAPI
+   * @returns {Promise<void>}
+   */
+    private async scrapeRequirementsAndEngagement(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
+        const engagementAndRequirementsElems = await browserAPI.findElements(Constants.EURO_JOBS_DETAILS_ENGAGEMENT_AND_REQUIREMENTS_SELECTOR);
+        console.log(`Elements found = ${engagementAndRequirementsElems.length}`)
+        engagementAndRequirementsElems.shift(); // fist element is jobDescription already scraped elsewhere in the class
+        for (let i = 0; i < engagementAndRequirementsElems.length; i++) {
+            const titleElem = await browserAPI.findElementOnElement(engagementAndRequirementsElems[i], Constants.H3_SELECTOR);
+            const valueElem = await browserAPI.findElementOnElement(engagementAndRequirementsElems[i], Constants.DIV_SELECTOR);
+            if (!titleElem || !valueElem) continue;
+
+            let title = await browserAPI.getTextFromElement(titleElem);
+            let value = await browserAPI.getTextFromElement(valueElem);
+
+            console.log(`Title=${title},value=${value}`);
+
+            switch(title?.trim()) {
+                case Constants.JOB_REQUIREMENTS_COL:
+                    newJob.requirements = value?.trim();
+                    break;
+                case Constants.EMPLOYMENT_TYPE_COL:
+                    newJob.timeEngagement = value?.trim();
+                    break;
+            }
+        }
     }
 }
