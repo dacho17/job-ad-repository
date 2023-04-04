@@ -32,12 +32,11 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
         const companyLocation = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_COMPANY_LOCATION_SELECTOR);
         const timeEngagement = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_TIME_ENGAGEMENT_SELECTOR);
         const salary = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_SALARY_SELECTOR);
-        const jobRequirements = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_JOB_REQUIREMENTS_SELECTOR);
         const jobBenefits = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR);
         newJob.companyLocation = companyLocation?.trim();
         newJob.timeEngagement = timeEngagement?.trim();
         newJob.salary = salary?.trim();
-        newJob.description += jobRequirements?.trim() + '\n\n' + jobBenefits?.trim();
+        newJob.benefits = jobBenefits?.trim();
 
         const postedAgo = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_POSTED_AGO_SELECTOR);
         if (postedAgo) {
@@ -45,6 +44,15 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
             newJob.postedDate = postedDate;
         }
         
+        await this.scrapeRequiredSkills(newJob, browserAPI);
+
         return newJob;
+    }
+
+    private async scrapeRequiredSkills(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
+        const requiredSkillElems = await browserAPI.findElements(Constants.SIMPLY_HIRED_DETAILS_JOB_REQUIRED_SKILLS_SELECTOR);
+        let requiredSkills = await Promise.all(requiredSkillElems.map(async elem => (await browserAPI.getTextFromElement(elem))!.trim()));
+
+        newJob.requiredSkills = requiredSkills.join(Constants.COMMA + Constants.WHITESPACE);       
     }
 }

@@ -74,7 +74,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
                     newJob.timeEngagement = Constants.FULL_TIME;
                     break;
                 default:
-                    jobDetails += jobDetail + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+                    jobDetails += jobDetail + Constants.COMMA + Constants.WHITESPACE;
             }
         }
 

@@ -64,12 +64,12 @@ export default class TybaScraper implements IJobBrowserScraper {
                 case Constants.SKILLS:
                     const valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
                     let values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
-                    newJob.requiredSkills = values.join(Constants.WHITESPACE);
+                    newJob.requiredSkills = values.join(Constants.COMMA + Constants.WHITESPACE);
                     break;
                 case Constants.MUST_HAVE_LANGUAGE:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
                     newJob.requiredLanguages = value?.split(Constants.WHITESPACE).map(part => part.trim())
-                        .filter(part => part.length > 1).join(Constants.WHITESPACE);
+                        .filter(part => part.length > 1).join(Constants.COMMA + Constants.WHITESPACE);
                     break;
             }
         }
