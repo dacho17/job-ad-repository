@@ -112,7 +112,7 @@ export default class QreerScraper implements IJobBrowserScraper {
 
     /**
     * @description Function which scrapes jobSkills part of the page, formats it and stores it into the 
-    * workLocation and requiredSkills properties.
+    * workLocation, requiredEducation, requiredExperience, requiredLanguages, and requiredSkills properties.
     * @param {BrowserAPI} browserAPI
     * @param {JobDTO} newJob
     * @returns {Promise<void>}

@@ -35,7 +35,7 @@ export default class TybaScraper implements IJobBrowserScraper {
 
     /**
     * @description Function which scrapes jobDetails part of the page, formats it and stores it into the 
-    * workLocation, timeEngagement, requiredSkills, companyIndustry properties.
+    * workLocation, timeEngagement, requiredSkills, requiredLanguages, and companyIndustry properties.
     * @param {BrowserAPI} browserAPI
     * @param {JobDTO} newJob
     * @returns {Promise<void>}

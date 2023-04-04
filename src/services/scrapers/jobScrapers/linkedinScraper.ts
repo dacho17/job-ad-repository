@@ -58,7 +58,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
 
     /**
      * @description Function that scrapes the 'criteria' section of a linkedin page, formats the scraped data and stores it on the newJob.
-     * Properties set to the newJob are (requiredSkills, companyIndustry and timeEngagement).
+     * Properties set to the newJob are (requiredExperience, details, companyIndustry and timeEngagement).
      * @param {number} jobAdId
      * @param {BrowserAPI} browserAPI
      * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -71,7 +71,6 @@ export default class LinkedInScraper implements IJobBrowserScraper {
             jobDetailsValues.push(value!.trim());
         }
 
-        let jobRequirements = Constants.EMPTY_STRING;
         newJob.requiredSkills = Constants.EMPTY_STRING;
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.LN_DETAILS_JOB_CRITERIA_ITEM_KEY_SELECTOR);
         for (let i = 0; i < jobDetailsKeyElements.length; i++) {
@@ -85,11 +84,12 @@ export default class LinkedInScraper implements IJobBrowserScraper {
                     newJob.timeEngagement = jobCriteriaVal;
                     break;
                 case Constants.SENIORITY_LEVEL:
+                    newJob.requiredExperience = jobCriteriaVal;
+                    break;
                 case Constants.JOB_FUNCTION:
-                    jobRequirements += jobCriteriaVal + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER;
+                    newJob.details = jobCriteriaVal;
+                    break;
             }
         }
-
-        newJob.requiredSkills = jobRequirements;
     }
 }
