@@ -85,11 +85,11 @@ export class ScrapingJobService {
                 }
                 const newOrganizationMAP = this.organizationMapper.toMap(newJobDTO.organization);
                 const newJobMAP = this.jobMapper.toMap(newJobDTO);  // FK should already be set -> newJobMAP.jobAdId = jobAdsWithoutScrapedJobs[i].id; // setting a FK-jobAdId
-                this.inheritPropsFromJob(jobAdsWithoutScrapedJobs[i], newJobMAP);
+                const newJobAdMAP = this.inheritPropsFromJob(jobAdsWithoutScrapedJobs[i], newJobMAP);
                 
-                const hasBeenStored = await this.sendScrapedJobForStoring(newJobMAP, newOrganizationMAP, jobAdsWithoutScrapedJobs[i]);   
+                const hasBeenStored = await this.sendScrapedJobForStoring(newJobMAP, newOrganizationMAP, newJobAdMAP);   
                 
-                if (hasBeenStored) succStored += 1; 
+                if (hasBeenStored) succStored += 1;
                 else jobAdQueryOffset += 1; // offset is to be added for the entries unsuccessfully stored to the DB
             }
         }
@@ -186,17 +186,18 @@ export class ScrapingJobService {
 
     /**
    * @description Function which sets JobAd properties postedDate and postedDateTimestamp from the connected Job object,
-   * if they do not exist.
+   * if they do not exist and returns the updated JobAd object.
    * @param {JobAd} jobAd jobAd which inherits the properties.
    * @param {Job} job job scraped based on the jobAd
-   * @returns {Promise<void>}
+   * @returns {Promise<JobAd>}
    */
-    private inheritPropsFromJob(jobAd: JobAd, job: Job): void {
+    private inheritPropsFromJob(jobAd: JobAd, job: Job): JobAd {
         if (!jobAd.postedDate && job.postedDate) {
             jobAd.postedDate = job.postedDate;
             jobAd.postedDateTimestamp = this.utils.transformToTimestamp(jobAd.postedDate.toString()) ?? undefined;
         }
         
         jobAd.jobTitle = job.jobTitle;
+        return jobAd;
     }
 }

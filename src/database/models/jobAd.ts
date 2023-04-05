@@ -15,8 +15,6 @@ export class JobAd extends Model {
     jobTitle?: string;
     postedDate?: Date;
     postedDateTimestamp?: number;
-    JobAdSourceId?: number;
-    JobId?: number;
 }
 
 export const JobAdMAP = (sequelize: Sequelize) => {

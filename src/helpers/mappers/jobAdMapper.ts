@@ -33,7 +33,7 @@ export class JobAdMapper {
             jobLink: jobAdMAP.jobLink,
             source: jobAdMAP.source,
             jobTitle: jobAdMAP.jobTitle,
-            postedDateTimestamp: jobAdMAP.postedDateTimestamp
+            postedDateTimestamp: jobAdMAP.postedDateTimestamp,
         }
         
         return jobAdDTO;

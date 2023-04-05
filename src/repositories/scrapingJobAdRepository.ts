@@ -2,8 +2,7 @@ import 'reflect-metadata';
 import { Service } from 'typedi';
 import { JobAd } from '../database/models/jobAd';
 import db from '../database/db';
-import { Op, Transaction } from 'sequelize';
-import { JobAdSource } from '../helpers/enums/jobAdSource';
+import { Transaction } from 'sequelize';
 
 @Service()
 export class ScrapingJobAdRepository {
@@ -75,8 +74,11 @@ export class ScrapingJobAdRepository {
     public async markAsScraped(jobAd: JobAd, t: Transaction): Promise<JobAd> {
         try {
             const updatedJobAd = await jobAd.update({
+                jobTitle: jobAd.jobTitle,
+                postedDate: jobAd.postedDate,
+                postedDateTimestamp: jobAd.postedDateTimestamp,
                 areDetailsScraped: true,
-                detailsScrapedDate: new Date(Date.now())
+                detailsScrapedDate: new Date(Date.now()),
             }, { transaction: t });
             return updatedJobAd;    
         } catch (exception) {
