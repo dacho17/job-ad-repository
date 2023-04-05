@@ -44,8 +44,11 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
                 const delimiterIndex: number = jobDetailsText.indexOf(jobDetailsKeys[i]!);
                 jobDetailsText = jobDetailsText.slice(0, delimiterIndex) + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER + jobDetailsText.slice(delimiterIndex);
             }
-            jobDetailsText = jobDetailsText.replace(/: /g, Constants.EQUALS);
-            newJob.details = jobDetailsText.trim();
+            jobDetailsText = jobDetailsText.replace(/: /g, Constants.EQUALS).trim();
+
+            if (jobDetailsText !== Constants.APPLY_NOW) {   // sometimes 'Apply Now' is the value of jobDetails and this should not be stored
+                newJob.details = jobDetailsText.trim();
+            } 
         }
 
         return newJob;

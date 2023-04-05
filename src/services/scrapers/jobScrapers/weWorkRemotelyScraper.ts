@@ -14,7 +14,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on WeWorkRemotely in the scrape is (jobTitle, organization.name, organization.location, organization.webiste, organization.urlReference, postedAgo, nOfApplicants, jobDetails, jobDescription).
+   * Data available on WeWorkRemotely in the scrape is (jobTitle, organization.name, organization.location, organization.webiste, organization.urlReference, postedAgo, nOfApplicants, isRemote, timeEngagement, jobDetails, jobDescription).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -31,15 +31,26 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            organization: { name: orgName?.trim(), urlReference: orgLink?.trim() } as OrganizationDTO,
+            organization: {
+                name: orgName?.trim(),
+                urlReference: orgLink ? Constants.WE_WORK_REMOTELY_URL + orgLink.trim() : undefined
+            } as OrganizationDTO,
         }
 
         const orgWebsite = await browserAPI.getDataSelectorAndAttr(Constants.WE_WORK_REMOTELY_COMPANY_WEBSITE_SELECTOR, Constants.HREF_SELECTOR);
-        const orgLocation = await browserAPI.getText(Constants.WE_WORK_REMOTELY_COMPANY_LOCATION_SELECTOR)
+        const orgLocationCandidate = await browserAPI.getText(Constants.WE_WORK_REMOTELY_COMPANY_LOCATION_SELECTOR)
+
+        if (orgLocationCandidate?.trim() === newJob.organization.name) {
+            
+        } else if (orgLocationCandidate?.toLowerCase().includes(Constants.REMOTE)) {   // this value is sometimes 'Remote' or a variation of it
+            newJob.isRemote = true;
+        } else {
+            newJob.organization.location = orgLocationCandidate?.trim();
+        }
+
         const postedDate = await browserAPI.getDataSelectorAndAttr(Constants.WE_WORK_REMOTELY_POSTED_DATE_SELECTOR, Constants.DATETIME_SELECTOR);
 
         newJob.organization.website = orgWebsite?.trim();
-        newJob.organization.location = orgLocation?.trim();
         newJob.postedDate = postedDate ? new Date(postedDate.trim()) : undefined;
         
         await this.scrapeJobDetails(newJob, browserAPI);

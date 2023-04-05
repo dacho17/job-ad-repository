@@ -14,7 +14,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on CvLibrary in the scrape is (jobTitle, orgName, workLocation, isRemote, salary, postedDate, jobDetails, jobDescription).
+   * Data available on CvLibrary in the scrape is (jobTitle, orgName, workLocation, isRemote, salary, timeEngagement, startDate, postedDate, jobDetails, jobDescription).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -58,11 +58,14 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.CV_LIBRARY_DETAILS_JOB_DETAILS_KEY_SELECTOR);
         const jobDetailsValueElements = await browserAPI.findElements(Constants.CV_LIBRARY_DETAILS_JOB_DETAILS_VALUE_SELECTOR);
 
-        // first scraping workLocation and salary as they are on separate part of the page
+        // first scraping workLocation and salary (of present) as they are on separate part of the page
         const workLocation = await browserAPI.getTextFromElement(jobDetailsValueElements[0]);
-        const salary = await browserAPI.getTextFromElement(jobDetailsValueElements[1]);
-        newJob.salary = salary?.trim();
         newJob.workLocation = workLocation?.trim();
+        
+        const salaryCandidate = await browserAPI.getTextFromElement(jobDetailsValueElements[1]);
+        if (/\d/.test(salaryCandidate || Constants.EMPTY_STRING)) {
+            newJob.salary = salaryCandidate!.trim();
+        }
 
         for (let i = 2; i < jobDetailsKeyElements.length; i++) {
             if (!jobDetailsKeyElements[i] || !jobDetailsValueElements[i]) continue;

@@ -77,12 +77,20 @@ export class ScrapingJobService {
 
                 let newJobDTO;
                 // differentiating between IJobBrowserScrapers and IJobApiScrapers
-                if (jobAdsWithoutScrapedJobs[i].source !== JobAdSource.SNAPHUNT) {
-                    await this.browserAPI.openPage(jobAdsWithoutScrapedJobs[i].jobLink);
-                    newJobDTO = await (jobScraper as IJobBrowserScraper).scrape(jobAdsWithoutScrapedJobs[i].id, this.browserAPI);
-                } else {
-                    newJobDTO = await (jobScraper as IJobApiScraper).scrape(jobAdsWithoutScrapedJobs[i].id, jobAdsWithoutScrapedJobs[i].jobLink);                    
+                try {
+                    if (jobAdsWithoutScrapedJobs[i].source !== JobAdSource.SNAPHUNT) {
+                        await this.browserAPI.openPage(jobAdsWithoutScrapedJobs[i].jobLink);
+                        newJobDTO = await (jobScraper as IJobBrowserScraper).scrape(jobAdsWithoutScrapedJobs[i].id, this.browserAPI);
+                    } else {
+                        newJobDTO = await (jobScraper as IJobApiScraper).scrape(jobAdsWithoutScrapedJobs[i].id, jobAdsWithoutScrapedJobs[i].jobLink);                    
+                    }
+                } catch (exception) {
+                    console.log(exception);
+                    // TODO: mark this event somehow in the database because the ad might be inactive!
+                    jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
+                    continue;
                 }
+
                 const newOrganizationMAP = this.organizationMapper.toMap(newJobDTO.organization);
                 const newJobMAP = this.jobMapper.toMap(newJobDTO);  // FK should already be set -> newJobMAP.jobAdId = jobAdsWithoutScrapedJobs[i].id; // setting a FK-jobAdId
                 const newJobAdMAP = this.inheritPropsFromJob(jobAdsWithoutScrapedJobs[i], newJobMAP);

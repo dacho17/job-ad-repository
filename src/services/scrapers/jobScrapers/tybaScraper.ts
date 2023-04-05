@@ -9,13 +9,17 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 export default class TybaScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on Tyba in the scrape is (jobTitle, organization.name, organization.urlReference, organization.industry, jobDescription (workLocation, timeEngagement, requiredSkills).
+   * Data available on Tyba in the scrape is (jobTitle, organization.name, organization.urlReference, workLocation, timeEngagement, requiredSkills, requiredLanguages, and organization.industry).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText(Constants.TYBA_DETAILS_JOB_TITLE_SELECTOR);
+
+        if (!jobTitle) {
+            throw `No title found for the job connected to the jobAdId=${jobAdId}. This job might no longer be available.`;
+        }
         const orgNameElem = await browserAPI.findElement(Constants.TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
         const orgLink = await browserAPI.getDataFromAttr(orgNameElem!, Constants.HREF_SELECTOR)
         const orgName = await browserAPI.getTextFromElement(orgNameElem!);
@@ -25,7 +29,7 @@ export default class TybaScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             jobAdId: jobAdId ?? undefined,
             description: jobDescription!.trim(),
-            organization: { name: orgName?.trim(), urlReference: orgLink?.trim() } as OrganizationDTO,
+            organization: { name: orgName?.trim(), urlReference: orgLink ? Constants.TYBA_URL + orgLink.trim() : undefined } as OrganizationDTO,
         }
 
         await this.scrapeJobDetails(browserAPI, newJob);
@@ -51,7 +55,8 @@ export default class TybaScraper implements IJobBrowserScraper {
                 case Constants.LOCATION:
                     const valueElem = await browserAPI.findElementOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
                     value = await browserAPI.getTextFromElement(valueElem!);
-                    newJob.workLocation = value?.split(Constants.WHITESPACE).map(part => part.trim()).join(Constants.EMPTY_STRING).trim();
+                    value = value?.split(Constants.WHITESPACE).map(part => part.trim()).join(Constants.EMPTY_STRING).trim();
+                    newJob.workLocation = value!.replace(Constants.COMMA, Constants.COMMA + Constants.WHITESPACE);
                     break;
                 case Constants.CATEGORY:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
@@ -64,7 +69,7 @@ export default class TybaScraper implements IJobBrowserScraper {
                 case Constants.SKILLS:
                     const valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
                     let values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
-                    newJob.requiredSkills = values.join(Constants.COMMA + Constants.WHITESPACE);
+                    newJob.requiredSkills = values.filter(part => part !== Constants.EMPTY_STRING).join(Constants.COMMA + Constants.WHITESPACE);
                     break;
                 case Constants.MUST_HAVE_LANGUAGE:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);

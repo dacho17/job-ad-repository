@@ -24,6 +24,7 @@ export class Job extends Model {
     euWorkPermitRequired?: boolean;
     requiredSkills?: string;
     goodToHaveSkills?: string;
+    requiredLanguages?: string;
     requiredExperience?: string;
     requiredEducation?: string;
     requirements?: string;

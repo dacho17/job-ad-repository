@@ -13,7 +13,7 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on Graduateland in the scrape is (jobTitle, orgName, orgUrlRef, postedAgo, workLocation, timeEngagement, requiredSkills, companyIndustry, description).
+   * Data available on Graduateland in the scrape is (jobTitle, jobDescription, orgName, orgUrlRef, postedDate, workLocation, timeEngagement, requiredSkills, requiredLanguages, and organization.orgIndustry).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -29,7 +29,10 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            organization: { name: orgName?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
+            organization: {
+                name: orgName?.trim(),
+                urlReference: orgUrlRef ? Constants.GRADUATELAND_URL + orgUrlRef.trim() : undefined
+            } as OrganizationDTO,
         }
 
         const postedAgo = await browserAPI.getText(Constants.GRADUATELAND_DETAILS_POSTED_AGO_SELECTOR);
@@ -38,6 +41,8 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
         }
 
         await this.scrapeJobDetails(browserAPI, newJob);
+
+        console.log(newJob.organization);
 
         return newJob;
     }
@@ -55,24 +60,26 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.GRADUATELAND_DETAILS_JOB_DETAILS_KEY_SELECTOR);
         for (let i = 0; i < jobDetailsKeyElements.length; i++) {
             const keyword = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
-            let value;
+            let value, valueElems, values;
             switch(keyword!.trim()) {
                 case Constants.LOCATION:
                     const valueElem = await browserAPI.findElementOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
                     value = await browserAPI.getTextFromElement(valueElem!);
-                    newJob.workLocation = value?.split(Constants.WHITESPACE).map(part => part.trim()).join(Constants.EMPTY_STRING).trim();
+                    value = value?.split(Constants.WHITESPACE).map(part => part.trim()).join(Constants.EMPTY_STRING).trim();
+                    newJob.workLocation = value!.replace(Constants.COMMA, Constants.COMMA + Constants.WHITESPACE);
                     break;
                 case Constants.CATEGORY:
-                    value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-                    newJob.organization.industry = value?.trim();
+                    valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
+                    values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
+                    newJob.organization.industry = values.filter(part => part && part.length > 1).join(Constants.COMMA + Constants.WHITESPACE);
                     break;
                 case Constants.TYPE:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
                     newJob.timeEngagement = value?.trim();
                     break;
                 case Constants.SKILLS:
-                    const valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
-                    let values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
+                    valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
+                    values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
                     newJob.requiredSkills = values.filter(part => part && part.length > 1).join(Constants.COMMA + Constants.WHITESPACE);
                     break;
                 case Constants.MUST_HAVE_LANGUAGE:

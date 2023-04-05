@@ -13,7 +13,7 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on SimplyHired in the scrape is (jobTitle, organization.name, organization.location, timeEngagement, salary, postedDate, jobDescription).
+   * Data available on SimplyHired in the scrape is (jobTitle, organization.name, organization.location, timeEngagement, salary, postedDate, benefits, requiredSkills, jobDescription).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.

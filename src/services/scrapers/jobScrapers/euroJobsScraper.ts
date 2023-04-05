@@ -14,25 +14,29 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on EuroJobs in the scrape is (jobTitle, orgLocation, orgName, orgWebsite, postedDate, jobDescription).
-   * Information - EUworkPermitRequired, jobViews, applicationDeadline are on the page as well.
+   * Information - EUworkPermitRequired, jobViews, applicationDeadline, requirements, timeEngagement are on the page as well.
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {    
-        const jobTitle = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR);
+        let jobTitle = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_DESCRIPTION_SELECTOR);
         const orgName = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_COMPANY_NAME_SELECTOR);
 
+
+        jobTitle = jobTitle!.replace(Constants.EURO_JOBS_REDUNDANT_MARK, Constants.EMPTY_STRING).trim(); // getting rid of ', null' part if present
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle,
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: { name: orgName?.trim() } as OrganizationDTO,
         }
         
         const orgWebsite = await browserAPI.getDataSelectorAndAttr(Constants.EURO_JOBS_DETAILS_COMPANY_WEBSITE_SELECTOR, Constants.HREF_SELECTOR);
-        newJob.organization.website = orgWebsite?.trim();
+        if (orgWebsite !== Constants.EURO_JOBS_EMPTY_WEBSITE_URL) {
+            newJob.organization.website = orgWebsite?.trim();
+        }
 
         await this.scrapeJobDetails(newJob, browserAPI);
         await this.scrapeRequirementsAndEngagement(newJob, browserAPI);
@@ -52,13 +56,15 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
         const jobDetailsValuesElement = await browserAPI.findElements(Constants.EURO_JOBS_DETAILS_JOB_DETAILS_VALUE_SELECTOR);
         for (let i = 0; i < jobDetailsKeysElement.length; i++) {
             const key = await browserAPI.getTextFromElement(jobDetailsKeysElement[i]);
-            const value = await browserAPI.getTextFromElement(jobDetailsValuesElement[i]);
+            let value = await browserAPI.getTextFromElement(jobDetailsValuesElement[i]);
             switch (key?.trim()) {
                 case Constants.CLIENT_COL:
                     newJob.organization.name = value?.trim() || newJob.organization.name;
                     break;
                 case Constants.LOCATION_COL:
-                    newJob.organization.location = value?.trim();
+                    value = value!.replace(Constants.EURO_JOBS_REDUNDANT_MARK, Constants.EMPTY_STRING).trim();
+                    value = value[0].toUpperCase() + value.slice(1);
+                    newJob.organization.location = value;
                     break;
                 case Constants.EU_WORK_PERMIT_REQ_COL:
                     newJob.euWorkPermitRequired = value?.trim() === Constants.YES;

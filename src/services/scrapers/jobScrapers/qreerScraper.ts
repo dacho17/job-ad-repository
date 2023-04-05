@@ -13,7 +13,7 @@ export default class QreerScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on Qreer in the scrape is (jobTitle, organization.name, organization.location, organization.urlReference, jobDescription, workLocation, requiredSKills, workLocation and requiredSkills).
+   * Data available on Qreer in the scrape is (jobTitle, organization.name, organization.location, organization.urlReference, jobDescription, applicationDeadline, requiredSKills, isInternship, workLocation, requiredEducation, requiredExperience, requiredLanguages and requiredSkills).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -123,24 +123,26 @@ export default class QreerScraper implements IJobBrowserScraper {
         for (let i = 0; i < keyValPairElements.length; i++) {
             const [keyElement, valElement] = await browserAPI.findElementsOnElement(keyValPairElements[i], Constants.TD_SELECTOR);
             const jobDetailsKey = await browserAPI.getTextFromElement(keyElement);
-            const jobDetailsVal = await browserAPI.getTextFromElement(valElement);
+            const jobDetailsValSection =await browserAPI.getInnerHTML(valElement);
+            const jobDetailVals = jobDetailsValSection?.trim().split(Constants.LESS_SIGN + Constants.BR_SELECTOR + Constants.MORE_SIGN)
+                .map(part => part.trim()).join(Constants.COMMA + Constants.WHITESPACE);
 
             switch (jobDetailsKey?.trim()) {
                 case Constants.EDUCATION_COL:
                 case Constants.EDUCATION_LEVEL_COL:
-                    educationReq.push(jobDetailsVal?.trim());
+                    educationReq.push(jobDetailVals?.trim());
                     break;
                 case Constants.SPECIALTIES_COL:
-                    newJob.requiredSkills = jobDetailsVal?.trim();
+                    newJob.requiredSkills = jobDetailVals?.trim();
                     break;
                 case Constants.EXPERIENCE_COL:
-                    newJob.requiredExperience = jobDetailsVal?.trim();
+                    newJob.requiredExperience = jobDetailVals?.trim();
                     break;
                 case Constants.LANGUAGES_SPOKEN_COL:
-                    newJob.requiredLanguages = jobDetailsVal?.trim();
+                    newJob.requiredLanguages = jobDetailVals?.trim();
                     break;
                 case Constants.JOB_LOCATION_COL:
-                    newJob.workLocation = jobDetailsVal?.trim();   
+                    newJob.workLocation = jobDetailVals?.trim();   
                     break;
             }
         }

@@ -157,6 +157,23 @@ export default class BrowserAPI {
     }
 
     /**
+   * @description Function that extracts the HTML within the selected element
+   * @param {ElementHandle<Element>} element
+   * @returns {Promise<string | null>} Returns the requested HTLM as string, or null if the one is not found.
+   */
+    public async getInnerHTML(element: ElementHandle<Element>): Promise<string | null> {
+        try {
+            const innerHtml = await this.page.evaluate(el => el.innerHTML, element);
+
+            await element.dispose();
+            return innerHtml;
+        } catch (exception) {
+            console.log(`Not able to evaluate an element`);
+            return null;
+        }
+    }
+
+    /**
    * @description Function that extracts the text data from element which matches the passed selector.
    * If no element is found null is returned.
    * @param {string} selector 

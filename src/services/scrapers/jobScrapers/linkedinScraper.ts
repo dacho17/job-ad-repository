@@ -13,7 +13,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
 
     /**
      * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-     * Data available on Linkedin in the scrape is (jobTitle, organization.name, organization.location, organization.urlReference, organization.industry, jobDescription, nOfApplicants, postedDate, ).
+     * Data available on Linkedin in the scrape is (jobTitle, organization.name, organization.location, organization.urlReference, organization.industry, jobDescription, nOfApplicants, postedDate, requiredExperience, details, timeEngagement).
      * @param {number} jobAdId
      * @param {BrowserAPI} browserAPI
      * @returns {Promise<JobDTO>} Returns the a JobDTO.

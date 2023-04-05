@@ -261,16 +261,19 @@ export default class Utils {
      * @returns {Date} Returns string based on the constructed Date, argument, or value 'Unknown'.
      */
     public getStartDate4CvLibrary(textContainingStartDate: string): string {
-        const [year, month, day] = textContainingStartDate.split(Constants.MINUS_SIGN);
-        if (year && month && day){
-            const yearNum = parseInt(year);
-            const monthNum = parseInt(month);
-            const dayNum = parseInt(day);
-            if (!isNaN(yearNum) && !isNaN(monthNum) && !isNaN(dayNum))
-                return (new Date(yearNum, monthNum - 1, dayNum).toString());
+        const [firstPart, month, thirdPart] = textContainingStartDate.split(Constants.MINUS_SIGN);
+        let formattedDate = null;
+        if (firstPart && month && thirdPart){
+            if (firstPart.length === 4) {   // first part is a year
+                formattedDate = `${thirdPart}/${month}/${firstPart}`;
+            } else {    // first part is a day
+                formattedDate = `${firstPart}/${month}/${thirdPart}`;
+            }
         }
+
+        if (textContainingStartDate.toLowerCase() === 'asap') textContainingStartDate = 'ASAP';
         
-        return textContainingStartDate || Constants.UNKNOWN;
+        return formattedDate || textContainingStartDate || Constants.UNKNOWN;
     }
 
     /**

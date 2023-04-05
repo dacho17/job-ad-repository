@@ -44,6 +44,7 @@ export default {
     SNAPHUNT_REMOTE_QUERY_PARAMETER: `&jobLocationType=remote&urlJobLocationType=remote`,
 
     // common html selectors
+    BR_SELECTOR: 'br',
     DIV_SELECTOR: 'div',
     H3_SELECTOR: 'h3',
     HREF_SELECTOR: 'href',
@@ -55,6 +56,7 @@ export default {
     DATETIME_SELECTOR: 'datetime',
     NAME_SELECTOR: 'name',
     VALUE_SELECTOR: 'value',
+    
 
     // joblinks selectors
     ADZUNA_JOBLINKS_SELECTOR: '.ui-search-results > div[data-aid] > .w-full > .flex.gap-4 > h2 > a',
@@ -247,6 +249,8 @@ export default {
     EQUALS: '=',
     COMMA_SIGN: ',',
     MINUS_SIGN: '-',
+    MORE_SIGN: '>',
+    LESS_SIGN: '<',
     PLUS_SIGN: '+',
     UNDERSCORE_SIGN: '_',
     QUESTIONMARK_SIGN: '?',
@@ -272,16 +276,18 @@ export default {
 
     // Words appearing
     ANYWHERE_IN_THE_WORLD: 'Anywhere in the World',
+    APPLY_NOW: 'Apply Now',
     CATEGORY: 'Category',
     CLIENT_COL: 'Client:',
     COMPANY_SIZE: 'Company Size',
-    COMPANY_SIZE_NOFLUFF: 'Company size',
+    COMPANY_SIZE_COL: 'Company size:',
     DEADLINE_COL: 'Deadline:',
     EDUCATION_COL: 'Education Backgrounds:',
     EDUCATION_LEVEL_COL: 'Education Level:',
     EMPLOYMENT_TYPE: 'Employment type',
     EMPLOYMENT_TYPE_COL: 'Employment Type:',
     EXPERIENCE_COL: 'Experience:',
+    FOUNDED_IN_COL: 'Founded in:',
     FOUNDED_IN: 'Founded in',
     FOUNDED: 'Founded',
     FULLY_REMOTE: 'Fully remote',
@@ -295,12 +301,14 @@ export default {
     JOB_REQUIREMENTS_COL: 'Job Requirements:',
     LANGUAGES_SPOKEN_COL: 'Languages spoken:',
     LOCATION_COL: 'Location:',
-    MAIN_LOCATION: 'Main location',
+    MAIN_LOCATION_COL: 'Main location:',
+    LOCATIONS_COL: 'Locations:',
     LOCATION: 'Location',
     EU_WORK_PERMIT_REQ_COL: 'EU work permit required:',
     MUST_HAVE_LANGUAGE: 'Must-have language',
     PERMANENT_CONTRACT: 'Permanent contract',
     POSTED_COL: 'Posted:',
+    REMOTE: 'remote',
     SALARY_ICON: 'Salary Icon',
     SENIORITY_LEVEL: 'Seniority level',
     SHOW_MORE: 'Show more',
@@ -325,4 +333,6 @@ export default {
     CV_LIBRARY_JOBLINK_SUFFIX: '-jobs',
     JOB_DESCRIPTION_COMPOSITION_DELIMITER: ';; ',   // ', '
     SNAPHUNT_REDUNDANT_ADDRESS_MARK: '||&&||',
+    EURO_JOBS_REDUNDANT_MARK: ', null',
+    EURO_JOBS_EMPTY_WEBSITE_URL: 'http://',
 }

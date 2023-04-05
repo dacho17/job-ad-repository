@@ -13,7 +13,7 @@ export default class NoFluffScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on NoFluff in the scrape is (jobTitle, workLocation, isRemote, postedDate, organization.name, organization.urlReference, organization.founded, organization.size, and organization.location, salary, requiredSkills, jobDetails, jobDescription).
+   * Data available on NoFluff in the scrape is (jobTitle, workLocation, equipmentProvided, benefits, requirements, isRemote, timeEngagement, postedDate, organization.name, organization.urlReference, organization.founded, organization.size, and organization.location, salary, requiredSkills, goodToHaveSkills, jobDetails, jobDescription).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -31,7 +31,7 @@ export default class NoFluffScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim() || Constants.EMPTY_STRING,
             jobAdId: jobAdId ?? undefined,
             organization: { name: orgName?.trim(), urlReference: orgUrlRef ? Constants.NO_FLUFF_JOBS_URL + orgUrlRef.trim() : undefined } as OrganizationDTO,
         }
@@ -83,8 +83,8 @@ export default class NoFluffScraper implements IJobBrowserScraper {
     }
 
     /**
-    * @description Function which scrapes JobDetails part of the page, formats it and stores it into the 
-    * details property of the newJob.
+    * @description Function which scrapes JobDetails part of the page, formats it to timeEngagement and isRemote
+    * values and stores them to the respective properties of the newJob.
     * @param {JobDTO} newJob
     * @param {BrowserAPI} browserAPI
     * @returns {Promise<void>}
@@ -127,12 +127,15 @@ export default class NoFluffScraper implements IJobBrowserScraper {
             const companyDetailsKeyAndValueStr = await browserAPI.getTextFromElement(companyDetailsElements[i]);
             
             switch(companyDetailsKey) {
-                case Constants.FOUNDED_IN:
-                    newJob.organization.founded = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
-                case Constants.COMPANY_SIZE_NOFLUFF:
-                    newJob.organization.size = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
-                case Constants.MAIN_LOCATION:
-                    newJob.organization.location = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                case Constants.FOUNDED_IN_COL:
+                    newJob.organization.founded = companyDetailsKeyAndValueStr?.replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                    break;
+                case Constants.COMPANY_SIZE_COL:
+                    newJob.organization.size = companyDetailsKeyAndValueStr?.replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                    break;
+                case Constants.MAIN_LOCATION_COL:
+                    newJob.organization.location = companyDetailsKeyAndValueStr?.replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                    break;
             }
         }
     }
