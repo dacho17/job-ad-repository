@@ -165,6 +165,8 @@ export default {
     LN_DETAILS_NUMBER_OF_APPLICANTS_SELECTOR: '.num-applicants__caption',
     LN_DETAILS_JOB_DETAILS_SELECTOR: '.description__job-criteria-list',
     LN_DETAILS_JOB_DESCRIPTION_SELECTOR: '.description__text',
+    LN_DETAILS_JOB_DESCRIPTION_VAR_1_SELECTOR: '#job-details',
+    LN_DETAILS_JOB_DESCRIPTION_VAR_2_SELECTOR: '.jobs-description-content',
     LN_DETAILS_SHOW_MORE_BUTTON_SELECTOR: '.show-more-less-html__button',
     LN_DETAILS_JOB_CRITERIA_ITEM_KEY_SELECTOR: '.description__job-criteria-subheader',
     LN_DETAILS_JOB_CRITERIA_ITEM_VALUE_SELECTOR: '.description__job-criteria-text--criteria',
@@ -260,7 +262,7 @@ export default {
     INVALID_PARAMETERS: 'Some parameters received are faulty',
     MISSING_PARAMETERS: 'Not all required parameters have been received',
     NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
-    UNDISLOSED_COMPANY: 'Undisclosed',
+    UNDISLOSED_COMPANY: 'Undisclosed organization',
     UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',
     UNKNOWN_NUMBER_OF_APPLICANTS: 'Unknown number of applicants',
     URL_INVALID: 'Url invalid',
@@ -311,6 +313,8 @@ export default {
     EXPIRY_DATE_COL: 'Expiry Date:',
     WEBISTE: 'Website',
     YES: 'Yes',
+
+    UNKNOWN: 'Unknown',
 
     // HTTP codes
     OK: 200,

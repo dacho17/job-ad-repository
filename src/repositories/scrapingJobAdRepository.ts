@@ -22,6 +22,7 @@ export class ScrapingJobAdRepository {
     /**
    * @description Stores a scraped job ad and returns a success message. Throws an error if encountered.
    * @param jobAd JobAd MAP object which is to be stored
+   * @param {Transaction} t transaction as part of which the insert query is executed
    * @returns {Promise<JobAd>} Promise containing the stored job ad.
    */
     public async create(jobAd: JobAd): Promise<JobAd> {

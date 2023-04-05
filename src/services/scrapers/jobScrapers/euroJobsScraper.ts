@@ -1,6 +1,7 @@
 import { Inject, Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import Utils from "../../../helpers/utils";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
@@ -12,7 +13,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on EuroJobs in the scrape is (jobTitle, companyLocation, companyName, postedDate, jobDescription).
+   * Data available on EuroJobs in the scrape is (jobTitle, orgLocation, orgName, orgWebsite, postedDate, jobDescription).
    * Information - EUworkPermitRequired, jobViews, applicationDeadline are on the page as well.
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
@@ -21,17 +22,17 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {    
         const jobTitle = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_DESCRIPTION_SELECTOR);
-        const companyName = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_COMPANY_NAME_SELECTOR);
+        const orgName = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_COMPANY_NAME_SELECTOR);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
+            organization: { name: orgName?.trim() } as OrganizationDTO,
         }
         
-        const companyWebsite = await browserAPI.getDataSelectorAndAttr(Constants.EURO_JOBS_DETAILS_COMPANY_WEBSITE_SELECTOR, Constants.HREF_SELECTOR);
-        newJob.companyWebsite = companyWebsite?.trim();
+        const orgWebsite = await browserAPI.getDataSelectorAndAttr(Constants.EURO_JOBS_DETAILS_COMPANY_WEBSITE_SELECTOR, Constants.HREF_SELECTOR);
+        newJob.organization.website = orgWebsite?.trim();
 
         await this.scrapeJobDetails(newJob, browserAPI);
         await this.scrapeRequirementsAndEngagement(newJob, browserAPI);
@@ -40,7 +41,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
     }
 
     /**
-   * @description Function which looks to scrape companyName, companyLocation, euWorkPermit, postedDate and deadline,
+   * @description Function which looks to scrape orgName, orgLocation, euWorkPermit, postedDate and applicationDeadline,
    * The function also sets details property as a composition of all the properties mentioned above and some additional ones.
    * @param {JobDTO} newJob
    * @param {BrowserAPI} browserAPI
@@ -54,10 +55,10 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
             const value = await browserAPI.getTextFromElement(jobDetailsValuesElement[i]);
             switch (key?.trim()) {
                 case Constants.CLIENT_COL:
-                    newJob.companyName = value?.trim() || newJob.companyName;
+                    newJob.organization.name = value?.trim() || newJob.organization.name;
                     break;
                 case Constants.LOCATION_COL:
-                    newJob.companyLocation = value?.trim();
+                    newJob.organization.location = value?.trim();
                     break;
                 case Constants.EU_WORK_PERMIT_REQ_COL:
                     newJob.euWorkPermitRequired = value?.trim() === Constants.YES;
@@ -66,7 +67,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
                     newJob.postedDate = this.utils.getDateFromDottedDateString(value);
                     break;
                 case Constants.EXPIRY_DATE_COL:
-                    newJob.deadline = this.utils.getDateFromDottedDateString(value);
+                    newJob.applicationDeadline = this.utils.getDateFromDottedDateString(value);
                     break;
             }
         }

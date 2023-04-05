@@ -55,7 +55,7 @@ export default class SnaphuntAdScraper implements IJobAdScraper {
                 source: JobAdSource.SNAPHUNT,
                 jobLink: jobLink,
                 postedDate: postedDate,
-                postedDateTimestamp: this.utils.transformToTimestamp(postedDateStr)
+                postedDateTimestamp: this.utils.transformToTimestamp(postedDateStr) ?? undefined
             };
             scraperTracker.scrapedAds.push(newAd);
         });

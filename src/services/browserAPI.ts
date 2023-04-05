@@ -34,6 +34,14 @@ export default class BrowserAPI {
         return this.page;
     }
 
+    public async waitForSelector(selector: string, ms: number): Promise<void> {
+        try {
+            await this.page.waitForSelector(selector, { timeout: ms });
+        } catch (exception) {
+            console.log(`Selector = ${selector} not found on the page after ${ms}ms have passed - [${exception}].`);
+        }
+    }
+
     /**
    * @description Returns the currently openned url.
    * @returns {string}

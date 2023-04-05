@@ -3,6 +3,7 @@ dotenv.config();
 import { Sequelize } from 'sequelize';
 import { JobMAP, Job } from './models/job';
 import { JobAdMAP, JobAd } from './models/jobAd';
+import { Organization, OrganizationMAP } from './models/organization';
 
 const sequelize = new Sequelize(process.env.DATABASE_NAME!, process.env.DB_USERNAME!, process.env.DB_PASSWORD, {
     host: process.env.DB_HOST,
@@ -17,10 +18,14 @@ const sequelize = new Sequelize(process.env.DATABASE_NAME!, process.env.DB_USERN
 
 JobAdMAP(sequelize);
 JobMAP(sequelize);
+OrganizationMAP(sequelize);
 
 // NOTE: define the associations here!
 Job.belongsTo(JobAd, {
     foreignKey: 'jobAdId'
+});
+Job.belongsTo(Organization, {
+    foreignKey: 'organizationId'
 });
 
 sequelize.authenticate().then(() => {
@@ -34,4 +39,5 @@ export default {
     sequelize: sequelize,
     JobAd: JobAd,
     Job: Job,
+    Organization: Organization,
 }

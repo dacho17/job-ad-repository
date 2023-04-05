@@ -1,6 +1,7 @@
 import { Inject, Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import Utils from "../../../helpers/utils";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
@@ -12,27 +13,27 @@ export default class NoFluffScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on NoFluff in the scrape is (jobTitle, workLocation, isRemote, postedDate, companyName, companyLink, salary, requiredSkills, companyDescripiton, jobDetails, jobDescription).
+   * Data available on NoFluff in the scrape is (jobTitle, workLocation, isRemote, postedDate, organization.name, organization.urlReference, organization.founded, organization.size, and organization.location, salary, requiredSkills, jobDetails, jobDescription).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
+        await browserAPI.waitForSelector('DUMMY', 5000);
         const jobTitle = await browserAPI.getText((Constants.NO_FLUFF_DETAILS_JOB_TITLE_SELECTOR));
 
         await this.clickShowMore(Constants.NO_FLUFF_DETAILS_JOB_DESCRIPTION_SHOW_MORE_SELECTOR, browserAPI);
         const jobDescription = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
-        const companyNameLinkEl = await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
-        const companyLink = await browserAPI.getDataFromAttr(companyNameLinkEl!, Constants.HREF_SELECTOR);
-        const companyName = await browserAPI.getTextFromElement(companyNameLinkEl!);
+        const orgNameLinkEl = await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
+        const orgUrlRef = await browserAPI.getDataFromAttr(orgNameLinkEl!, Constants.HREF_SELECTOR);
+        const orgName = await browserAPI.getTextFromElement(orgNameLinkEl!);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
-            companyLink: companyLink ? Constants.NO_FLUFF_JOBS_URL + companyLink.trim() : undefined,
+            organization: { name: orgName?.trim(), urlReference: orgUrlRef ? Constants.NO_FLUFF_JOBS_URL + orgUrlRef.trim() : undefined } as OrganizationDTO,
         }
 
         const postedAgo = await browserAPI.getText((Constants.NO_FLUFF_DETAILS_POSTED_AGO_SELECTOR));
@@ -41,9 +42,9 @@ export default class NoFluffScraper implements IJobBrowserScraper {
         }
         
         const salary = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_SALARY_SELECTOR);
-        const companyDescription = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_COMPANY_DESCRIPTION_SELECTOR);        
+        const orgDescription = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_COMPANY_DESCRIPTION_SELECTOR);        
         newJob.salary = salary?.trim();
-        newJob.companyDescription = companyDescription?.trim();
+        newJob.organization.description = orgDescription?.trim();
 
         await this.scrapeCompanyDetails(newJob, browserAPI);
         await this.scrapeJobSkills(newJob, browserAPI);
@@ -111,7 +112,7 @@ export default class NoFluffScraper implements IJobBrowserScraper {
 
     /**
     * @description Function which scrapes companyDetails part of the page, formats it and stores it into the 
-    * companyFounded, companySize, and companyLocation properties of the newJob.
+    * organization.founded, organization.size, and organization.location properties of the newJob.
     * @param {JobDTO} newJob
     * @param {BrowserAPI} browserAPI
     * @returns {Promise<void>}
@@ -127,11 +128,11 @@ export default class NoFluffScraper implements IJobBrowserScraper {
             
             switch(companyDetailsKey) {
                 case Constants.FOUNDED_IN:
-                    newJob.companyFounded = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                    newJob.organization.founded = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
                 case Constants.COMPANY_SIZE_NOFLUFF:
-                    newJob.companySize = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                    newJob.organization.size = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
                 case Constants.MAIN_LOCATION:
-                    newJob.companyLocation = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
+                    newJob.organization.location = companyDetailsKeyAndValueStr?.trim().replace(companyDetailsKey, Constants.EMPTY_STRING).trim();
             }
         }
     }

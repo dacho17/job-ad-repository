@@ -1,9 +1,10 @@
-import { Inject, Service } from "typedi";
+import Container, { Inject, Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import Utils from "../../../helpers/utils";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 
 @Service()
 export default class LinkedInScraper implements IJobBrowserScraper {
@@ -12,7 +13,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
 
     /**
      * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-     * Data available on Linkedin in the scrape is (jobTitle, companyName, companyLocation, companyLink, jobDescription, nOfApplicants, postedDate, ).
+     * Data available on Linkedin in the scrape is (jobTitle, organization.name, organization.location, organization.urlReference, organization.industry, jobDescription, nOfApplicants, postedDate, ).
      * @param {number} jobAdId
      * @param {BrowserAPI} browserAPI
      * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -25,14 +26,23 @@ export default class LinkedInScraper implements IJobBrowserScraper {
             await showMoreButton.click();
         }
 
-        console.log('after button click');
-
         const jobTitle = await browserAPI.getText(Constants.LN_DETAILS_JOBTITLE_SELECTOR);
-        const companyName = await browserAPI.getText(Constants.LN_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
-        const companyLink = await browserAPI.getDataSelectorAndAttr(Constants.LN_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR, Constants.HREF_SELECTOR)
-        const companyLocation = await browserAPI.getText(Constants.LN_DETAILS_COMPANY_LOCATION_SELECTOR);
+        const orgName = await browserAPI.getText(Constants.LN_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
+        const orgUrlRef = await browserAPI.getDataSelectorAndAttr(Constants.LN_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR, Constants.HREF_SELECTOR)
+        const orgLocation = await browserAPI.getText(Constants.LN_DETAILS_COMPANY_LOCATION_SELECTOR);
         const nOfApplicants = await browserAPI.getText(Constants.LN_DETAILS_NUMBER_OF_APPLICANTS_SELECTOR);
+
+        await browserAPI.waitForSelector('DUMMY', 5000);
         let jobDescription = await browserAPI.getText(Constants.LN_DETAILS_JOB_DESCRIPTION_SELECTOR);
+        if (!jobDescription) {
+            await browserAPI.waitForSelector(Constants.LN_DETAILS_JOB_DESCRIPTION_SELECTOR, 1000);
+            jobDescription = await browserAPI.getText(Constants.LN_DETAILS_JOB_DESCRIPTION_VAR_1_SELECTOR);
+        }
+        if (!jobDescription) {
+            await browserAPI.waitForSelector(Constants.LN_DETAILS_JOB_DESCRIPTION_SELECTOR, 1000);
+            jobDescription = await browserAPI.getText(Constants.LN_DETAILS_JOB_DESCRIPTION_VAR_2_SELECTOR);
+        }
+
         const postedAgo = await browserAPI.getText(Constants.LN_DETAILS_POSTED_AGO_SELECTOR);
 
         jobDescription = jobDescription!
@@ -43,9 +53,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
-            companyLocation: companyLocation?.trim(),
-            companyLink: companyLink?.trim(),
+            organization: { name: orgName?.trim(), location: orgLocation?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
             nOfApplicants: nOfApplicants?.trim(),
             postedDate: this.utils.getPostedDate4LinkedIn(postedAgo!.trim())
         }
@@ -58,7 +66,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
 
     /**
      * @description Function that scrapes the 'criteria' section of a linkedin page, formats the scraped data and stores it on the newJob.
-     * Properties set to the newJob are (requiredExperience, details, companyIndustry and timeEngagement).
+     * Properties set to the newJob are (requiredExperience, details, organization.industry and timeEngagement).
      * @param {number} jobAdId
      * @param {BrowserAPI} browserAPI
      * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -78,7 +86,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
             const jobCriteriaVal = jobDetailsValues[i]; 
             switch(jobCriteriaKey?.trim()) {
                 case Constants.INDUSTRIES:
-                    newJob.companyIndustry = jobCriteriaVal;
+                    newJob.organization.industry = jobCriteriaVal;
                     break;
                 case Constants.EMPLOYMENT_TYPE:
                     newJob.timeEngagement = jobCriteriaVal;

@@ -1,6 +1,7 @@
 import { Inject, Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import Utils from "../../../helpers/utils";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
@@ -12,15 +13,15 @@ export default class QreerScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on Qreer in the scrape is (jobTitle, companyName, companyLocation, jobDescription, workLocation, requiredSKills, companyLink, workLocation and requiredSkills).
+   * Data available on Qreer in the scrape is (jobTitle, organization.name, organization.location, organization.urlReference, jobDescription, workLocation, requiredSKills, workLocation and requiredSkills).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {    
         const jobTitle = await browserAPI.getText(Constants.QREER_DETAILS_JOB_TITLE_SELECTOR);
-        const companyName = await browserAPI.getText(Constants.QREER_DETAILS_COMPANY_NAME_SELECTOR);
-        const companyLocation = await browserAPI.getText(Constants.QREER_DETAILS_COMPANY_LOCATION_SELECTOR);
+        const orgName = await browserAPI.getText(Constants.QREER_DETAILS_COMPANY_NAME_SELECTOR);
+        const orgLocation = await browserAPI.getText(Constants.QREER_DETAILS_COMPANY_LOCATION_SELECTOR);
 
         const jobDescriptionElements = await browserAPI.findElements(Constants.QREER_DETAILS_JOB_DESCRIPTION_SELECTOR);
         let jobDescription = Constants.EMPTY_STRING;
@@ -33,8 +34,7 @@ export default class QreerScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
-            companyLocation: companyLocation?.trim()
+            organization: { name: orgName?.trim(), location: orgLocation?.trim() } as OrganizationDTO,
         }
 
         await this.scrapeDeadlineAndIsInternship(browserAPI, newJob);
@@ -46,7 +46,7 @@ export default class QreerScraper implements IJobBrowserScraper {
 
     /**
     * @description Function which scrapes a part of the page, formats it and stores it into the 
-    * workLocation and requiredSkills properties.
+    * applicationDeadline and isInternship properties.
     * @param {BrowserAPI} browserAPI
     * @param {JobDTO} newJob
     * @returns {Promise<void>}
@@ -87,14 +87,14 @@ export default class QreerScraper implements IJobBrowserScraper {
                     ? this.utils.transformQreerDate(deadlineValue)
                     : null;
                 console.log(`Value of deadline before transforming to date is ${deadline}`);
-                newJob.deadline = deadline || undefined;
-                console.log(`Value of deadline on jobAD is now ${newJob.deadline}`);
+                newJob.applicationDeadline = deadline || undefined;
+                console.log(`Value of deadline on jobAD is now ${newJob.applicationDeadline}`);
             }
         }
     }
 
     /**
-    * @description Function which scrapes companyLink, formats it and sets it to the newJob.
+    * @description Function which scrapes organization.urlReference, formats it and sets it to the newJob.
     * @param {BrowserAPI} browserAPI
     * @param {JobDTO} newJob
     * @returns {Promise<void>}
@@ -105,8 +105,8 @@ export default class QreerScraper implements IJobBrowserScraper {
             companyLinkEl = await browserAPI.findElement(Constants.QREER_DETAILS_ALT_COMPANY_LINK_SELECTOR);
         }
         if (companyLinkEl) {
-            const companyLink = Constants.QREER_URL + await browserAPI.getDataFromAttr(companyLinkEl, Constants.HREF_SELECTOR);
-            newJob.companyLink = companyLink.trim();    
+            const orgUrlRef = Constants.QREER_URL + await browserAPI.getDataFromAttr(companyLinkEl, Constants.HREF_SELECTOR);
+            newJob.organization.urlReference = orgUrlRef.trim();    
         }
     }
 

@@ -1,10 +1,15 @@
-import { Service } from "typedi";
+import { Inject, Service } from "typedi";
 import db from '../../database/db';
 import { Job } from "../../database/models/job";
+import { Organization } from "../../database/models/organization";
 import JobDTO from "../dtos/jobDTO";
+import Utils from "../utils";
 
 @Service()
 export default class JobMapper {
+    @Inject()
+    private utils: Utils;
+
     /**
    * @description Function which maps JobDTO to JobMAP.
    * @param {JobDTO} jobDTO
@@ -13,7 +18,11 @@ export default class JobMapper {
     public toMap(jobDTO: JobDTO): Job {
         const jobMAP = db.Job.build({
             jobTitle: jobDTO.jobTitle,
+            postedDateTimestamp: this.utils.transformToTimestamp(jobDTO.postedDate?.toString() || null),
+            applicationDeadlineTimestamp: this.utils.transformToTimestamp(jobDTO.applicationDeadline?.toString() || null),
             postedDate: jobDTO.postedDate,
+            startDate: jobDTO.startDate,
+            
             timeEngagement: jobDTO.timeEngagement,
             salary: jobDTO.salary,
             nOfApplicants: jobDTO.nOfApplicants,
@@ -22,20 +31,15 @@ export default class JobMapper {
             description: jobDTO.description,
             isRemote: jobDTO.isRemote,
             isInternship: jobDTO.isInternship,
-            deadline: jobDTO.deadline,
             requiredSkills: jobDTO.requiredSkills,
             additionalJobLink: jobDTO.additionalJobLink,
-        
-            companyName: jobDTO.companyName,
-            companyLocation: jobDTO.companyLocation,
-            companyLogo: jobDTO.companyLogo,
-            companyLink: jobDTO.companyLink,
-            companyDescription: jobDTO.companyDescription,
-            companyDetails: jobDTO.companyDetails,
-            companySize: jobDTO.companySize,
-            companyFounded: jobDTO.companyFounded,
-            companyIndustry: jobDTO.companyIndustry,
-            companyWebsite: jobDTO.companyWebsite,
+            euWorkPermitRequired: jobDTO.euWorkPermitRequired,
+            goodToHaveSkills: jobDTO.goodToHaveSkills,
+            requiredExperience: jobDTO.requiredExperience,
+            requiredEducation: jobDTO.requiredEducation,
+            requirements: jobDTO.requirements,
+            responsibilities: jobDTO.responsibilities,
+            equipmentProvided: jobDTO.equipmentProvided,
 
             jobAdId: jobDTO.jobAdId
         });
@@ -50,71 +54,33 @@ export default class JobMapper {
      public toDTO(jobMAP: Job): JobDTO {
         const jobDTO: JobDTO = {
             jobTitle: jobMAP.jobTitle,
+            postedDateTimestamp: jobMAP.postedDateTimestamp,
+            applicationDeadlineTimestamp: jobMAP.applicationDeadlineTimestamp,
             postedDate: jobMAP.postedDate,
-            timeEngagement: jobMAP.timeEngagement,
-            salary: jobMAP.salary,
+            startDate: jobMAP.startDate,
             nOfApplicants: jobMAP.nOfApplicants,
+            salary: jobMAP.salary,
+            timeEngagement: jobMAP.timeEngagement,
             workLocation: jobMAP.workLocation,
-            details: jobMAP.details,
-            description: jobMAP.description,
             isRemote: jobMAP.isRemote,
             isInternship: jobMAP.isInternship,
-            deadline: jobMAP.deadline,
+            euWorkPermitRequired: jobMAP.euWorkPermitRequired,
             requiredSkills: jobMAP.requiredSkills,
             additionalJobLink: jobMAP.additionalJobLink,
-        
-            companyName: jobMAP.companyName,
-            companyLocation: jobMAP.companyLocation,
-            companyLogo: jobMAP.companyLogo,
-            companyLink: jobMAP.companyLink,
-            companyDescription: jobMAP.companyDescription,
-            companyDetails: jobMAP.companyDetails,
-            companySize: jobMAP.companySize,
-            companyFounded: jobMAP.companyFounded,
-            companyIndustry: jobMAP.companyIndustry,
-            companyWebsite: jobMAP.companyWebsite,
+            details: jobMAP.details,
+            description: jobMAP.description,
+            goodToHaveSkills: jobMAP.goodToHaveSkills,
+            requiredExperience: jobMAP.requiredExperience,
+            requiredEducation: jobMAP.requiredEducation,
+            requirements: jobMAP.requirements,
+            responsibilities: jobMAP.responsibilities,
+            equipmentProvided: jobMAP.equipmentProvided,
+
+            organization: {} as Organization,
 
             jobAdId: jobMAP.jobAdId
         };
         
-        db.Job.build({
-            jobTitle: jobDTO.jobTitle,
-            postedDate: jobDTO.postedDate,
-            timeEngagement: jobDTO.timeEngagement,
-            salary: jobDTO.salary,
-            nOfApplicants: jobDTO.nOfApplicants,
-            startDate: jobDTO.startDate,
-            workLocation: jobDTO.workLocation,
-            details: jobDTO.details,
-            description: jobDTO.description,
-            isRemote: jobDTO.isRemote,
-            isInternship: jobDTO.isInternship,
-            deadline: jobDTO.deadline,
-            requiredSkills: jobDTO.requiredSkills,
-            requiredExperience: jobDTO.requiredExperience,
-            requiredEducation: jobDTO.requiredEducation,
-            goodToHaveSkills: jobDTO.goodToHaveSkills,
-            requiredLanguages: jobDTO.requiredLanguages,
-            requirements: jobDTO.requirements,
-            benefits: jobDTO.benefits,
-            equipmentProvided: jobDTO.equipmentProvided,
-            responsibilities: jobDTO.responsibilities,
-            additionalJobLink: jobDTO.additionalJobLink,
-        
-            companyName: jobDTO.companyName,
-            companyLocation: jobDTO.companyLocation,
-            companyLogo: jobDTO.companyLogo,
-            companyLink: jobDTO.companyLink,
-            companyDescription: jobDTO.companyDescription,
-            companyDetails: jobDTO.companyDetails,
-            companySize: jobDTO.companySize,
-            companyFounded: jobDTO.companyFounded,
-            companyIndustry: jobDTO.companyIndustry,
-            companyWebsite: jobDTO.companyWebsite,
-
-            jobAdId: jobDTO.jobAdId
-        });
-        return jobMAP;
+        return jobDTO;
     }
 }
-

@@ -1,12 +1,17 @@
+import OrganizationDTO from "./organizationDTO";
+
 // TODO: trim this class
 export default class JobDTO {
     jobTitle: string;
     postedDate?: Date;
+    postedDateTimestamp?: number;
+    applicationDeadline?: Date;
+    applicationDeadlineTimestamp?: number;
+    startDate?: string;
     timeEngagement?: string;
     salary?: string;
     nOfApplicants?: string;
     workLocation?: string;
-    startDate?: Date;
     details?: string;
     description: string;
     isRemote?: boolean;
@@ -22,18 +27,8 @@ export default class JobDTO {
     responsibilities?: string;
     additionalJobLink?: string;
     euWorkPermitRequired?: boolean;
-    deadline?: Date;
 
-    companyName: string;
-    companyLocation?: string;
-    companyLink?: string;
-    companyLogo?: string;
-    companyDescription?: string;
-    companyDetails?: string;
-    companySize?: string;
-    companyFounded?: string;
-    companyIndustry?: string;
-    companyWebsite?: string;
+    organization: OrganizationDTO;
 
     jobAdId?: number;
 }

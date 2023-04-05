@@ -9,38 +9,29 @@ export class Job extends Model {
     createdAt: Date;
     updatedAt: Date;
     jobTitle: string;
+    postedDateTimestamp?: number
     postedDate?: Date;
-    timeEngagement?: string;
-    salary?: string;
+    startDate?: string;
+    applicationDeadlineTimestamp?: number;
     nOfApplicants?: string;
-    startDate?: Date;
+    salary?: string;
+    timeEngagement?: string;
     workLocation?: string;
-    details?: string;
-    description: string
     isRemote?: boolean;
     isInternship?: boolean;
+    euWorkPermitRequired?: boolean;
     requiredSkills?: string;
     goodToHaveSkills?: string;
-    requirements?: string;
     requiredExperience?: string;
     requiredEducation?: string;
-    equipmentProvided?: string;
+    requirements?: string;
     responsibilities?: string;
+    equipmentProvided?: string;
     additionalJobLink?: string;
-    euWorkPermitRequired?: boolean;
-    deadline?: Date;
+    details?: string;
+    description: string
 
-    companyName: string;
-    companyLocation?: string;
-    companyLogo?: string;
-    companyLink?: string;
-    companySize?: string;
-    companyFounded?: string;
-    companyIndustry?: string;
-    companyDescription?: string;
-    companyDetails?: string;
-    companyWebsite?: string;
-
+    organizationId?: number;
     jobAdId?: number;
 }
 
@@ -69,6 +60,18 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.DATE,
             allowNull: true,
         },
+        applicationDeadlineTimestamp: {
+            type: DataTypes.BIGINT,
+            allowNull: true,
+        },
+        postedDateTimestamp: {
+            type: DataTypes.BIGINT,
+            allowNull: true,
+        },
+        startDate: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
         timeEngagement: {
             type: DataTypes.STRING,
             allowNull: true,
@@ -81,10 +84,6 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.STRING,
             allowNull: true
         },
-        startDate: {
-            type: DataTypes.DATE,
-            allowNull: true
-        },
         workLocation: {
             type: DataTypes.STRING(1024),
             allowNull: true
@@ -94,7 +93,7 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true
         },
         description: {
-            type: DataTypes.STRING(10000),
+            type: DataTypes.STRING(20000),
             allowNull: false
         },
         isRemote: {
@@ -107,10 +106,6 @@ export const JobMAP = (sequelize: Sequelize) => {
         },
         euWorkPermitRequired: {
             type: DataTypes.BOOLEAN,
-            allowNull: true,
-        },
-        deadline: {
-            type: DataTypes.DATE,
             allowNull: true,
         },
         requiredSkills: {
@@ -150,46 +145,6 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true,
         },
         additionalJobLink: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-        },
-        companyName: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-        },
-        companyLocation: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-        },
-        companyLogo: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-        },
-        companyLink: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-        },
-        companySize: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        companyFounded: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        companyIndustry: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        companyDescription: {
-            type: DataTypes.STRING(4096),
-            allowNull: true,
-        },
-        companyDetails: {
-            type: DataTypes.STRING(4096),
-            allowNull: true,
-        },
-        companyWebsite: {
             type: DataTypes.TEXT,
             allowNull: true,
         }

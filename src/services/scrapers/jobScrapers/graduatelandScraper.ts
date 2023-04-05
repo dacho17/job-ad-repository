@@ -1,6 +1,7 @@
 import { Inject, Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import Utils from "../../../helpers/utils";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
@@ -12,24 +13,23 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on Graduateland in the scrape is (jobTitle, companyName, companyLink, postedAgo, workLocation, timeEngagement, requiredSkills, companyIndustry, description).
+   * Data available on Graduateland in the scrape is (jobTitle, orgName, orgUrlRef, postedAgo, workLocation, timeEngagement, requiredSkills, companyIndustry, description).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText(Constants.GRADUATELAND_DETAILS_JOB_TITLE_SELECTOR);
-        const companyNameElement = await browserAPI.findElement(Constants.GRADUATELAND_DETAILS_COMPANY_NAME_SELECTOR);
-        const companyLink = await browserAPI.getDataFromAttr(companyNameElement!, Constants.HREF_SELECTOR);
-        const companyName = await browserAPI.getTextFromElement(companyNameElement!);
+        const orgNameElement = await browserAPI.findElement(Constants.GRADUATELAND_DETAILS_COMPANY_NAME_SELECTOR);
+        const orgUrlRef = await browserAPI.getDataFromAttr(orgNameElement!, Constants.HREF_SELECTOR);
+        const orgName = await browserAPI.getTextFromElement(orgNameElement!);
         const jobDescription = await browserAPI.getText(Constants.GRADUATELAND_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
-            companyLink: Constants.GRADUATELAND_URL + companyLink?.trim()
+            organization: { name: orgName?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
         }
 
         const postedAgo = await browserAPI.getText(Constants.GRADUATELAND_DETAILS_POSTED_AGO_SELECTOR);
@@ -44,7 +44,7 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
 
      /**
    * @description Function which scrapes jobDetails part of the page, formats it and stores it into the
-   * workLocation, timeEngagement, requiredSkills, requiredLanguages, and companyIndustry properties.
+   * workLocation, timeEngagement, requiredSkills, requiredLanguages, and organization.orgIndustry properties.
    * @param {BrowserAPI} browserAPI
    * @param {JobDTO} newJob
    * @returns {Promise<void>}
@@ -64,7 +64,7 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
                     break;
                 case Constants.CATEGORY:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-                    newJob.companyIndustry = value?.trim();
+                    newJob.organization.industry = value?.trim();
                     break;
                 case Constants.TYPE:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);

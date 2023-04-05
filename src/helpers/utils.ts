@@ -8,9 +8,10 @@ import { JobAdSource } from "./enums/jobAdSource";
 export default class Utils {
     private urlValidationRegex = /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i;
 
-    public transformToTimestamp(date: string): number {
+    public transformToTimestamp(date: string| null): number | null {
+        if (date === null) return null;
         const timestamp = Date.parse(date);
-        if (isNaN(timestamp)) return Date.parse((new Date().toString()));
+        if (isNaN(timestamp)) return null;
 
         return timestamp;
     }
@@ -253,16 +254,23 @@ export default class Utils {
         }
     }
 
-
-    public getStartDate4CvLibrary(textContainingNofApplicants: string): Date {
-        const [year, month, day] = textContainingNofApplicants.split(Constants.MINUS_SIGN);
-        if (!year || !month || !day) return new Date();
-        const yearNum = parseInt(year);
-        const monthNum = parseInt(month);
-        const dayNum = parseInt(day);
-        if (isNaN(yearNum) || isNaN(monthNum) || isNaN(dayNum)) return new Date(); 
-
-        return new Date(yearNum, monthNum - 1, dayNum);
+    /**
+     * @description Function that expects startDate (in format yyyy-mm-dd) 
+     * from CvLibrary job details page formats it to the Date object, and return it as string.
+     * @param {string} textContainingStartDate
+     * @returns {Date} Returns string based on the constructed Date, argument, or value 'Unknown'.
+     */
+    public getStartDate4CvLibrary(textContainingStartDate: string): string {
+        const [year, month, day] = textContainingStartDate.split(Constants.MINUS_SIGN);
+        if (year && month && day){
+            const yearNum = parseInt(year);
+            const monthNum = parseInt(month);
+            const dayNum = parseInt(day);
+            if (!isNaN(yearNum) && !isNaN(monthNum) && !isNaN(dayNum))
+                return (new Date(yearNum, monthNum - 1, dayNum).toString());
+        }
+        
+        return textContainingStartDate || Constants.UNKNOWN;
     }
 
     /**
@@ -300,10 +308,20 @@ export default class Utils {
         return new Date();
     }
 
-    public validateUrl(url: string) {
-        return url && this.urlValidationRegex.test(url.trim());
+    /**
+     * @description Function that validates the url and returns boolean depending on whether the url is a valid url.
+     * @param {string} url
+     * @returns {boolean}
+     */
+    public validateUrl(url: string): boolean {
+        return url !== null && url !==undefined && this.urlValidationRegex.test(url.trim());
     }
 
+    /**
+     * @description Function that returns the JobAdSource corresponding to the url which has been provided.
+     * @param {string} url
+     * @returns {JobAdSource}
+     */
     public getJobAdSourceBasedOnTheUrl(url: string): JobAdSource {
         switch(true) {
             case url.includes(Constants.ADZUNA):

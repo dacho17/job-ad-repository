@@ -1,6 +1,7 @@
 import { Inject, Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import Utils from "../../../helpers/utils";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
@@ -12,7 +13,7 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on ArbeitNow in the scrape is (jobTitle, officeLocation, companyName, salary, jobDetails, postedAgo, jobDescription).
+   * Data available on ArbeitNow in the scrape is (jobTitle, officeLocation, orgName, salary, jobDetails, postedAgo, jobDescription).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -21,8 +22,8 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
         // 
 
         const jobTitle = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_JOB_TITLE_SELECTOR)
-        const companyName = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_COMPANY_NAME_SELECTOR);
-        const companyLocation = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_COMPANY_LOCATION_SELECTOR);
+        const orgName = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_COMPANY_NAME_SELECTOR);
+        const orgLocation = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_COMPANY_LOCATION_SELECTOR);
         const salary = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_SALARY_INFORMATION);
         
         const jobDetails = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_JOB_DETAILS_SELECTOR);
@@ -30,8 +31,7 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
-            companyName: companyName!.trim(),
-            companyLocation: companyLocation?.trim(),
+            organization: { name: orgName?.trim(), location: orgLocation?.trim() } as OrganizationDTO,
             salary: salary?.replace(Constants.SALARY_ICON, Constants.EMPTY_STRING).trim(),
             details: jobDetails?.trim(),
             description: jobDescription!.trim(),
@@ -40,7 +40,8 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
 
         const postedDateStr = await browserAPI.getDataSelectorAndAttr(Constants.ARBEITNOW_DETAILS_POSTED_DATE_SELECTOR, Constants.DATETIME_SELECTOR)
         if (postedDateStr) {
-            newJob.postedDate = new Date(this.utils.transformToTimestamp(postedDateStr!.trim()))
+            newJob.postedDateTimestamp = this.utils.transformToTimestamp(postedDateStr!.trim()) ?? undefined
+            newJob.postedDate = new Date(newJob.postedDateTimestamp!);
         }
 
         return newJob;

@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import { Service } from "typedi";
+import { Organization } from '../../../database/models/organization';
 import Constants from '../../../helpers/constants';
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import IJobApiScraper from '../interfaces/IJobApiScraper';
@@ -10,8 +11,8 @@ export default class SnaphuntScraper implements IJobApiScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on Snaphunt in the scrape is (jobTitle, description, requiredSkills, workLocation,
-   * companyName, companySize, companyIndustry, companyLocation, isRemote, details, timeEngagement, salary,
-   * companyLogo, companyWebsite, companyDescription, companyLink
+   * organization.name, organization.size, organization.industry, organization.location, isRemote, details, timeEngagement, salary,
+   * organization.logo, organization.website, organization.description, organization.urlReference
    * @param {number} jobAdId
    * @param {string} jobUrl
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -48,14 +49,16 @@ export default class SnaphuntScraper implements IJobApiScraper {
             timeEngagement: data.jobEngagement,
             salary: data.showSalary ? data.minSalary + '-' + data.maxSalary + data.currency : undefined,
 
-            companyName: companyInfo.companyName,
-            companySize: companyInfo.companySize,
-            companyIndustry: companyInfo.companyType,
-            companyLocation: `${companyInfo.address.replace(Constants.SNAPHUNT_REDUNDANT_ADDRESS_MARK, Constants.EMPTY_STRING)} - ${companyInfo.zipCode} - ${companyInfo.city} - ${companyInfo.country}`,
-            companyLogo: companyInfo.companyLogo,
-            companyWebsite: companyInfo.companyWebsite,
-            companyDescription: companyInfo.companyDescription,
-            companyLink: companyInfo.linkedInURL,
+            organization: {
+                name: companyInfo.companyName,
+                size: companyInfo.companySize,
+                industry: companyInfo.companyType,
+                location: `${companyInfo.address.replace(Constants.SNAPHUNT_REDUNDANT_ADDRESS_MARK, Constants.EMPTY_STRING)} - ${companyInfo.zipCode} - ${companyInfo.city} - ${companyInfo.country}`,
+                logo: companyInfo.companyLogo,
+                website: companyInfo.companyWebsite,
+                description: companyInfo.companyDescription,
+                urlReference: companyInfo.linkedInURL,
+            } as Organization,
         }
 
         return newJob;

@@ -1,6 +1,7 @@
 import { Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 
@@ -9,7 +10,7 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 export default class JobFluentScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on JobFluent in the scrape is (jobTitle, companyName, companyLink, requiredSkills, companyInfo, jobDescription, isRemote, isInternship, timeEngagement).
+   * Data available on JobFluent in the scrape is (jobTitle, timeEngagement, jobDescription, requiredSkills, isRemote, isInternship, organization.name, organization.urlReference, organization.website, organization.industry, organization.location, organization.size, and organization.founded properties ).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -19,9 +20,9 @@ export default class JobFluentScraper implements IJobBrowserScraper {
         const timeEngagement = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_TIME_ENGAGEMENT_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
-        const companyLocation = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_COMPANY_LOCATION_SELECTOR);
-        const companyName = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_COMPANY_NAME_SELECTOR);
-        const companyLink = await browserAPI.getDataSelectorAndAttr(Constants.JOB_FLUENT_DETAILS_COMPANY_LINK_SELECTOR, Constants.HREF_SELECTOR);
+        const orgLocation = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_COMPANY_LOCATION_SELECTOR);
+        const orgName = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_COMPANY_NAME_SELECTOR);
+        const orgUrlRef = await browserAPI.getDataSelectorAndAttr(Constants.JOB_FLUENT_DETAILS_COMPANY_LINK_SELECTOR, Constants.HREF_SELECTOR);
         const requiredSkills = await browserAPI.getDataSelectorAndAttr(Constants.JOB_FLUENT_DETAILS_REQUIRED_SKILLS_SELECTOR, Constants.CONTENT_SELECTOR);
 
         // check! parse companyDetails into its constituent properties
@@ -31,9 +32,7 @@ export default class JobFluentScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
-            companyLink: Constants.GRADUATELAND_URL + companyLink?.trim(),
-            companyLocation: companyLocation?.trim(),
+            organization: { name: orgName?.trim(), location: orgLocation?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
             requiredSkills: requiredSkills?.trim(),
             timeEngagement: timeEngagement?.trim()
         }
@@ -55,7 +54,7 @@ export default class JobFluentScraper implements IJobBrowserScraper {
 
     /**
    * @description Function which scrapes jobDetails part of the page, formats it and stores it into 
-   * companyWebsite, companyIndustry, companyLocation, companySize, and companyFounded properties.
+   * organization.website, organization.industry, organization.location, organization.size, and organization.founded properties.
    * @param {BrowserAPI} browserAPI
    * @param {JobDTO} newJob
    * @returns {Promise<void>}
@@ -73,19 +72,19 @@ export default class JobFluentScraper implements IJobBrowserScraper {
             const keyword = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
             switch(keyword!.trim()) {
                 case Constants.WEBISTE:
-                    newJob.companyWebsite = jobDetailsValues[i].trim()
+                    newJob.organization.website = jobDetailsValues[i].trim()
                     break;
                 case Constants.INDUSTRY:
-                    newJob.companyIndustry = jobDetailsValues[i].trim();
+                    newJob.organization.industry = jobDetailsValues[i].trim();
                     break;
                 case Constants.HEADQUARTERS:
-                    newJob.companyLocation = jobDetailsValues[i].trim()
+                    newJob.organization.location = jobDetailsValues[i].trim()
                     break;
                 case Constants.COMPANY_SIZE:
-                    newJob.companySize = jobDetailsValues[i].trim()
+                    newJob.organization.size = jobDetailsValues[i].trim()
                     break;
                 case Constants.FOUNDED:
-                    newJob.companyFounded = jobDetailsValues[i].trim()
+                    newJob.organization.founded = jobDetailsValues[i].trim()
                     break;
             }
         }

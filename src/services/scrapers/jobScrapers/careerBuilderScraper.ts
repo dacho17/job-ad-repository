@@ -1,4 +1,5 @@
 import { Service } from "typedi";
+import { Organization } from "../../../database/models/organization";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import BrowserAPI from "../../browserAPI";
@@ -9,7 +10,7 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 export default class CareerBuilderScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on CareerBuilder in the scrape is (jobTitle, companyName, companyLocation, timeEngagement, salary, jobDescription, requiredSkills).
+   * Data available on CareerBuilder in the scrape is (jobTitle, orgName, orgLocation, timeEngagement, salary, jobDescription, requiredSkills).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -22,7 +23,7 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: 'Unrevealed'
+            organization: { name: Constants.UNDISLOSED_COMPANY } as Organization
         }
 
         const salaryInfo = await browserAPI.getText(Constants.CAREER_BUILDER_DETAILS_SALARY_SELECTOR);
@@ -35,8 +36,8 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
     }
 
     /**
-   * @description Function which scrapes a part of the page and sets companyLocation and timeManagement properties of new JobDTO,
-   * If companyName is found it sets that property as well.
+   * @description Function which scrapes a part of the page and sets orgLocation and timeManagement properties of new JobDTO,
+   * If orgName is found it sets that property as well.
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<void>}
@@ -47,11 +48,11 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
         let secondSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[1]);
         if (jobSubtitleElement.length === 3) {
             const thirdSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[2]);
-            newJob.companyName = firstSubtitleProperty?.trim() || Constants.UNDISLOSED_COMPANY;
-            newJob.companyLocation = secondSubtitleProperty?.trim()
+            newJob.organization.name = firstSubtitleProperty?.trim() || Constants.UNDISLOSED_COMPANY;
+            newJob.organization.location = secondSubtitleProperty?.trim()
             newJob.timeEngagement = thirdSubtitleProperty?.trim();
         } else {
-            newJob.companyLocation = firstSubtitleProperty?.trim();
+            newJob.organization.location = firstSubtitleProperty?.trim();
             newJob.timeEngagement = secondSubtitleProperty?.trim();
         }
     }

@@ -292,7 +292,7 @@ export class BaseAdScraper {
                 break;
         }
 
-        jobAd.postedDateTimestamp = this.utils.transformToTimestamp(jobAd.postedDate!.toString())                        
+        jobAd.postedDateTimestamp = this.utils.transformToTimestamp(jobAd.postedDate!.toString()) ?? undefined;                        
     }
 
     /**

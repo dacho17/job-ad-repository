@@ -1,4 +1,6 @@
+import { ClientRequest, ServerResponse } from 'http';
 import { createLogger, transports, format } from 'winston';
+import { Request, RequestHandler, Response } from 'express';
 import 'winston-daily-rotate-file';
 
 const logger = createLogger({
@@ -10,6 +12,7 @@ const logger = createLogger({
             frequency: '24h',
             datePattern: 'YYYY-MM-DD',
         }),
+        // new transports.Console()
     ],
     format: format.combine(
         format.timestamp(),
@@ -23,4 +26,9 @@ const logger = createLogger({
     },
 });
 
-export default logger;
+function logRequest(req: Request, res: Response, next: any) {
+    logger.info(`Incoming ${req.method} request url=${req.url} originalUrl=${req.originalUrl} path=${req.path}`);
+    next()
+}
+
+export default logRequest;

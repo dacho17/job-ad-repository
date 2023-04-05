@@ -1,6 +1,7 @@
 import { Inject, Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import Utils from "../../../helpers/utils";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
@@ -13,7 +14,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on WeWorkRemotely in the scrape is (jobTitle, companyName, companyLocation, companyWebiste, companyLink, postedAgo, nOfApplicants, jobDetails, jobDescription).
+   * Data available on WeWorkRemotely in the scrape is (jobTitle, organization.name, organization.location, organization.webiste, organization.urlReference, postedAgo, nOfApplicants, jobDetails, jobDescription).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -23,23 +24,22 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         const jobDescription = await browserAPI.getText(Constants.WE_WORK_REMOTELY_JOB_DESCRIPTION_SELECTOR);
         const companyNameAndLinkElement = await browserAPI.findElement(Constants.WE_WORK_REMOTELY_COMPANY_NAME_AND_LINK_SELECTOR);
 
-        const companyLink = await browserAPI.getDataFromAttr(companyNameAndLinkElement!, Constants.HREF_SELECTOR);
-        const companyName = await browserAPI.getTextFromElement(companyNameAndLinkElement!);
+        const orgLink = await browserAPI.getDataFromAttr(companyNameAndLinkElement!, Constants.HREF_SELECTOR);
+        const orgName = await browserAPI.getTextFromElement(companyNameAndLinkElement!);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
-            companyLink: companyLink ? Constants.WE_WORK_REMOTELY_URL + companyLink.trim() : undefined
+            organization: { name: orgName?.trim(), urlReference: orgLink?.trim() } as OrganizationDTO,
         }
 
-        const companyWebsite = await browserAPI.getDataSelectorAndAttr(Constants.WE_WORK_REMOTELY_COMPANY_WEBSITE_SELECTOR, Constants.HREF_SELECTOR);
-        const companyLocation = await browserAPI.getText(Constants.WE_WORK_REMOTELY_COMPANY_LOCATION_SELECTOR)
+        const orgWebsite = await browserAPI.getDataSelectorAndAttr(Constants.WE_WORK_REMOTELY_COMPANY_WEBSITE_SELECTOR, Constants.HREF_SELECTOR);
+        const orgLocation = await browserAPI.getText(Constants.WE_WORK_REMOTELY_COMPANY_LOCATION_SELECTOR)
         const postedDate = await browserAPI.getDataSelectorAndAttr(Constants.WE_WORK_REMOTELY_POSTED_DATE_SELECTOR, Constants.DATETIME_SELECTOR);
 
-        newJob.companyWebsite = companyWebsite?.trim();
-        newJob.companyLocation = companyLocation?.trim();
+        newJob.organization.website = orgWebsite?.trim();
+        newJob.organization.location = orgLocation?.trim();
         newJob.postedDate = postedDate ? new Date(postedDate.trim()) : undefined;
         
         await this.scrapeJobDetails(newJob, browserAPI);

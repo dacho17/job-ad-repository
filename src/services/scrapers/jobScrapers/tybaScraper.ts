@@ -1,6 +1,7 @@
 import { Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 
@@ -8,24 +9,23 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 export default class TybaScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on Tyba in the scrape is (jobTitle, companyNam, companyLink, jobDescription (workLocation, companyIndustry, timeEngagement, requiredSkills).
+   * Data available on Tyba in the scrape is (jobTitle, organization.name, organization.urlReference, organization.industry, jobDescription (workLocation, timeEngagement, requiredSkills).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
         const jobTitle = await browserAPI.getText(Constants.TYBA_DETAILS_JOB_TITLE_SELECTOR);
-        const companyNameElem = await browserAPI.findElement(Constants.TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
-        const companyLink = await browserAPI.getDataFromAttr(companyNameElem!, Constants.HREF_SELECTOR)
-        const companyName = await browserAPI.getTextFromElement(companyNameElem!);
+        const orgNameElem = await browserAPI.findElement(Constants.TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
+        const orgLink = await browserAPI.getDataFromAttr(orgNameElem!, Constants.HREF_SELECTOR)
+        const orgName = await browserAPI.getTextFromElement(orgNameElem!);
         const jobDescription = await browserAPI.getText(Constants.TYBA_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
-            companyName: companyName?.trim() || Constants.UNDISLOSED_COMPANY,
             jobAdId: jobAdId ?? undefined,
             description: jobDescription!.trim(),
-            companyLink: companyLink ? Constants.TYBA_URL + companyLink.trim() : undefined
+            organization: { name: orgName?.trim(), urlReference: orgLink?.trim() } as OrganizationDTO,
         }
 
         await this.scrapeJobDetails(browserAPI, newJob);
@@ -35,7 +35,7 @@ export default class TybaScraper implements IJobBrowserScraper {
 
     /**
     * @description Function which scrapes jobDetails part of the page, formats it and stores it into the 
-    * workLocation, timeEngagement, requiredSkills, requiredLanguages, and companyIndustry properties.
+    * workLocation, timeEngagement, requiredSkills, requiredLanguages, and organization.industry properties.
     * @param {BrowserAPI} browserAPI
     * @param {JobDTO} newJob
     * @returns {Promise<void>}
@@ -55,7 +55,7 @@ export default class TybaScraper implements IJobBrowserScraper {
                     break;
                 case Constants.CATEGORY:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-                    newJob.companyIndustry = value?.trim();
+                    newJob.organization.industry = value?.trim();
                     break;
                 case Constants.TYPE:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);

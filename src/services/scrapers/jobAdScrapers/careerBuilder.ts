@@ -68,7 +68,7 @@ export class CareerBuilderScraper implements IAdScraper {
                     source: JobAdSource.CAREER_BUILDER,
                     jobLink: jobLinks[i],
                     postedDate: postedDates[i],
-                    postedDateTimestamp: this.utils.transformToTimestamp(postedDates[i].toString())
+                    postedDateTimestamp: this.utils.transformToTimestamp(postedDates[i].toString()) ?? undefined
                 };
     
                 scraperTracker.scrapedAds.push(newAd);

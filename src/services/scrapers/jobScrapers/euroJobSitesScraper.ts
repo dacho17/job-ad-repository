@@ -1,6 +1,7 @@
 import { Service } from "typedi";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
+import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 
@@ -8,22 +9,21 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 export default class EuroJobSitesScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on EuroJobSites in the scrape is (jobTitle, companyName, companyLocation, additionalJobLink, jobDescription, jobDetails).
+   * Data available on EuroJobSites in the scrape is (jobTitle, orgName, orgLocation, additionalJobLink, jobDescription, jobDetails).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
     public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
-        const [jobTitle, companyName, companyLocation] = await this.scrapeHeader(browserAPI);
+        const [jobTitle, orgName, orgLocation] = await this.scrapeHeader(browserAPI);
         const jobDescription = await browserAPI.getText(Constants.EURO_JOB_SITES_DETAILS_AD_SELECTOR);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle,
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
-            companyName: companyName || Constants.UNDISLOSED_COMPANY,
+            organization: { name: orgName?.trim(), location: orgLocation?.trim() } as OrganizationDTO,
         }
-        newJob.companyLocation = companyLocation;
 
         const additionalJobLink = await browserAPI.getDataSelectorAndAttr(Constants.EURO_JOB_SITES_DETAILS_ADDITIONAL_JOB_LINK_SELECTOR, Constants.HREF_SELECTOR);
         if (additionalJobLink) {
@@ -52,7 +52,7 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
     }
 
     /**
-   * @description Function which looks to scrape jobTitle, companuName, and companyLocation,
+   * @description Function which looks to scrape jobTitle, orgName, and orgLocation,
    * The function returns the triplet.
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<[string, string | null, string | undefined]>}
@@ -62,9 +62,9 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
         let offset = 0;
         if (jobHeaderElements.length == 4) offset = 1;
         const jobTitle = await browserAPI.getTextFromElement(jobHeaderElements[offset]);
-        const companyName = await browserAPI.getTextFromElement(jobHeaderElements[offset + 1]);
-        const companyLocation = await browserAPI.getTextFromElement(jobHeaderElements[offset + 2]);
+        const orgName = await browserAPI.getTextFromElement(jobHeaderElements[offset + 1]);
+        const orgLocation = await browserAPI.getTextFromElement(jobHeaderElements[offset + 2]);
     
-        return [jobTitle!.trim(), companyName?.trim() || null, companyLocation?.trim()];
+        return [jobTitle!.trim(), orgName?.trim() || null, orgLocation?.trim()];
     }
 }
