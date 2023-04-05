@@ -3,6 +3,8 @@ import {
     DataTypes,
     Model
 } from 'sequelize';
+import { JobAd } from './jobAd';
+import { Organization } from './organization';
 
 export class Job extends Model {
     id: number;
@@ -147,10 +149,18 @@ export const JobMAP = (sequelize: Sequelize) => {
         additionalJobLink: {
             type: DataTypes.TEXT,
             allowNull: true,
+        },
+        jobAdId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        organizationId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
         }
     }, {
         sequelize,
         modelName: 'Job',
     });
-    Job.sync({ alter: true });
+    Job.sync(); // { alter: true }
 }

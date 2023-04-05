@@ -70,5 +70,5 @@ export const JobAdMAP = (sequelize: Sequelize) => {
         sequelize,
         modelName: 'JobAd',
     });
-    JobAd.sync({ alter: true });
+    JobAd.sync();   // { alter: true }
 }

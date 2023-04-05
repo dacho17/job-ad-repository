@@ -77,5 +77,5 @@ export const OrganizationMAP = (sequelize: Sequelize) => {
         sequelize,
         modelName: 'Organization',
     });
-    Organization.sync({ alter: true }); // NOTE: alter: true - alters tables to fit the models - useful during development
+    Organization.sync(); // NOTE: { alter: true } - alters tables to fit the models - useful during development
 }
