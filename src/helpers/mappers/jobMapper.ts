@@ -1,14 +1,21 @@
 import { Inject, Service } from "typedi";
 import db from '../../database/db';
 import { Job } from "../../database/models/job";
+import { JobAd } from "../../database/models/jobAd";
 import { Organization } from "../../database/models/organization";
 import JobDTO from "../dtos/jobDTO";
 import Utils from "../utils";
+import { JobAdMapper } from "./jobAdMapper";
+import OrganizationMappper from "./organizationMapper";
 
 @Service()
 export default class JobMapper {
     @Inject()
     private utils: Utils;
+    @Inject()
+    private organizationMapper: OrganizationMappper;
+    @Inject()
+    private jobAdMapper: JobAdMapper;
 
     /**
    * @description Function which maps JobDTO to JobMAP.
@@ -31,6 +38,7 @@ export default class JobMapper {
             description: jobDTO.description,
             isRemote: jobDTO.isRemote,
             isInternship: jobDTO.isInternship,
+            isStudentPosition: jobDTO.isStudentPosition,
             requiredSkills: jobDTO.requiredSkills,
             additionalJobLink: jobDTO.additionalJobLink,
             euWorkPermitRequired: jobDTO.euWorkPermitRequired,
@@ -41,6 +49,8 @@ export default class JobMapper {
             requirements: jobDTO.requirements,
             responsibilities: jobDTO.responsibilities,
             equipmentProvided: jobDTO.equipmentProvided,
+
+            // organization can be mapped here
 
             jobAdId: jobDTO.jobAdId
         });
@@ -54,6 +64,7 @@ export default class JobMapper {
    */
      public toDTO(jobMAP: Job): JobDTO {
         const jobDTO: JobDTO = {
+            id: jobMAP.id,
             jobTitle: jobMAP.jobTitle,
             postedDateTimestamp: jobMAP.postedDateTimestamp,
             applicationDeadlineTimestamp: jobMAP.applicationDeadlineTimestamp,
@@ -65,6 +76,7 @@ export default class JobMapper {
             workLocation: jobMAP.workLocation,
             isRemote: jobMAP.isRemote,
             isInternship: jobMAP.isInternship,
+            isStudentPosition: jobMAP.isStudentPosition,
             euWorkPermitRequired: jobMAP.euWorkPermitRequired,
             requiredSkills: jobMAP.requiredSkills,
             additionalJobLink: jobMAP.additionalJobLink,
@@ -78,9 +90,12 @@ export default class JobMapper {
             responsibilities: jobMAP.responsibilities,
             equipmentProvided: jobMAP.equipmentProvided,
 
-            organization: {} as Organization,
-
-            jobAdId: jobMAP.jobAdId
+            organization: jobMAP.organization
+                ? this.organizationMapper.toDTO(jobMAP.organization)
+                : {} as Organization,
+            jobAd: jobMAP.jobAd
+                ? this.jobAdMapper.toDto(jobMAP.jobAd)
+                : {} as JobAd,
         };
         
         return jobDTO;

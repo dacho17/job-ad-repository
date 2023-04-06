@@ -67,7 +67,7 @@ export class ScrapingJobService {
 
             console.log(`${jobAdsWithoutScrapedJobs.length} jobads to be scraped`)
             for (let i = 0; i < jobAdsWithoutScrapedJobs.length; i++) {
-                const jobScraper = this.getScraperFor(jobAdsWithoutScrapedJobs[i].source);
+                const jobScraper = this.jobScraperHelper.getScraperFor(jobAdsWithoutScrapedJobs[i].source);
                 if (!jobScraper) {
                     jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
                     continue;
@@ -91,12 +91,11 @@ export class ScrapingJobService {
                     continue;
                 }
 
-                const newOrganizationMAP = this.organizationMapper.toMap(newJobDTO.organization);
-                const newJobMAP = this.jobMapper.toMap(newJobDTO);  // FK should already be set -> newJobMAP.jobAdId = jobAdsWithoutScrapedJobs[i].id; // setting a FK-jobAdId
-                const newJobAdMAP = this.inheritPropsFromJob(jobAdsWithoutScrapedJobs[i], newJobMAP);
-                
-                const hasBeenStored = await this.sendScrapedJobForStoring(newJobMAP, newOrganizationMAP, newJobAdMAP);   
-                
+                let newJobMAP = this.buildJobMap(newJobDTO, jobAdsWithoutScrapedJobs[i].jobLink);  // FK should already be set -> newJobMAP.jobAdId = jobAdsWithoutScrapedJobs[i].id; // setting a FK-jobAdId
+                newJobMAP.jobAd = this.inheritPropsFromJob(jobAdsWithoutScrapedJobs[i], newJobMAP);
+                newJobMAP.organization = this.organizationMapper.toMap(newJobDTO.organization);
+
+                const hasBeenStored = await this.sendScrapedJobForStoring(newJobMAP);
                 if (hasBeenStored) succStored += 1;
                 else jobAdQueryOffset += 1; // offset is to be added for the entries unsuccessfully stored to the DB
             }
@@ -111,10 +110,10 @@ export class ScrapingJobService {
    * Job data is then scraped, along with the organization data, and they are stored into the Job and Organization table respectively.
    * @returns {Promise<JobDTO>} Promise resolving to JobDTO having connected OrganizationDTO as one of the properties.
    */
-    public async scrapeJobFromUrl(url: string): Promise<JobDTO> {
+    public async scrapeJobFromUrl(url: string): Promise<JobDTO | null> {
         await this.browserAPI.run();
         const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(url);
-        const scraper = this.getScraperFor(jobSource);
+        const scraper = this.jobScraperHelper.getScraperFor(jobSource);
         if (!scraper) throw `Scraper not found for the provided url=${url}`;
 
         let newJobDTO;
@@ -125,12 +124,13 @@ export class ScrapingJobService {
         } else {
             newJobDTO = await (scraper as IJobApiScraper).scrape(null, url);                    
         }
-        const newJobMAP = this.jobMapper.toMap(newJobDTO);
-        const newOrgMAP = this.organizationMapper.toMap(newJobDTO.organization);
+        const newJobMAP = this.buildJobMap(newJobDTO, url);
+        newJobMAP.organization = this.organizationMapper.toMap(newJobDTO.organization);
+        // const newOrgMAP = this.organizationMapper.toMap(newJobDTO.organization);
 
-        const _ = await this.sendScrapedJobForStoring(newJobMAP, newOrgMAP, undefined);
+        const storedJobMAP = await this.sendScrapedJobForStoring(newJobMAP);
 
-        return newJobDTO;
+        return storedJobMAP ? this.jobMapper.toDTO(storedJobMAP) : null;
     }
 
     /**
@@ -146,22 +146,6 @@ export class ScrapingJobService {
     }
 
     /**
-   * @description Function which returns a jobScraper based on the JobAdSource value.
-   * @param {JobAdSource} adSource
-   * @returns {IJobScraper | null}
-   */
-    private getScraperFor(adSource: JobAdSource): IJobScraper | null {
-        // first attempt to get a browserScraper
-        let jobScraper = this.jobScraperHelper.getBrowserScraperFor(adSource);
-        // if browser scraper is not found try getting apiScraper
-        if (!jobScraper) {
-            jobScraper = this.jobScraperHelper.getApiScraperFor(adSource);
-        }
-
-        return jobScraper;
-    }
-
-    /**
    * @description Function which starts a transaction and interacts with jobRepository, organizationRepository, 
    * and jobAdRepository if the newJobAd has been passed as an argument to the function.
    * Within the transaction a new job will be created, along with the company (TODO: if it already does not exist),
@@ -171,24 +155,26 @@ export class ScrapingJobService {
    * @param {JobAd?} newJobAd optional parameter, since Job can be scraped directly from the jobLink
    * @returns {Promise<boolean>} Promise resolving to the boolean signifying whether the SQL transaction was successful
    */
-    private async sendScrapedJobForStoring(newJob: Job, newOrganization: Organization, newJobAd?: JobAd): Promise<boolean> {
+    private async sendScrapedJobForStoring(newJob: Job): Promise<Job | null> {
         const transaction = await db.sequelize.transaction();
         try {
-            const createdOrganization = await this.organizationRepository.create(newOrganization, transaction);
-            newJob.organizationId = createdOrganization.id; // assigning organizationId FK to the newJob
-            await this.jobRepository.create(newJob, transaction);
+            const createdOrganization = await this.organizationRepository.create(newJob.organization!, transaction);
 
-            if (newJobAd) { // job can be scraped without ad reference. This is the check if it has the reference to the ad.
-                await this.jobAdRepository.markAsScraped(newJobAd, transaction);
+            if (newJob.jobAd) { // job can be scraped without ad reference. This is the check if it has the reference to the ad.
+                const scrapedJobAd = await this.jobAdRepository.markAsScraped(newJob.jobAd, transaction);
+                newJob.jobAd = scrapedJobAd;
             }
 
+            newJob.organizationId = createdOrganization.id; // assigning organizationId FK to the newJob
+            const storedJob = await this.jobRepository.create(newJob, transaction);
+
             await transaction.commit();
-            return true;
+            return storedJob;
         } catch (exception) {
             console.log(`An exception occurred while storing a 
-                ${newJobAd ? 'triplet (job, org, jobAd)' : 'pair (job, org)'} - [${exception}]`);
+                ${newJob.jobAd ? 'triplet (job, org, jobAd)' : 'pair (job, org)'} - [${exception}]`);
             await transaction.rollback();
-            return false;
+            return null;
         }
     }
 
@@ -207,5 +193,26 @@ export class ScrapingJobService {
         
         jobAd.jobTitle = job.jobTitle;
         return jobAd;
+    }
+
+    /**
+   * @description Function which sets creates a Job based on JobDTO and determines whether the job object
+   * needs to be parsed in the future.
+   * @param {JobDTO} newJob
+   * @param {string} jobUrl
+   * @returns {Promise<Job>}
+   */
+    private buildJobMap(newJob: JobDTO, jobUrl: string): Job {
+        let newJobMAP = this.jobMapper.toMap(newJob);
+        const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(jobUrl);
+        switch(jobSource) {
+            case JobAdSource.ARBEIT_NOW:
+                newJobMAP.requiresParsing = true;
+                break;
+            default:
+                newJobMAP.requiresParsing = false;  // NOTE: this marks the job as 'displayable'
+        }
+
+        return newJobMAP;
     }
 }

@@ -82,7 +82,7 @@ export default class JobScraperHelper {
    * @param {JobAdSource} jobAdSouce
    * @returns {IJobBrowserScraper | null}
    */
-    public getBrowserScraperFor(jobAdSouce: JobAdSource): IJobScraper | null {
+    private getBrowserScraperFor(jobAdSouce: JobAdSource): IJobScraper | null {
         switch (jobAdSouce) {
             case JobAdSource.ADZUNA:
                 return this.adzunaScraper;
@@ -128,12 +128,28 @@ export default class JobScraperHelper {
    * @param {JobAdSource} jobAdSouce
    * @returns {IJobApiScraper | null}
    */
-    public getApiScraperFor(jobAdSource: JobAdSource): IJobScraper | null {
+    private getApiScraperFor(jobAdSource: JobAdSource): IJobScraper | null {
         switch (jobAdSource) {
             case JobAdSource.SNAPHUNT:
                 return this.snaphuntScraper;
             default:
                 return null;
         }
+    }
+
+    /**
+   * @description Function which returns a jobScraper based on the JobAdSource value.
+   * @param {JobAdSource} adSource
+   * @returns {IJobScraper | null}
+   */
+    public getScraperFor(adSource: JobAdSource): IJobScraper | null {
+        // first attempt to get a browserScraper
+        let jobScraper = this.getBrowserScraperFor(adSource);
+        // if browser scraper is not found try getting apiScraper
+        if (!jobScraper) {
+            jobScraper = this.getApiScraperFor(adSource);
+        }
+
+        return jobScraper;
     }
 }

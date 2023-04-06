@@ -21,6 +21,7 @@ export class Job extends Model {
     workLocation?: string;
     isRemote?: boolean;
     isInternship?: boolean;
+    isStudentPosition?: boolean;
     euWorkPermitRequired?: boolean;
     requiredSkills?: string;
     goodToHaveSkills?: string;
@@ -32,7 +33,12 @@ export class Job extends Model {
     equipmentProvided?: string;
     additionalJobLink?: string;
     details?: string;
-    description: string
+    description: string;
+    requiresParsing: boolean;
+    parsedDate?: Date;
+    
+    organization?: Organization;
+    jobAd?: JobAd;
 
     organizationId?: number;
     jobAdId?: number;
@@ -107,6 +113,10 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.BOOLEAN,
             allowNull: true,
         },
+        isStudentPosition: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true,
+        },
         euWorkPermitRequired: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
@@ -151,6 +161,15 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.TEXT,
             allowNull: true,
         },
+        requiresParsing: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
+        parsedDate: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
         jobAdId: {
             type: DataTypes.INTEGER,
             allowNull: true
@@ -163,5 +182,5 @@ export const JobMAP = (sequelize: Sequelize) => {
         sequelize,
         modelName: 'Job',
     });
-    Job.sync(); // { alter: true }
+    Job.sync({ alter: true }); // 
 }

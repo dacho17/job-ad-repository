@@ -3,14 +3,16 @@ import { Transaction } from "sequelize";
 import { Service } from "typedi";
 import { Job } from "../database/models/job";
 import { JobAd } from "../database/models/jobAd";
+import { Organization } from "../database/models/organization";
 import { GetJobsRequest } from "../helpers/dtos/getJobsRequest";
 import { JobAdSource } from "../helpers/enums/jobAdSource";
 
 @Service()
 export default class ScrapingJobRepository {
     private MAX_BATCH_SIZE: number = 200;
+
     /**
-   * @description Creates a job ad and returns it. Throws an error if encountered.
+   * @description Creates a job and returns it. Throws an error if encountered.
    * @param {Job} job Job MAP object which is to be stored
    * @param {Transaction} t Function can be executed as a part of transaction
    * @returns {Promise<Job>} Promise containing the stored job.
@@ -49,11 +51,66 @@ export default class ScrapingJobRepository {
                 limit: getJobsReq.batchSize > this.MAX_BATCH_SIZE ? this.MAX_BATCH_SIZE : getJobsReq.batchSize,
                 offset: getJobsReq.offset
             });
-            console.log(paginatedJobs.length +' entries fetched');
     
             return paginatedJobs;
         } catch (exception) {
             throw `getJobsPaginated unsuccessful - [${exception}]`;
+        }
+    }
+
+    /**
+   * @description Fetches the jobs to parse, including the companies they are connected to.
+   * If there is an error, it is thrown.
+   * @param {number} offset
+   * @param {number} batchSize
+   * @returns {Promise<Job[]>} Promise containing the requested jobs.
+   */
+    public async getJobsToParse(offset: number, batchSize: number): Promise<Job[]> {
+        try {
+            const jobsToParse = await Job.findAll({
+                where: {
+                    requiresParsing: true
+                },
+                limit: batchSize,
+                offset: offset,
+                include: Organization
+            });
+
+            return jobsToParse;
+        } catch (exception) {
+            throw `getJobsToParse failed - [${exception}]`;
+        }
+    }
+
+    /**
+   * @description Fetches a job based on its id.
+   * If there is an error, it is thrown.
+   * @param {number} id
+   * @returns {Promise<Job>} Promise containing the requested job.
+   */
+    public async getById(id: number): Promise<Job | null> {
+        try {
+            const job = await Job.findByPk(id, {
+                include: Organization
+            });
+
+            return job;
+        } catch (exception) {
+            throw `getJobsToParse failed - [${exception}]`;
+        }
+    }
+
+    /**
+   * @description Updates the job and returns it. Throws an error if encountered.
+   * @param {Job} job Job MAP object which is to be stored
+   * @returns {Promise<Job>} Promise containing the stored job.
+   */
+    public async update(job: Job): Promise<Job> {
+        try {
+            console.log(`Job before storing details=${job.details}\n\ndecription=${job.description}`)
+            return await job.save();
+        } catch (exception) {
+            throw `An attempt to update the job with jobId=${job.id} has failed. - [${exception}]`;
         }
     }
 }

@@ -1,7 +1,9 @@
+import { JobAdDTO } from "./jobAdDTO";
 import OrganizationDTO from "./organizationDTO";
 
 // TODO: trim this class
 export default class JobDTO {
+    id?: number;
     jobTitle: string;
     postedDate?: Date;
     postedDateTimestamp?: number;
@@ -16,6 +18,7 @@ export default class JobDTO {
     description: string;
     isRemote?: boolean;
     isInternship?: boolean;
+    isStudentPosition?: boolean;
     requiredLanguages?: string;
     requiredSkills?: string;
     requiredExperience?: string;
@@ -29,6 +32,7 @@ export default class JobDTO {
     euWorkPermitRequired?: boolean;
 
     organization: OrganizationDTO;
+    jobAd?: JobAdDTO;
 
     jobAdId?: number;
 }
