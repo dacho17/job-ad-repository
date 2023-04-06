@@ -28,7 +28,7 @@ export default class AdzunaScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             organization: { name: orgName?.trim() } as OrganizationDTO,
-            timeEngagement: timeEngagement?.trim(),
+            timeEngagement: timeEngagement?.trim().replace(Constants.WHITESPACE, Constants.MINUS_SIGN),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined
         }

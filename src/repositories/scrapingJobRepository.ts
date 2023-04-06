@@ -90,25 +90,24 @@ export default class ScrapingJobRepository {
    */
     public async getById(id: number): Promise<Job | null> {
         try {
-            const job = await Job.findByPk(id, {
-                include: Organization
-            });
+            const job = await Job.findByPk(id);
 
             return job;
         } catch (exception) {
-            throw `getJobsToParse failed - [${exception}]`;
+            throw `getById failed - [${exception}]`;
         }
     }
 
     /**
    * @description Updates the job and returns it. Throws an error if encountered.
-   * @param {Job} job Job MAP object which is to be stored
-   * @returns {Promise<Job>} Promise containing the stored job.
+   * @param {Job} job Job MAP object which is to be updated
+   * @param {Transaction?} t transaction as part of which the update query is executed
+   * @returns {Promise<Job>} Promise containing the updated job.
    */
-    public async update(job: Job): Promise<Job> {
+    public async update(job: Job, t?: Transaction): Promise<Job> {
         try {
             console.log(`Job before storing details=${job.details}\n\ndecription=${job.description}`)
-            return await job.save();
+            return await job.save({transaction: t});
         } catch (exception) {
             throw `An attempt to update the job with jobId=${job.id} has failed. - [${exception}]`;
         }

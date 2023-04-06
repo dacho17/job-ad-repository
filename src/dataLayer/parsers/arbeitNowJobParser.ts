@@ -1,14 +1,17 @@
-import { Service } from "typedi";
+import { Inject, Service } from "typedi";
 import { Job } from "../../database/models/job";
 import { Organization } from "../../database/models/organization";
 import constants from "../../helpers/constants";
 import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
+import Utils from "../../helpers/utils";
 import IParser from "../interfaces/IJobParser";
 
 @Service()
 export default class ArbeitNowJobParser implements IParser {
     private trie: TrieNode;
+    @Inject()
+    private utils: Utils;
 
     // within the constructor, the trie which parser uses is constructed
     constructor() {
@@ -78,7 +81,7 @@ export default class ArbeitNowJobParser implements IParser {
             }
         }
 
-        organization.name = this.reverseString(finalCompanyNameRev);
+        organization.name = this.utils.reverseString(finalCompanyNameRev);
     }
 
     /**
@@ -166,7 +169,7 @@ export default class ArbeitNowJobParser implements IParser {
 
             job.timeEngagement = timeEngagementLabels.join(constants.COMMA + constants.WHITESPACE);
             job.requiredExperience = requiredExperienceLabels.join(constants.COMMA + constants.WHITESPACE);
-            job.details = this.reverseString(finalJobDetailsRev);
+            job.details = this.utils.reverseString(finalJobDetailsRev);
             console.log(`Job details after parsing: ${job.details}`);
         }
     }
@@ -241,14 +244,6 @@ export default class ArbeitNowJobParser implements IParser {
             
         }
 
-        job.salary = finalSalary ? this.reverseString(finalSalary) + constants.WHITESPACE + wageRatePeriod : undefined;
-    }
-
-    private reverseString(str: string) {
-        let reversedString = constants.EMPTY_STRING;
-        for (let i = 0; i < str.length; i++) {
-            reversedString = str[i] + reversedString;
-        }
-        return reversedString;
+        job.salary = finalSalary ? this.utils.reverseString(finalSalary) + constants.WHITESPACE + wageRatePeriod : undefined;
     }
 }

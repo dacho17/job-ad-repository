@@ -20,6 +20,7 @@ export class Job extends Model {
     timeEngagement?: string;
     workLocation?: string;
     isRemote?: boolean;
+    isHybrid?: boolean;
     isInternship?: boolean;
     isStudentPosition?: boolean;
     euWorkPermitRequired?: boolean;
@@ -36,7 +37,7 @@ export class Job extends Model {
     description: string;
     requiresParsing: boolean;
     parsedDate?: Date;
-    
+
     organization?: Organization;
     jobAd?: JobAd;
 
@@ -106,6 +107,10 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: false
         },
         isRemote: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true,
+        },
+        isHybrid: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
         },

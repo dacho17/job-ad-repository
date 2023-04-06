@@ -4,5 +4,7 @@ export enum TrieWordType {
     SENIORITY = 2,
     TIME_ENGAGEMENT = 3,
     IS_REMOTE = 4,
-    IS_STUDENT = 5,
+    IS_HYBRID = 5,
+    IS_STUDENT = 6,
+    SALARY_PERIOD = 7,
 }

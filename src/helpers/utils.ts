@@ -427,4 +427,17 @@ export default class Utils {
                 return null;
         }
     }
+
+    /**
+     * @description Function that reverses the passed string and returns it.
+     * @param {string} str
+     * @returns {string}
+     */
+    public reverseString(str: string): string {
+        let reversedString = Constants.EMPTY_STRING;
+        for (let i = 0; i < str.length; i++) {
+            reversedString = str[i] + reversedString;
+        }
+        return reversedString;
+    }
 }

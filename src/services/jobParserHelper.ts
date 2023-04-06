@@ -1,16 +1,20 @@
 import { Inject, InjectMany, Service } from "typedi";
 import IJobParser from "../dataLayer/interfaces/IJobParser";
 import ArbeitNowParser from "../dataLayer/parsers/arbeitNowJobParser";
+import CareerBuilderJobParser from "../dataLayer/parsers/careerBuilderJobParser";
 import { JobAdSource } from "../helpers/enums/jobAdSource";
 
 @Service()
 export default class JobParserHelper {
     private arbeitNowParser: ArbeitNowParser;
+    private careerBuilderParser: CareerBuilderJobParser;
 
     constructor(
         @Inject() arbeitNowParser: ArbeitNowParser,
+        @Inject() careerBuilderParser: CareerBuilderJobParser,
     ) {
         this.arbeitNowParser = arbeitNowParser;
+        this.careerBuilderParser = careerBuilderParser;
     }
 
     /**
@@ -24,8 +28,8 @@ export default class JobParserHelper {
             //     return this.adzunaScraper;
             case JobAdSource.ARBEIT_NOW:
                 return this.arbeitNowParser;
-            // case JobAdSource.CAREER_BUILDER:
-            //     return this.careerBuilderScraper;
+            case JobAdSource.CAREER_BUILDER:
+                return this.careerBuilderParser;
             // case JobAdSource.CAREER_JET:
             //     return this.careerJetScraper;
             // case JobAdSource.CV_LIBRARY:
