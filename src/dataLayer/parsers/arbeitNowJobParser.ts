@@ -24,6 +24,7 @@ export default class ArbeitNowJobParser implements IParser {
             this.trie.addEntry(entry, TrieWordType.TIME_ENGAGEMENT);
         });
         this.trie.addEntry('salary icon', TrieWordType.REDUNDANT);
+        this.trie.addEntry(' (eur)', TrieWordType.REDUNDANT);
     }
 
     /**
@@ -32,13 +33,15 @@ export default class ArbeitNowJobParser implements IParser {
    * @param {Organization?} job
    * @returns {Job}
    */
-    public parseJob(job: Job, organization?: Organization): Job {
-        if (organization) {
-            this.parseOrganizationName(job, organization);
+    public parseJob(job: Job): Job {
+        if (job.organization) {
+            this.parseOrganizationName(job, job.organization);
         }
 
         this.parseJobDetails(job);
-        job.organization = organization;
+        job.organization = job.organization;
+
+        this.parseSalary(job);
 
         return job;
     }
@@ -166,6 +169,79 @@ export default class ArbeitNowJobParser implements IParser {
             job.details = this.reverseString(finalJobDetailsRev);
             console.log(`Job details after parsing: ${job.details}`);
         }
+    }
+
+    /**
+   * @description Function that accepts the job to be scraped. The function attempts to scrape salary property,
+   * and formats it to <x EUR/timeframe> or <x-y EUR/timeframe> (e.g. 3.000-4.500 EUR/month).
+   * @param {Job} job
+   * @returns {void}
+   */
+    private parseSalary(job: Job): void {
+        if (!job.salary) return;
+
+        let finalSalary = null;
+        let nOfDigitsBeforeDot = 0;
+        let nOfDigitsAfterDot = 0;
+        let dotSeen = false;
+        let salaryNumberCandidateRev = constants.EMPTY_STRING;
+        let wageRatePeriod = null;
+        for (let i = 0; i < job.salary.length; i++) {
+            const currentToken = job.salary[i].toLowerCase();
+            if (currentToken === '(') break;
+
+            if (currentToken === constants.DOT) {
+                salaryNumberCandidateRev = currentToken + salaryNumberCandidateRev;
+                dotSeen = true;
+                continue;
+            }
+
+            const numCurrentToken = parseInt(currentToken);
+            if (!isNaN(numCurrentToken)) {
+                if(!dotSeen) {
+                    nOfDigitsBeforeDot += 1;
+                } else {
+                    nOfDigitsAfterDot += 1;
+                }
+                salaryNumberCandidateRev = currentToken + salaryNumberCandidateRev;
+
+                let isYearlyFormat = nOfDigitsBeforeDot > 1 && nOfDigitsAfterDot === 3;
+                let isMonthlyFormat = nOfDigitsBeforeDot === 1 && nOfDigitsAfterDot === 3;
+                if (isYearlyFormat || isMonthlyFormat) {
+                    wageRatePeriod = isYearlyFormat ? 'EUR/year' : 'EUR/month';
+                    console.log(`finalSalary is updated on: ${nOfDigitsBeforeDot}, ${nOfDigitsAfterDot}`);
+                    if (finalSalary) {
+                        finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
+                    } else {
+                        finalSalary = salaryNumberCandidateRev;
+                    }
+
+                    salaryNumberCandidateRev = constants.EMPTY_STRING;
+                    nOfDigitsBeforeDot = 0;
+                    nOfDigitsAfterDot = 0;
+                    dotSeen = false;
+                }
+
+                continue;
+            }
+
+            if (isNaN(numCurrentToken) && nOfDigitsBeforeDot > 0) {
+                wageRatePeriod = 'hour';
+                if (finalSalary) {
+                    finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
+                } else {
+                    finalSalary = salaryNumberCandidateRev;
+                }
+            }
+
+            salaryNumberCandidateRev = constants.EMPTY_STRING;
+            nOfDigitsBeforeDot = 0;
+            nOfDigitsAfterDot = 0;
+            dotSeen = false;
+            
+        }
+
+        job.salary = finalSalary ? this.reverseString(finalSalary) + constants.WHITESPACE + wageRatePeriod : undefined;
     }
 
     private reverseString(str: string) {
