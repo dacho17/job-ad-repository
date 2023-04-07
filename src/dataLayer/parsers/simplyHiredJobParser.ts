@@ -8,83 +8,35 @@ import IJobParser from "../interfaces/IJobParser";
 
 
 @Service()
-export default class CareerJetJobParser implements IJobParser {
+export default class SimplyhiredJobParser implements IJobParser {
     private trie: TrieNode;
 
     constructor() {
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
-        this.trie.addEntry('(hybrid)', TrieWordType.IS_HYBRID);
-        this.trie.addEntry('|| ', TrieWordType.REDUNDANT);
-        ['per year', 'per month', 'per week', 'per hour'].forEach(entry => {
+        this.trie.addEntry('up to ', TrieWordType.LESS_EQUAL_COMPARATOR);
+        this.trie.addEntry('from ', TrieWordType.MORE_EQUAL_COMPARATOR);
+        this.trie.addEntry('estimated: ', TrieWordType.REDUNDANT);
+        ['a year', 'a month', 'a week', 'an hour'].forEach(entry => {
             this.trie.addEntry(entry, TrieWordType.SALARY_PERIOD);
         });
     }
-
+    
     public parseJob(job: Job): Job {
-        this.parseJobTitle(job);
         this.formatsalary(job);
 
         return job;
     }
 
-    /**
-   * @description Function that accepts the job to be parsed. The function attempts to parse properties:
-   * isHybrid and update the job title to the value without the hybrid flag.
-   * @param {Job} job
-   * @returns {void}
-   */
-    private parseJobTitle(job: Job): void {
-        let finalJobTitleRev = constants.EMPTY_STRING;
-        let matchingPartRev = constants.EMPTY_STRING;
-        let trieMatch = null;
-        let stopParsing = false;    // stop parsing when (Hybrid) is found
-        for (let i = 0; i < job.jobTitle.length; i++) {
-            const currentLowerCasedToken = job.jobTitle[i].toLowerCase();
-            
-            if (trieMatch) {    // attempting to continue with the current matching sequence
-                trieMatch = trieMatch.matchToken(currentLowerCasedToken);
-            }
-            if (!trieMatch) {   // current matching sequence unmatched further. Attempting to match a new one
-                finalJobTitleRev = matchingPartRev + finalJobTitleRev;
-                matchingPartRev = constants.EMPTY_STRING;
-                trieMatch = this.trie.matchToken(currentLowerCasedToken);
-            }
-
-            if (!trieMatch) {
-                finalJobTitleRev = job.jobTitle[i] + finalJobTitleRev;
-                matchingPartRev = constants.EMPTY_STRING;
-            } else {
-                matchingPartRev = job.jobTitle[i] + matchingPartRev;
-
-                switch(trieMatch.getWordType()) {
-                    case TrieWordType.IS_HYBRID:
-                        stopParsing = true;
-                        job.isHybrid = true;
-                        break;
-                    case TrieWordType.REDUNDANT:
-                        stopParsing = true;
-                        break;
-                }
-
-                if (stopParsing) break;
-            }
-        }
-
-        job.jobTitle = reverseString(finalJobTitleRev.trimStart());
-    }
-
-    /**
+        /**
    * @description Function that accepts the job to be parsed. The function attempts to parse salary property,
    * and formats it to <x USD/timeframe> or <x-y USD/timeframe> (e.g. 3.000-4.500 USD/month).
    * @param {Job} job
    * @returns {void}
    */
     private formatsalary(job: Job): void {
-        // - <$x per year> or <$x per month> or <$x per hour>
-        // - can be x-y instead of x
         if (!job.salary) return;
 
-        let finalSalary = null;
+        let finalSalary = constants.EMPTY_STRING;
         let nOfDigitsBeforeDot = 0;
         let nOfDigitsAfterDot = 0;
         let dotSeen = false;
@@ -92,6 +44,7 @@ export default class CareerJetJobParser implements IJobParser {
         let salaryNumberCandidateRev = constants.EMPTY_STRING;
         let trieMatch = null;
         let salaryPeriodRev = null;
+        let salaryPrefix = constants.EMPTY_STRING;
         for (let i = 0; i < job.salary.length; i++) {
             const currentToken = job.salary[i].toLowerCase();
             if (trieMatch) {
@@ -105,10 +58,33 @@ export default class CareerJetJobParser implements IJobParser {
             } else {
                 matchingPartRev = currentToken + matchingPartRev;
 
-                if (trieMatch.getWordType() === TrieWordType.SALARY_PERIOD) {
-                    salaryPeriodRev = matchingPartRev.substring(0, matchingPartRev.indexOf(constants.WHITESPACE));
-                    matchingPartRev = constants.EMPTY_STRING;
-                    trieMatch = null;
+                switch (trieMatch.getWordType()) {
+                    case TrieWordType.SALARY_PERIOD:
+                        salaryPeriodRev = matchingPartRev.substring(0, matchingPartRev.indexOf(constants.WHITESPACE));
+                        matchingPartRev = constants.EMPTY_STRING;
+                        trieMatch = null;
+                        break;
+                    case TrieWordType.MORE_EQUAL_COMPARATOR:
+                        salaryPrefix = constants.PLUS_SIGN;
+                        matchingPartRev = constants.EMPTY_STRING;
+                        trieMatch = null;
+                        break;
+                    case TrieWordType.LESS_EQUAL_COMPARATOR:
+                        salaryPrefix = constants.EQUALS + constants.LESS_SIGN;
+                        matchingPartRev = constants.EMPTY_STRING;
+                        trieMatch = null;
+                        break;
+                }
+            }
+
+            if (job.salary[i] === 'K' && i > 0 && !isNaN(parseInt(job.salary[i - 1]))) {
+                if (i > 1 && (job.salary[i - 2] === constants.DOT || job.salary[i - 2] === constants.COMMA)) {
+                    salaryNumberCandidateRev = '00' + salaryNumberCandidateRev;
+                    nOfDigitsAfterDot += 2;
+
+                } else {
+                    salaryNumberCandidateRev = '000.' + salaryNumberCandidateRev;
+                    nOfDigitsAfterDot += 3;
                 }
             }
 
@@ -138,7 +114,7 @@ export default class CareerJetJobParser implements IJobParser {
                     if (finalSalary) {
                         finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
                     } else {
-                        finalSalary = salaryNumberCandidateRev;
+                        finalSalary = salaryNumberCandidateRev + finalSalary;
                     }
                 }
             }
@@ -151,7 +127,7 @@ export default class CareerJetJobParser implements IJobParser {
         }
 
         const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + '/' : constants.EMPTY_STRING)
-            + 'DSU' + constants.WHITESPACE + finalSalary;
+            + 'DSU' + constants.WHITESPACE + finalSalary + salaryPrefix;
         job.salary = finalSalary ? reverseString(finalSalaryOutput) : undefined;
     }
 }

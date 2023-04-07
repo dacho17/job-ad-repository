@@ -24,7 +24,7 @@ export default class CvLibraryJobParser implements IJobParser {
     }
 
     /**
-   * @description Function that accepts the job to be scraped. The function attempts to scrape properties:
+   * @description Function that accepts the job to be parseped. The function attempts to parsepe properties:
    * isHybrid and isRemote from the jobtitle, and update the job title to the value without those flags.
    * @param {Job} job
    * @returns {void}

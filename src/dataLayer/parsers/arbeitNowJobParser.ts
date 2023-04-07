@@ -48,7 +48,7 @@ export default class ArbeitNowJobParser implements IParser {
     }
 
     /**
-   * @description Function that accepts the job to be scraped. The function attempts to scrape properties:
+   * @description Function that accepts the job to be parsed. The function attempts to parse properties:
    * isRemote from organizationName and update the organization name to the value without the remote flag.
    * @param {Job} job
    * @returns {void}
@@ -94,7 +94,7 @@ export default class ArbeitNowJobParser implements IParser {
     }
 
     /**
-   * @description Function that accepts the job to be scraped. The function attempts to scrape properties:
+   * @description Function that accepts the job to be parsed. The function attempts to parse properties:
    * isRemote, isStudentPosition, requiredExperience and timeEngagement.
    * @param {Job} job
    * @returns {void}
@@ -180,7 +180,7 @@ export default class ArbeitNowJobParser implements IParser {
     }
 
     /**
-   * @description Function that accepts the job to be scraped. The function attempts to scrape salary property,
+   * @description Function that accepts the job to be parsed. The function attempts to parse salary property,
    * and formats it to <x EUR/timeframe> or <x-y EUR/timeframe> (e.g. 3.000-4.500 EUR/month).
    * @param {Job} job
    * @returns {void}

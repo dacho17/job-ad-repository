@@ -7,4 +7,6 @@ export enum TrieWordType {
     IS_HYBRID = 5,
     IS_STUDENT = 6,
     SALARY_PERIOD = 7,
+    LESS_EQUAL_COMPARATOR = 8,
+    MORE_EQUAL_COMPARATOR = 9,
 }

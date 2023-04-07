@@ -28,7 +28,7 @@ export default class CareerBuilderJobParser implements IJobParser {
     }
 
     /**
-   * @description Function that accepts the job to be scraped. The function attempts to scrape properties:
+   * @description Function that accepts the job to be parsed. The function attempts to parse properties:
    * isRemote and isHybrid and update the organization location to the value without the remote flag.
    * @param {Job} job
    * @returns {void}
@@ -79,7 +79,7 @@ export default class CareerBuilderJobParser implements IJobParser {
     }
 
     /**
-   * @description Function that accepts the job to be scraped. The function attempts to scrape salary property,
+   * @description Function that accepts the job to be parsed. The function attempts to parse salary property,
    * and formats it to <x USD/timeframe> or <x-y USD/timeframe> (e.g. 3.000-4.500 USD/month).
    * @param {Job} job
    * @returns {void}
