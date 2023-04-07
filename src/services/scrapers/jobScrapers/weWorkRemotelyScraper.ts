@@ -14,7 +14,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on WeWorkRemotely in the scrape is (jobTitle, organization.name, organization.location, organization.webiste, organization.urlReference, postedAgo, nOfApplicants, isRemote, timeEngagement, jobDetails, jobDescription).
+   * Data available on WeWorkRemotely in the scrape is (jobTitle, organization.name, organization.location, organization.webiste, organization.urlReference, postedAgo, nOfApplicants, isRemote, timeEngagement, workLocation, salary, jobDetails, jobDescription).
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
@@ -65,7 +65,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
 
     /**
     * @description Function which scrapes JobDetails part of the page, formats it and stores it into 
-    * isRemote, timeEngagement and details properties of the newJob.
+    * isRemote, timeEngagement, workLocation, salary and details properties of the newJob.
     * @param {JobDTO} newJob
     * @param {BrowserAPI} browserAPI
     * @returns {Promise<void>}
@@ -74,6 +74,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         let jobDetailElements = await browserAPI.findElements(Constants.WE_WORK_REMOTELY_JOB_DETAILS_SELECTOR);
         jobDetailElements.shift(); jobDetailElements.shift();  // first two elements of the list are irrelevant
         let jobDetails = [];
+        let timeEngagements = [];
         for (let i = 0; i < jobDetailElements.length; i++) {
             let jobDetail = await browserAPI.getTextFromElement(jobDetailElements[i]);
             jobDetail = jobDetail!.trim();
@@ -82,13 +83,20 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
                     newJob.isRemote = true;
                     break;
                 case Constants.FULL_TIME:
-                    newJob.timeEngagement = Constants.FULL_TIME;
+                    timeEngagements.push(Constants.FULL_TIME);
                     break;
                 default:
-                    jobDetails.push(jobDetail);
+                    if (jobDetail.indexOf(Constants.USD) !== -1) {
+                        newJob.salary = jobDetail;
+                    } else if (jobDetail.indexOf(Constants.ONLY) !== -1) {
+                        newJob.workLocation = jobDetail.substring(0, jobDetail.indexOf(Constants.ONLY) - 1);
+                    } else if (jobDetail.indexOf(Constants.CONTRACT) !== -1) {
+                        timeEngagements.push(Constants.CONTRACT);
+                    } else jobDetails.push(jobDetail);
             }
         }
 
+        newJob.timeEngagement = timeEngagements.join(Constants.COMMA + Constants.WHITESPACE);
         newJob.details = jobDetails.join(Constants.COMMA + Constants.WHITESPACE);
     }
 }

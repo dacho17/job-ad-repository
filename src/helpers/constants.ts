@@ -315,6 +315,7 @@ export default {
     ENTRY_LEVEL: 'entry level',
     EU_WORK_PERMIT_REQ_COL: 'EU work permit required:',
     MUST_HAVE_LANGUAGE: 'Must-have language',
+    ONLY: 'only',
     OTHER: 'other',
     PERMANENT: 'permanent',
     PERMANENT_CONTRACT: 'Permanent contract',
@@ -339,6 +340,9 @@ export default {
     YEAR: 'year',
     YEARS: 'years',
     YES: 'Yes',
+
+    // currencies
+    USD: 'usd',
 
     // HTTP codes
     OK: 200,
