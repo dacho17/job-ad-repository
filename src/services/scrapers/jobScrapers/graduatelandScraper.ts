@@ -75,7 +75,7 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
                     break;
                 case Constants.TYPE:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-                    newJob.timeEngagement = value?.trim();
+                    if (value) this.handleTimeEngagementProperty(newJob, value);
                     break;
                 case Constants.SKILLS:
                     valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
@@ -89,5 +89,30 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
                     break;
             }
         }
-    } 
+    }
+    
+    /**
+   * @description Function which handles jobType value from the website, extracts information from it, and 
+   * formats and stores the information to one of the job properties - timeEngagement, isInternship, isStudentPosition or details.
+   * @param {JobDTO} newJob
+   * @param {string} timeEngagement
+   * @returns {void}
+   */
+    private handleTimeEngagementProperty(job: JobDTO, timeEngagement: string): void {
+        switch (timeEngagement.toLowerCase()) {
+            case Constants.FULL_TIME:
+                job.timeEngagement = Constants.FULL_TIME;
+                break;
+            case Constants.INTERNSHIP:
+                job.isInternship = true;
+                break;
+            case Constants.PROJECT:
+                job.timeEngagement = Constants.CONTRACT;
+                break;
+            case Constants.GRADUATE_PROGRAMME:
+                job.isStudentPosition = true;
+            default:
+                job.details = timeEngagement
+        }
+    }
 }

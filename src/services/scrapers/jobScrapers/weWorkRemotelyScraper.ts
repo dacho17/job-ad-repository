@@ -77,7 +77,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         for (let i = 0; i < jobDetailElements.length; i++) {
             let jobDetail = await browserAPI.getTextFromElement(jobDetailElements[i]);
             jobDetail = jobDetail!.trim();
-            switch(jobDetail) {
+            switch(jobDetail.toLowerCase()) {
                 case Constants.ANYWHERE_IN_THE_WORLD:
                     newJob.isRemote = true;
                     break;
