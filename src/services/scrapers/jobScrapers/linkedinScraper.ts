@@ -5,6 +5,7 @@ import JobDTO from "../../../helpers/dtos/jobDTO";
 import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
+import constants from "../../../helpers/constants";
 
 @Service()
 export default class LinkedInScraper implements IJobBrowserScraper {
@@ -54,7 +55,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
-            nOfApplicants: nOfApplicants?.trim(),
+            nOfApplicants: this.formatNofApplicants(nOfApplicants?.trim()) ?? undefined,
             postedDate: this.utils.getPostedDate4LinkedIn(postedAgo!.trim())
         }
 
@@ -89,15 +90,77 @@ export default class LinkedInScraper implements IJobBrowserScraper {
                     newJob.organization.industry = jobCriteriaVal;
                     break;
                 case Constants.EMPLOYMENT_TYPE:
-                    newJob.timeEngagement = jobCriteriaVal;
+                    if (jobCriteriaVal) this.handleEmploymentTypeValue(newJob, jobCriteriaVal);
                     break;
                 case Constants.SENIORITY_LEVEL:
-                    newJob.requiredExperience = jobCriteriaVal;
+                    if (jobCriteriaVal) this.handleSeniorityLevelValue(newJob, jobCriteriaVal);
                     break;
                 case Constants.JOB_FUNCTION:
                     newJob.details = jobCriteriaVal;
                     break;
             }
         }
+    }
+
+    /**
+     * @description Function that handles the employmentType value from linkedin job site, formats its value,
+     * and stores it into one of the newJob properties: timeEngagement or isInternship.
+     * @param {JobDTO} newJob
+     * @param {string} employmentType
+     * @returns {void}
+     */
+    private handleEmploymentTypeValue(newJob: JobDTO, employmentType: string) : void {
+        switch (employmentType.toLowerCase()) {
+            case Constants.FULL_TIME:
+                newJob.timeEngagement = Constants.FULL_TIME;
+                break;
+            case Constants.CONTRACT:
+                newJob.timeEngagement = Constants.CONTRACT;
+                break;
+            case Constants.INTERNSHIP:
+                newJob.isInternship = true;
+                break;
+            case Constants.OTHER:
+                break;
+        }
+    }
+
+        /**
+     * @description Function that handles the seniorityLevel value from linkedin job site, formats its value,
+     * and stores it into one of the newJob properties: isInternship or requiredExperience.
+     * @param {JobDTO} newJob
+     * @param {string} seniorityLevel
+     * @returns {void}
+     */
+    private handleSeniorityLevelValue(newJob: JobDTO, seniorityLevel: string) : void {
+        switch (seniorityLevel.toLowerCase()) {
+            case Constants.INTERNSHIP:
+                newJob.isInternship = true;
+                break;
+            case Constants.ENTRY_LEVEL:
+            default:
+                newJob.requiredSkills = newJob.requiredSkills 
+                    ? newJob.requiredSkills + Constants.COMMA + Constants.WHITESPACE + seniorityLevel
+                    : seniorityLevel;
+                newJob.requiredExperience = newJob.requiredExperience
+                    ? newJob.requiredExperience + Constants.COMMA + Constants.WHITESPACE + seniorityLevel
+                    : seniorityLevel;
+        }
+    }
+
+    private formatNofApplicants(nOfApplicants?: string): string | null {
+        if (!nOfApplicants) return null;
+        const partsOfStr = nOfApplicants.split(Constants.WHITESPACE);
+
+        let candidateNum = parseInt(partsOfStr[0]);
+        if (!isNaN(candidateNum)) return partsOfStr[0];
+
+        candidateNum = parseInt(partsOfStr[1]);
+        if (!isNaN(candidateNum)) return `Over ${partsOfStr[1]}`;
+
+        candidateNum = parseInt(partsOfStr[4]);
+        if (!isNaN(candidateNum)) return `Less than ${partsOfStr[4]}`;
+
+        return Constants.UNKNOWN;
     }
 }

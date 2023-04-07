@@ -99,7 +99,7 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
    * @returns {void}
    */
     private handleTimeEngagementProperty(job: JobDTO, timeEngagement: string): void {
-        switch (timeEngagement.toLowerCase()) {
+        switch (timeEngagement.trim().toLowerCase()) {
             case Constants.FULL_TIME:
                 job.timeEngagement = Constants.FULL_TIME;
                 break;
