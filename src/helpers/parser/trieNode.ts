@@ -1,3 +1,4 @@
+import constants from "../constants";
 import { TrieWordType } from "../enums/trieWordType";
 
 export default class TrieNode {
@@ -26,6 +27,10 @@ export default class TrieNode {
         return this.wordType;
     }
 
+    public setWordType(wordType: TrieWordType): void {
+        this.wordType = wordType;
+    }
+
     /**
    * @description Checks among children whether there is a node whose value matches the nodeValue.
    * @param {string} nodeValue
@@ -48,20 +53,19 @@ export default class TrieNode {
    * @returns {void}
    */
     public addEntry(word: string, wordType: TrieWordType): void {
-        if (word === "") {
-            this.wordType = wordType;
+        const currLetter = word[0];
+        let matchingChild = this.matchNextNode(currLetter);
+        if (!matchingChild) {
+            matchingChild = new TrieNode(currLetter, []);
+            this.children.push(matchingChild);
+        }
+
+        if (currLetter === word) {
+            matchingChild.setWordType(wordType);
             return;
         };
 
-        const currLetter = word[0];
-        let matchingChild = this.matchNextNode(currLetter);
-        if (matchingChild) {
-            matchingChild.addEntry(word.substring(1), wordType);
-        } else {
-            let newChild = new TrieNode(currLetter, []);
-            this.children.push(newChild);
-            newChild.addEntry(word.substring(1), wordType);
-        }
+        matchingChild.addEntry(word.substring(1), wordType);
     }
 
     /**
@@ -75,13 +79,15 @@ export default class TrieNode {
         return nextNode;
     }
 
-    // used as a test method
-    // public checkIfEntryPresent(word: string): [string, TrieWordType] {
-    //     if (word === Constants.EMPTY_STRING) return [Constants.EMPTY_STRING, this.wordType];
+    public checkIfEntryPresent(word: string): [string, TrieWordType] {
+        const curNodeValue = this.getValue();
+        if (word === constants.EMPTY_STRING){
+            return [curNodeValue, this.getWordType()];
+        }
+        let nextChild = this.matchNextNode(word[0]);
+        if (!nextChild) return [curNodeValue, TrieWordType.NONE];
 
-    //     let nextChild = this.matchNextNode(word[0]);
-    //     if (!nextChild) return [Constants.EMPTY_STRING, TrieWordType.NONE];
-
-    //     return  nextChild.checkIfEntryPresent(word.substring(1));
-    // }
+        const [aggVal, wordType] = nextChild.checkIfEntryPresent(word.substring(1));
+        return [curNodeValue + aggVal, wordType];
+    }
 }

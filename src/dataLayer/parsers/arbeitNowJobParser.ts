@@ -4,14 +4,12 @@ import { Organization } from "../../database/models/organization";
 import constants from "../../helpers/constants";
 import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
-import Utils from "../../helpers/utils";
+import { reverseString } from '../../helpers/stringUtils';
 import IParser from "../interfaces/IJobParser";
 
 @Service()
 export default class ArbeitNowJobParser implements IParser {
     private trie: TrieNode;
-    @Inject()
-    private utils: Utils;
 
     // within the constructor, the trie which parser uses is constructed
     constructor() {
@@ -58,21 +56,30 @@ export default class ArbeitNowJobParser implements IParser {
     private parseOrganizationName(job: Job, organization: Organization): void {
         let finalCompanyNameRev = constants.EMPTY_STRING;
         let matchingPartRev = constants.EMPTY_STRING;
+        let isPrevTokenWhitespace = false;
         let trieMatch = null;
         for (let i = 0; i < organization.name.length; i++) {
             const currentLowerCasedToken = organization.name[i].toLowerCase();
-            if (trieMatch) {
+            if (currentLowerCasedToken === constants.WHITESPACE) {
+                if (isPrevTokenWhitespace) {
+                    continue;
+                }
+                isPrevTokenWhitespace = true;
+            } else isPrevTokenWhitespace = false;
+
+            if (trieMatch) {    // attempting to continue with the current matching sequence
                 trieMatch = trieMatch.matchToken(currentLowerCasedToken);
-            } else {
+            }
+
+            if (!trieMatch) {   // current matching sequence unmatched further. Attempting to match a new one
                 trieMatch = this.trie.matchToken(currentLowerCasedToken);
             }
 
             if (!trieMatch) {
-                finalCompanyNameRev = matchingPartRev + finalCompanyNameRev;
+                finalCompanyNameRev = organization.name[i] + matchingPartRev + finalCompanyNameRev;
                 matchingPartRev = constants.EMPTY_STRING;
             } else {
                 matchingPartRev = organization.name[i] + matchingPartRev;
-
                 if (trieMatch.getWordType() === TrieWordType.IS_REMOTE) {   // remote found and resetting all values
                     matchingPartRev = constants.EMPTY_STRING;
                     trieMatch = null;
@@ -81,12 +88,12 @@ export default class ArbeitNowJobParser implements IParser {
             }
         }
 
-        organization.name = this.utils.reverseString(finalCompanyNameRev);
+        organization.name = reverseString(finalCompanyNameRev.trimStart());
     }
 
     /**
    * @description Function that accepts the job to be scraped. The function attempts to scrape properties:
-   * isRemote, isStudentPosition, requiredSkills and timeEngagement.
+   * isRemote, isStudentPosition, requiredExperience and timeEngagement.
    * @param {Job} job
    * @returns {void}
    */
@@ -100,34 +107,31 @@ export default class ArbeitNowJobParser implements IParser {
         const requiredExperienceLabels = [];
         let salaryIconDetected = false; // when this part is detected the scraping ends
         let jobDetails = job.details;
-        console.log(`job details before parsing = ${jobDetails}`);
         if (jobDetails) {
             for (let i = 0; i < jobDetails.length; i++) {
                 const curToken = jobDetails[i].toLowerCase();
                 const tokenToSet = jobDetails[i] === '\n' ? constants.WHITESPACE : jobDetails[i];
-                if (curToken)
                 if (curToken === constants.WHITESPACE) {
-                    if (isPrevTokenWhitespace) {
-                        matchingPartRev = constants.EMPTY_STRING;
+                    if (isPrevTokenWhitespace || constants.EMPTY_STRING === finalJobDetailsRev) {
+                        matchingPartRev = trieMatch ? constants.WHITESPACE : constants.EMPTY_STRING;
                         keyWordCandidate = constants.EMPTY_STRING;
-                        trieMatch = null;
                         continue;
                     }
                     isPrevTokenWhitespace = true;
-                }
-                isPrevTokenWhitespace = false;
+                } else isPrevTokenWhitespace = false;
                 
-                if (trieMatch) {
+                if (trieMatch) {    // attempting to continue with the current matching sequence
                     trieMatch = trieMatch.matchToken(curToken);
-                } else {
-                    trieMatch = this.trie.matchToken(curToken);
                 }
-    
-                
-                if (!trieMatch) {
-                    finalJobDetailsRev = tokenToSet + matchingPartRev + finalJobDetailsRev;
+                if (!trieMatch) {   // current matching sequence unmatched further. Attempting to match a new one
+                    finalJobDetailsRev = matchingPartRev + finalJobDetailsRev
                     matchingPartRev = constants.EMPTY_STRING;
                     keyWordCandidate = constants.EMPTY_STRING;
+                    trieMatch = this.trie.matchToken(curToken);
+                }
+                
+                if (!trieMatch) {
+                    finalJobDetailsRev = tokenToSet + finalJobDetailsRev;
                 } else {
                     matchingPartRev = tokenToSet + matchingPartRev;
                     keyWordCandidate += trieMatch.getValue();
@@ -169,8 +173,7 @@ export default class ArbeitNowJobParser implements IParser {
 
             job.timeEngagement = timeEngagementLabels.join(constants.COMMA + constants.WHITESPACE);
             job.requiredExperience = requiredExperienceLabels.join(constants.COMMA + constants.WHITESPACE);
-            job.details = this.utils.reverseString(finalJobDetailsRev);
-            console.log(`Job details after parsing: ${job.details}`);
+            job.details = reverseString(finalJobDetailsRev.trimStart());
         }
     }
 
@@ -193,7 +196,7 @@ export default class ArbeitNowJobParser implements IParser {
             const currentToken = job.salary[i].toLowerCase();
             if (currentToken === '(') break;
 
-            if (currentToken === constants.DOT) {
+            if (currentToken === constants.DOT || currentToken === constants.COMMA) {
                 salaryNumberCandidateRev = currentToken + salaryNumberCandidateRev;
                 dotSeen = true;
                 continue;
@@ -212,7 +215,7 @@ export default class ArbeitNowJobParser implements IParser {
                 let isMonthlyFormat = nOfDigitsBeforeDot === 1 && nOfDigitsAfterDot === 3;
                 if (isYearlyFormat || isMonthlyFormat) {
                     wageRatePeriod = isYearlyFormat ? 'EUR/year' : 'EUR/month';
-                    console.log(`finalSalary is updated on: ${nOfDigitsBeforeDot}, ${nOfDigitsAfterDot}`);
+
                     if (finalSalary) {
                         finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
                     } else {
@@ -229,7 +232,7 @@ export default class ArbeitNowJobParser implements IParser {
             }
 
             if (isNaN(numCurrentToken) && nOfDigitsBeforeDot > 0) {
-                wageRatePeriod = 'hour';
+                wageRatePeriod = 'EUR/hour';
                 if (finalSalary) {
                     finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
                 } else {
@@ -244,6 +247,6 @@ export default class ArbeitNowJobParser implements IParser {
             
         }
 
-        job.salary = finalSalary ? this.utils.reverseString(finalSalary) + constants.WHITESPACE + wageRatePeriod : undefined;
+        job.salary = finalSalary ? reverseString(finalSalary) + constants.WHITESPACE + wageRatePeriod : undefined;
     }
 }

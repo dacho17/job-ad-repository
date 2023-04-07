@@ -1,16 +1,14 @@
-import { Inject, Service } from "typedi";
+import { Service } from "typedi";
 import { Job } from "../../database/models/job";
 import constants from "../../helpers/constants";
 import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
-import Utils from "../../helpers/utils";
+import { reverseString } from "../../helpers/stringUtils";
 import IJobParser from "../interfaces/IJobParser";
 
 @Service()
 export default class CareerBuilderJobParser implements IJobParser {
     private trie: TrieNode;
-    @Inject()
-    private utils: Utils;
 
     constructor() {
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
@@ -74,7 +72,7 @@ export default class CareerBuilderJobParser implements IJobParser {
             }
         }
 
-        job.organization.location = this.utils.reverseString(finalCompanyLocRev);
+        job.organization.location = reverseString(finalCompanyLocRev.trimStart());
     }
 
     /**
@@ -154,6 +152,6 @@ export default class CareerBuilderJobParser implements IJobParser {
 
         const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + '/' : constants.EMPTY_STRING)
             + 'DSU' + constants.WHITESPACE + finalSalary;
-        job.salary = finalSalary ? this.utils.reverseString(finalSalaryOutput) : undefined;
+        job.salary = finalSalary ? reverseString(finalSalaryOutput) : undefined;
     }
 }
