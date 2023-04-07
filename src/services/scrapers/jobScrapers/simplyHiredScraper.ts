@@ -34,7 +34,7 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
         const timeEngagement = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_TIME_ENGAGEMENT_SELECTOR);
         const salary = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_SALARY_SELECTOR);
         newJob.organization.location = orgLocation?.trim();
-        newJob.timeEngagement = timeEngagement?.trim();
+        this.handleTimeEngagement(newJob, timeEngagement);
         newJob.salary = salary?.trim();
 
         const postedAgo = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_POSTED_AGO_SELECTOR);
@@ -43,8 +43,10 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
             newJob.postedDate = postedDate;
         }
         
-        newJob.requiredSkills = await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_REQUIRED_SKILLS_SELECTOR, browserAPI);
-        newJob.benefits = await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR, browserAPI);
+        const reqSkill = await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_REQUIRED_SKILLS_SELECTOR, browserAPI);
+        this.handleRequiredExperience(newJob, reqSkill);
+        newJob.requiredSkills = reqSkill.join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.benefits = (await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR, browserAPI)).join(Constants.COMMA + Constants.WHITESPACE);
 
         return newJob;
     }
@@ -56,10 +58,69 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<string>}
    */
-    private async scrapeSimplyHiredListOfElements(selector: string, browserAPI: BrowserAPI): Promise<string> {
+    private async scrapeSimplyHiredListOfElements(selector: string, browserAPI: BrowserAPI): Promise<string[]> {
         const requiredSkillElems = await browserAPI.findElements(selector);
         let requiredElements = await Promise.all(requiredSkillElems.map(async elem => (await browserAPI.getTextFromElement(elem))!.trim()));
         
-        return requiredElements.join(Constants.COMMA + Constants.WHITESPACE);
+        return requiredElements;
+    }
+
+    /**
+     * @description Function that handles the collected required skills from SimplyHired,
+     * extracts required experience, and stores it into the new newJob property.
+     * @param {JobDTO} newJob
+     * @param {string[]} requiredExperience
+     * @returns {void}
+     */
+    private handleRequiredExperience(newJob: JobDTO, requiredExperience: string[]): void {
+        let reqExpSol: string[] = [];
+        requiredExperience.forEach(elem => {
+            const elemParts = elem.split(Constants.WHITESPACE);
+            if (elemParts.length > 1) {
+                const [firstPart, secondPart, _] = elemParts;
+                const firstPartNum = parseInt(firstPart);
+                const secondPartNum = parseInt(secondPart);
+                const yearsSuf = (num: number) => num === 1 ? 'year' : 'years';
+                if (firstPart === 'Under' && !isNaN(secondPartNum)) reqExpSol.push(`Less than ${secondPart} ${yearsSuf(secondPartNum)}`);
+                if (!isNaN(firstPartNum)) reqExpSol.push(`At least ${firstPart} ${yearsSuf(firstPartNum)}`)
+                
+                const plusIndex = firstPart.indexOf(Constants.PLUS_SIGN);
+                if (plusIndex !== -1) {
+                    const years = firstPart.substring(0, plusIndex);
+                    reqExpSol.push(`More than ${years} ${yearsSuf(parseInt(years))}`);
+                }
+            }
+        });
+
+        newJob.requiredExperience = reqExpSol.join(Constants.COMMA + Constants.WHITESPACE);
+    }
+
+    /**
+     * @description Function that sets timeManagement and isInternship properties.
+     * @param {JobDTO} newJob
+     * @param {string | null} timeEngagement
+     * @returns {void}
+     */
+    private handleTimeEngagement(newJob: JobDTO, timeEngagement: string | null): void {
+        if (!timeEngagement) return;
+
+        let timeEngagements = [];
+        const timeEngagementValues = timeEngagement.split(Constants.PIPE);
+        for (let i = 0; i < timeEngagementValues.length; i++) {
+            let value = timeEngagementValues[i].trim().toLowerCase();
+            switch (value) {
+                case Constants.FULL_TIME:
+                case Constants.CONTRACT:
+                case Constants.PERMANENT:
+                case Constants.SEASONAL:
+                    timeEngagements.push(value);
+                    break;
+                case Constants.INTERNSHIP:
+                    newJob.isInternship = true;
+                    break;
+            }
+        }
+        
+        newJob.timeEngagement = timeEngagements.join(Constants.COMMA + Constants.WHITESPACE);
     }
 }
