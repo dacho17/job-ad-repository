@@ -72,11 +72,13 @@ export default class ArbeitNowJobParser implements IParser {
             }
 
             if (!trieMatch) {   // current matching sequence unmatched further. Attempting to match a new one
+                finalCompanyNameRev = matchingPartRev + finalCompanyNameRev;
+                matchingPartRev = constants.EMPTY_STRING;
                 trieMatch = this.trie.matchToken(currentLowerCasedToken);
             }
 
             if (!trieMatch) {
-                finalCompanyNameRev = organization.name[i] + matchingPartRev + finalCompanyNameRev;
+                finalCompanyNameRev = organization.name[i] + finalCompanyNameRev;
                 matchingPartRev = constants.EMPTY_STRING;
             } else {
                 matchingPartRev = organization.name[i] + matchingPartRev;

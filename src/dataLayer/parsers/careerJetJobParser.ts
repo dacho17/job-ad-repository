@@ -6,62 +6,57 @@ import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from "../../helpers/stringUtils";
 import IJobParser from "../interfaces/IJobParser";
 
+
 @Service()
-export default class CareerBuilderJobParser implements IJobParser {
+export default class CareerJetJobParser implements IJobParser {
     private trie: TrieNode;
 
     constructor() {
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
-        this.trie.addEntry('(onsite)', TrieWordType.REDUNDANT);
         this.trie.addEntry('(hybrid)', TrieWordType.IS_HYBRID);
-        this.trie.addEntry('(remote)', TrieWordType.IS_REMOTE);
-        ['year', 'month', 'week', 'hour'].forEach(entry => {
+        this.trie.addEntry('|| ', TrieWordType.REDUNDANT);
+        ['per year', 'per month', 'per week', 'per hour'].forEach(entry => {
             this.trie.addEntry(entry, TrieWordType.SALARY_PERIOD);
         });
     }
 
     public parseJob(job: Job): Job {
-        this.parseSalary(job);
-        this.parseOrganizationLocation(job);
+        this.parseJobTitle(job);
+        this.formatsalary(job);
 
         return job;
     }
 
     /**
    * @description Function that accepts the job to be scraped. The function attempts to scrape properties:
-   * isRemote and isHybrid and update the organization location to the value without the remote flag.
+   * isHybrid and update the job title to the value without the hybrid flag.
    * @param {Job} job
    * @returns {void}
    */
-    private parseOrganizationLocation(job: Job): void {
-        if (!job.organization?.location) return;
-
-        let finalCompanyLocRev = constants.EMPTY_STRING;
+    private parseJobTitle(job: Job): void {
+        let finalJobTitleRev = constants.EMPTY_STRING;
         let matchingPartRev = constants.EMPTY_STRING;
         let trieMatch = null;
-        let stopParsing = false;    // stop parsing when (Remote) || (Onsite) || (Hybrid) is found
-        for (let i = 0; i < job.organization.location.length; i++) {
-            const currentLowerCasedToken = job.organization.location[i].toLowerCase();
+        let stopParsing = false;    // stop parsing when (Hybrid) is found
+        for (let i = 0; i < job.jobTitle.length; i++) {
+            const currentLowerCasedToken = job.jobTitle[i].toLowerCase();
+            
             if (trieMatch) {    // attempting to continue with the current matching sequence
                 trieMatch = trieMatch.matchToken(currentLowerCasedToken);
             }
             if (!trieMatch) {   // current matching sequence unmatched further. Attempting to match a new one
-                finalCompanyLocRev = matchingPartRev + finalCompanyLocRev;
+                finalJobTitleRev = matchingPartRev + finalJobTitleRev;
                 matchingPartRev = constants.EMPTY_STRING;
                 trieMatch = this.trie.matchToken(currentLowerCasedToken);
             }
 
             if (!trieMatch) {
-                finalCompanyLocRev = job.organization.location[i] + finalCompanyLocRev;
+                finalJobTitleRev = job.jobTitle[i] + finalJobTitleRev;
                 matchingPartRev = constants.EMPTY_STRING;
             } else {
-                matchingPartRev = job.organization.location[i] + matchingPartRev;
+                matchingPartRev = job.jobTitle[i] + matchingPartRev;
 
                 switch(trieMatch.getWordType()) {
-                    case TrieWordType.IS_REMOTE:
-                        stopParsing = true;
-                        job.isRemote = true;
-                        break;
                     case TrieWordType.IS_HYBRID:
                         stopParsing = true;
                         job.isHybrid = true;
@@ -75,7 +70,7 @@ export default class CareerBuilderJobParser implements IJobParser {
             }
         }
 
-        job.organization.location = reverseString(finalCompanyLocRev.trimStart());
+        job.jobTitle = reverseString(finalJobTitleRev.trimStart());
     }
 
     /**
@@ -84,7 +79,9 @@ export default class CareerBuilderJobParser implements IJobParser {
    * @param {Job} job
    * @returns {void}
    */
-    private parseSalary(job: Job): void {
+    private formatsalary(job: Job): void {
+        // - <$x per year> or <$x per month> or <$x per hour>
+        // - can be x-y instead of x
         if (!job.salary) return;
 
         let finalSalary = null;
@@ -109,7 +106,7 @@ export default class CareerBuilderJobParser implements IJobParser {
                 matchingPartRev = currentToken + matchingPartRev;
 
                 if (trieMatch.getWordType() === TrieWordType.SALARY_PERIOD) {
-                    salaryPeriodRev = matchingPartRev;
+                    salaryPeriodRev = matchingPartRev.substring(0, matchingPartRev.indexOf(constants.WHITESPACE));
                     matchingPartRev = constants.EMPTY_STRING;
                     trieMatch = null;
                 }
