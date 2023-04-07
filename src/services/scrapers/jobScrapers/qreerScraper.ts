@@ -53,7 +53,6 @@ export default class QreerScraper implements IJobBrowserScraper {
     */
     private async scrapeDeadlineAndIsInternship(browserAPI: BrowserAPI, newJob: JobDTO): Promise<void> {
         const jobDetailsElements = await browserAPI.findElements(Constants.QREER_DETAILS_JOB_DETAILS_SELECTOR);
-        console.log(`Job details elements have been found = ${!!jobDetailsElements}`)
         if (!jobDetailsElements) return;
         
         const isInternshipKeyEl = await browserAPI.findElementOnElement(jobDetailsElements[0], Constants.SPAN_SELECTOR);
@@ -64,12 +63,9 @@ export default class QreerScraper implements IJobBrowserScraper {
             if (isInternshipKey && isInternshipValue) {
                 isInternshipKey = isInternshipKey.trim();
                 isInternshipValue = isInternshipValue.replace(isInternshipKey, Constants.EMPTY_STRING).trim();
-                console.log(`isinternship key value = ${isInternshipKey}`);
-                console.log(`isinternship value value = ${isInternshipValue}`);
                 newJob.isInternship = isInternshipKey === Constants.TYPE_COL && isInternshipValue === Constants.JOB
                     ? false
                     : undefined;
-                console.log(`Value of isInternship on jobAD is now ${newJob.isInternship}`);
             }
         }
 
@@ -81,14 +77,10 @@ export default class QreerScraper implements IJobBrowserScraper {
             if (deadlineKey && deadlineValue) {
                 deadlineKey = deadlineKey.trim();
                 deadlineValue = deadlineValue.replace(deadlineKey, Constants.EMPTY_STRING).trim();
-                console.log(`deadlineKey value = ${deadlineKey}`);
-                console.log(`deadlineValue value = ${deadlineValue}`);
                 const deadline: Date | null = deadlineKey === Constants.DEADLINE_COL 
                     ? this.utils.transformQreerDate(deadlineValue)
                     : null;
-                console.log(`Value of deadline before transforming to date is ${deadline}`);
                 newJob.applicationDeadline = deadline || undefined;
-                console.log(`Value of deadline on jobAD is now ${newJob.applicationDeadline}`);
             }
         }
     }

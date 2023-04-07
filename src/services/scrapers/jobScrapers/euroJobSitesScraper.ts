@@ -28,7 +28,7 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
         const additionalJobLink = await browserAPI.getDataSelectorAndAttr(Constants.EURO_JOB_SITES_DETAILS_ADDITIONAL_JOB_LINK_SELECTOR, Constants.HREF_SELECTOR);
         if (additionalJobLink) {
             const curUrl = browserAPI.getUrl();
-            newJob.additionalJobLink = curUrl.substring(0, curUrl.indexOf('.com') + 4) + additionalJobLink.trim();
+            newJob.additionalJobLink = curUrl.substring(0, curUrl.indexOf(Constants.DOT_COM) + 4) + additionalJobLink.trim();
         }
         
         const jobDetailsKeysElement = await browserAPI.findElements(Constants.EURO_JOB_SITES_DETAILS_JOB_DETAILS_KEYS_SELECTOR);

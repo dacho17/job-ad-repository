@@ -88,7 +88,6 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
    */
     private async scrapeRequirementsAndEngagement(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
         const engagementAndRequirementsElems = await browserAPI.findElements(Constants.EURO_JOBS_DETAILS_ENGAGEMENT_AND_REQUIREMENTS_SELECTOR);
-        console.log(`Elements found = ${engagementAndRequirementsElems.length}`)
         engagementAndRequirementsElems.shift(); // fist element is jobDescription already scraped elsewhere in the class
         for (let i = 0; i < engagementAndRequirementsElems.length; i++) {
             const titleElem = await browserAPI.findElementOnElement(engagementAndRequirementsElems[i], Constants.H3_SELECTOR);
@@ -97,8 +96,6 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
 
             let title = await browserAPI.getTextFromElement(titleElem);
             let value = await browserAPI.getTextFromElement(valueElem);
-
-            console.log(`Title=${title},value=${value}`);
 
             switch(title?.trim()) {
                 case Constants.JOB_REQUIREMENTS_COL:

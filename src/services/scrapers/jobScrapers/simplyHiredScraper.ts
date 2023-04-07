@@ -80,7 +80,7 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
                 const [firstPart, secondPart, _] = elemParts;
                 const firstPartNum = parseInt(firstPart);
                 const secondPartNum = parseInt(secondPart);
-                const yearsSuf = (num: number) => num === 1 ? 'year' : 'years';
+                const yearsSuf = (num: number) => num === 1 ? Constants.YEAR : Constants.YEARS;
                 if (firstPart === 'Under' && !isNaN(secondPartNum)) reqExpSol.push(`Less than ${secondPart} ${yearsSuf(secondPartNum)}`);
                 if (!isNaN(firstPartNum)) reqExpSol.push(`At least ${firstPart} ${yearsSuf(firstPartNum)}`)
                 
