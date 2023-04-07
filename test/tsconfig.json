@@ -1,0 +1,34 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2016",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "module": "commonjs",
+    "rootDir": "../",
+    "baseUrl": "../",
+    "typeRoots": [
+      "../node_modules/@types"
+    ],
+    "sourceMap": true,
+    "outDir": "./dist/",
+    "sourceRoot": "./src/",
+    "isolatedModules": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "strict": false,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false,
+    "allowUnreachableCode": false,
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "db-interface-client",
+    "../node_modules"
+  ],
+  "include": [
+    "./**/*.ts"
+  ]
+}
