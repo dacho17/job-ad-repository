@@ -199,7 +199,7 @@ export default class ArbeitNowJobParser implements IParser {
             if (currentToken === '(') break;
 
             if (currentToken === constants.DOT || currentToken === constants.COMMA) {
-                salaryNumberCandidateRev = currentToken + salaryNumberCandidateRev;
+                salaryNumberCandidateRev = constants.DOT + salaryNumberCandidateRev;
                 dotSeen = true;
                 continue;
             }

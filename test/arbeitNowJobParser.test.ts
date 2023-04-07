@@ -71,7 +71,7 @@ class ArbeitNowJobParserTests {
     
     testData.salary = '   12,5 - 14 (EUR)   ';
     this.arbeitNowJobParser.parseJob(testData);
-    expect(testData.salary).to.be.equal('12,5-14 EUR/hour');
+    expect(testData.salary).to.be.equal('12.5-14 EUR/hour');
 
     testData.salary = '   4.000 (EUR)   ';
     this.arbeitNowJobParser.parseJob(testData);
