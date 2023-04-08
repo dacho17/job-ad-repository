@@ -6,6 +6,7 @@ import { Organization } from "../database/models/organization";
 import { GetJobsRequest } from '../helpers/dtos/getJobsRequest';
 import JobDTO from '../helpers/dtos/jobDTO';
 import { JobAdSource } from "../helpers/enums/jobAdSource";
+import { JobAdMapper } from "../helpers/mappers/jobAdMapper";
 import JobMapper from "../helpers/mappers/jobMapper";
 import OrganizationMappper from "../helpers/mappers/organizationMapper";
 import Utils from "../helpers/utils";
@@ -26,6 +27,7 @@ export class ScrapingJobService {
     private organizationRepository: OrganizationRepository;
 
     private jobScraperHelper: JobScraperHelper;
+    private jobAdMapper: JobAdMapper;
     private jobMapper: JobMapper;
     private organizationMapper: OrganizationMappper;
     private browserAPI: BrowserAPI;
@@ -37,6 +39,7 @@ export class ScrapingJobService {
         @Inject() jobRepository: ScrapingJobRepository,
         @Inject() organizationRepository: OrganizationRepository,
         @Inject() jobScraperHelper: JobScraperHelper,
+        @Inject() jobAdMapper: JobAdMapper,
         @Inject() jobMapper: JobMapper,
         @Inject() organizationMapper: OrganizationMappper,
         @Inject() broserAPI: BrowserAPI,
@@ -48,6 +51,7 @@ export class ScrapingJobService {
         this.jobRepository = jobRepository;
         this.organizationRepository = organizationRepository;
         this.jobScraperHelper = jobScraperHelper;
+        this.jobAdMapper = jobAdMapper;
         this.jobMapper = jobMapper;
         this.organizationMapper = organizationMapper;
         this.browserAPI = broserAPI;
@@ -63,6 +67,7 @@ export class ScrapingJobService {
    */
     public async scrapeJobs(): Promise<[number, number]> {
         let jobAdQueryOffset = 0;
+        let expired = 0;
         let succStored = 0;
         await this.browserAPI.run();
         for (;;) {
@@ -71,27 +76,34 @@ export class ScrapingJobService {
 
             console.log(`${jobAdsWithoutScrapedJobs.length} jobads to be scraped`)
             for (let i = 0; i < jobAdsWithoutScrapedJobs.length; i++) {
+                // const jobAdDTO = this.jobAdMapper.toDto(jobAdsWithoutScrapedJobs[i]);
                 const jobScraper = this.jobScraperHelper.getScraperFor(jobAdsWithoutScrapedJobs[i].source);
                 if (!jobScraper) {
                     jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
                     continue;
                 }
                 
-                console.log(`${jobAdQueryOffset + succStored}: ${jobAdsWithoutScrapedJobs[i].jobLink} to be scraped`);
+                console.log(`${jobAdQueryOffset + succStored + expired}: ${jobAdsWithoutScrapedJobs[i].jobLink} to be scraped`);
 
                 let newJobDTO;
                 // differentiating between IJobBrowserScrapers and IJobApiScrapers
                 try {
                     if (jobAdsWithoutScrapedJobs[i].source !== JobAdSource.SNAPHUNT) {
                         await this.browserAPI.openPage(jobAdsWithoutScrapedJobs[i].jobLink);
-                        newJobDTO = await (jobScraper as IJobBrowserScraper).scrape(jobAdsWithoutScrapedJobs[i].id, this.browserAPI);
+                        newJobDTO = await (jobScraper as IJobBrowserScraper).scrape(jobAdsWithoutScrapedJobs[i], this.browserAPI);
                     } else {
-                        newJobDTO = await (jobScraper as IJobApiScraper).scrape(jobAdsWithoutScrapedJobs[i].id, jobAdsWithoutScrapedJobs[i].jobLink);                    
+                        newJobDTO = await (jobScraper as IJobApiScraper).scrape(jobAdsWithoutScrapedJobs[i], jobAdsWithoutScrapedJobs[i].jobLink);                    
                     }
                 } catch (exception) {
                     console.log(exception);
                     // TODO: mark this event somehow in the database because the ad might be inactive!
                     jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
+                    continue;
+                }
+
+                if (!newJobDTO) {   // handle newJobDTO = null (job is no longer present online)
+                    expired += 1;
+                    await this.jobAdRepository.update(jobAdsWithoutScrapedJobs[i]) // stores jobAd marking it as expired
                     continue;
                 }
 
@@ -128,8 +140,8 @@ export class ScrapingJobService {
         } else {
             newJobDTO = await (scraper as IJobApiScraper).scrape(null, url);                    
         }
-        const newJobMAP = this.buildJobMap(newJobDTO, url);
-        newJobMAP.organization = this.organizationMapper.toMap(newJobDTO.organization);
+        const newJobMAP = this.buildJobMap(newJobDTO!, url);
+        newJobMAP.organization = this.organizationMapper.toMap(newJobDTO!.organization);
         // const newOrgMAP = this.organizationMapper.toMap(newJobDTO.organization);
 
         const storedJobMAP = await this.sendScrapedJobForStoring(newJobMAP);

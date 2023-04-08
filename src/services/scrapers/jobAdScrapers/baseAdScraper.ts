@@ -18,7 +18,8 @@ export class BaseAdScraper {
 
     /**
    * @description Function accepts requested parameters from the client and based on them returns a list of scraped JobAdDTOs
-   * @param {AdScraperUrlParams} urlParams @param {JobAdSource} adSource
+   * @param {AdScraperUrlParams} urlParams
+   * @param {JobAdSource} adSource
    * @returns {Promise<JobAdDTO[]>} Returns the list of scraped JobAdDTOs.
    */
     protected async scrapeAds(urlParams: AdScraperUrlParams, adSource: JobAdSource): Promise<JobAdDTO[]> {
@@ -36,11 +37,11 @@ export class BaseAdScraper {
                 for (let i = 0; i < navigationButtons.length; i++) {
                     const candidateUrl = await this.browserAPI.getDataFromAttr(navigationButtons[i], Constants.HREF_SELECTOR);
                     const candidateButtonPageContent = await this.browserAPI.getTextFromElement(navigationButtons[i]);
-                    console.log(`${candidateButtonPageContent} is the value in navigation button. Url=${candidateUrl}`);
+
                     if (!candidateButtonPageContent || !candidateUrl) continue;
                     const pageNumberCandidate = parseInt(candidateButtonPageContent.trim());
                     if (isNaN(pageNumberCandidate)) continue;
-                    console.log(`Current page=${scraperTracker.currentPage} and candidate page=${pageNumberCandidate}`);
+
                     if (pageNumberCandidate === scraperTracker.currentPage + 1) {
                         scraperTracker.url = candidateUrl;
                         break;
@@ -67,7 +68,8 @@ export class BaseAdScraper {
 
     /**
    * @description Function accepts job ad website (one of the four euroJobSites) url parameters and returns the list of scraped JobAdDTOs.
-   * @param {AdScraperUrlParams} urlParams @param {JobAdSource} adSource
+   * @param {AdScraperUrlParams} urlParams
+   * @param {JobAdSource} adSource
    * @returns {Promise<JobAdDTO[]>} Returns the list of scraped JobAdDTOs.
    */
     protected async scrapeEuroJobSitesAds(urlParams: AdScraperUrlParams, adSource: JobAdSource): Promise<JobAdDTO[]> {
@@ -83,15 +85,13 @@ export class BaseAdScraper {
         return scraperTracker.scrapedAds;
     }
 
-    public delay(delayInms: number) {
-        return new Promise(resolve => setTimeout(resolve, delayInms));
-      }
-
     /**
    * @description Main function of the class, that extracts and formats data from the website, finally attaching
    * it to the newly created JobAdDTO object. 
-   * @param {AdScraperTracker} scraperTracker @param {JobAdSource} adSource
-   * @param {ElementHandle<Element>[]} jobAdElements @param {(string | null)[]} postedAgoList
+   * @param {AdScraperTracker} scraperTracker 
+   * @param {JobAdSource} adSource
+   * @param {ElementHandle<Element>[]} jobAdElements
+   * @param {(string | null)[]} postedAgoList
    * @returns {Promise<number>} Returns the number of scraped job ads.
    */
     protected async scrapeJobAdElements(scraperTracker: AdScraperTracker, adSource: JobAdSource, jobAdElements: ElementHandle<Element>[], postedAgoList: (string | null)[]): Promise<number> {
@@ -120,9 +120,12 @@ export class BaseAdScraper {
     }
 
     /**
-   * @description Function accepts data about the page to be scraped, job ad selector and element handles to posted ago elements if they are present.
-   * @param {AdScraperTracker} scraperTracker @param {JobAdSource} adSource @param {string} adSelector @param {string} postedAgoElements
-   * @returns {Promise<n>} Returns the number of job ads scraped from the page.
+   * @description Function accepts data about the page to be scraped, job ad source, job ad selector and element handles to posted ago elements if they are present.
+   * @param {AdScraperTracker} scraperTracker
+   * @param {JobAdSource} adSource
+   * @param {string} adSelector
+   * @param {string} postedAgoList
+   * @returns {Promise<number>} Returns the number of job ads scraped from the page.
    */
     private async scrapePage(scraperTracker: AdScraperTracker, adSource: JobAdSource, adSelector: string, postedAgoList: (string | null)[]): Promise<number> {
         const jobAdElements = await this.browserAPI.findMultiple(adSelector);
@@ -133,7 +136,8 @@ export class BaseAdScraper {
 
     /**
      * @description Function that accepts the scraped url and jobAdSource. Based on the jobAdSource the url is formatted and returned.
-     * @param {string} jobLink @param {JobAdSource} jobAdSource
+     * @param {string} jobLink
+     * @param {JobAdSource} jobAdSource
      * @returns {string} Returns the formatted url.
      */
     private formatJobLink(jobLink: string, adSource: JobAdSource): string {
@@ -246,8 +250,9 @@ export class BaseAdScraper {
     /**
      * @description Function accepts requested parameters from the client and jobAdSource.
      * Based on the parameters, the function constructs the euroJobSiteUrl which will be scraped for jobAds.
-     * @param {AdScraperUrlParams} urlParams @param {JobAdSource} jobAdSource
-     * @returns {string} Returns the element selector.
+     * @param {AdScraperUrlParams} urlParams
+     * @param {JobAdSource} jobAdSource
+     * @returns {AdScraperTracker}
      */
     private getEuroJobSiteData(urlParams: AdScraperUrlParams, jobAdSource: JobAdSource): AdScraperTracker {
         const scraperTracker: AdScraperTracker = {
@@ -273,7 +278,9 @@ export class BaseAdScraper {
     /**
      * @description Function maps scraped postedAgo entry to postedDate and posted timestamp, based on the scraped website.
      * The properties postedDate and postedTimestamp are then set for the JobAdDTO.
-     * @param {JobAdDTO} jobAd @param {string} postedAgo @param {JobAdSource} jobAdSource
+     * @param {JobAdDTO} jobAd
+     * @param {string} postedAgo 
+     * @param {JobAdSource} adSource
      * @returns {void}
      */
     private setPostedDate(jobAd: JobAdDTO, postedAgo: string, adSource: JobAdSource): void {

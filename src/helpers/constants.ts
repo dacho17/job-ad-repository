@@ -359,5 +359,6 @@ export default {
     JOB_DESCRIPTION_COMPOSITION_DELIMITER: ';; ',   // ', '
     SNAPHUNT_REDUNDANT_ADDRESS_MARK: '||&&||',
     EURO_JOBS_REDUNDANT_MARK: ', null',
+    EURO_JOBS_REDUNDANT_MARK_TWO: 'Null, ',
     EURO_JOBS_EMPTY_WEBSITE_URL: 'http://',
 }

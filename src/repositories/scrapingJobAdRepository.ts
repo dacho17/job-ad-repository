@@ -51,6 +51,7 @@ export class ScrapingJobAdRepository {
             const jobAdsWithoutScrapedDetails = await JobAd.findAll({
                 where: {
                     areDetailsScraped: false,
+                    isAdPresentOnline: true,
                     // source: { [Op.not]: [JobAdSource.CV_LIBRARY.valueOf(), JobAdSource.NO_FLUFF_JOBS.valueOf()] },
                 },
                 limit: this.FETCH_JOB_AD_BATCH,
@@ -83,6 +84,20 @@ export class ScrapingJobAdRepository {
             return updatedJobAd;    
         } catch (exception) {
             throw `An exception occurred while updating the jobAd with id=${jobAd.id}. - [${exception}]`;
+        }
+    }
+
+    /**
+   * @description Updates the jobAd and return it. Throws an error if encountered.
+   * @param {JobAd} jobAd JobAd MAP object which is to be updated
+   * @param {Transaction?} t transaction as part of which the update query is executed
+   * @returns {Promise<JobAd>} Promise containing the updated jobAd.
+   */
+    public async update(jobAd: JobAd, t?: Transaction): Promise<JobAd> {
+        try {
+            return await jobAd.save({transaction: t});
+        } catch (exception) {
+            throw `An attempt to update the jobAd with id=${jobAd.id} has failed. - [${exception}]`;
         }
     }
 }

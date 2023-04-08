@@ -9,7 +9,12 @@ import { BaseAdScraper } from "./baseAdScraper";
 
 @Service()
 export default class LinkedInAdScraper extends BaseAdScraper implements IJobAdScraper {
-
+    /**
+   * @description Function that accepts client form, and based on it starts the jobAd scraping.
+   * The function scrapes jobLink and postedAgo values.
+   * @param {ScrapeJobAdsForm} clientForm
+   * @returns {Promise<JobAdDTO[]>} Returns the list of scraped JobAdDTOs.
+   */
     public async scrape(clientForm: ScrapeJobAdsForm): Promise<JobAdDTO[]> {
         const urlParams: AdScraperUrlParams = {
             jobTitle: clientForm.jobTitle.replace(Constants.WHITESPACE, Constants.UFT_PLUS_SIGN_ENCODING),

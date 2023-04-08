@@ -105,7 +105,6 @@ export default class ScrapingJobRepository {
    */
     public async update(job: Job, t?: Transaction): Promise<Job> {
         try {
-            console.log(`Job before storing details=${job.details}\n\ndecription=${job.description}`)
             return await job.save({transaction: t});
         } catch (exception) {
             throw `An attempt to update the job with jobId=${job.id} has failed. - [${exception}]`;

@@ -1,4 +1,5 @@
 import { Service } from "typedi";
+import { JobAd } from "../../../database/models/jobAd";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
@@ -8,21 +9,25 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 @Service()
 export default class EuroJobSitesScraper implements IJobBrowserScraper {
     /**
-   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+      * @description Function that accepts jobAd and browserAPI.
    * Data available on EuroJobSites in the scrape is (jobTitle, orgName, orgLocation, additionalJobLink, jobDescription, jobDetails).
-   * @param {number | null} jobAdId
+   * @param {JobAd | null} jobAd
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<JobDTO>} Returns the a JobDTO.
+   * @returns {Promise<JobDTO | null>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const [jobTitle, orgName, orgLocation] = await this.scrapeHeader(browserAPI);
+        if (!jobTitle) {
+            jobAd!.isAdPresentOnline = false;
+            return null;
+        }
         const jobDescription = await browserAPI.getText(Constants.EURO_JOB_SITES_DETAILS_AD_SELECTOR);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle,
             url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim() } as OrganizationDTO,
         }
 

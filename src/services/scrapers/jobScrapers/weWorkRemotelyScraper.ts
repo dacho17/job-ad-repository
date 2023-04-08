@@ -1,4 +1,5 @@
 import { Inject, Service } from "typedi";
+import { JobAd } from "../../../database/models/jobAd";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
@@ -13,14 +14,18 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
     private utils: Utils;
 
     /**
-   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+   * @description Function that accepts jobAd and browserAPI.
    * Data available on WeWorkRemotely in the scrape is (jobTitle, organization.name, organization.location, organization.webiste, organization.urlReference, postedAgo, nOfApplicants, isRemote, timeEngagement, workLocation, salary, jobDetails, jobDescription).
-   * @param {number | null} jobAdId
+   * @param {JobAd | null} jobAd
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<JobDTO>} Returns the a JobDTO.
+   * @returns {Promise<JobDTO | null>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.WE_WORK_REMOTELY_DETAIL_JOB_TITLE_SELECTOR);
+        if (!jobTitle) {
+            jobAd!.isAdPresentOnline = false;
+            return null;
+        }
         const jobDescription = await browserAPI.getText(Constants.WE_WORK_REMOTELY_JOB_DESCRIPTION_SELECTOR);
         const companyNameAndLinkElement = await browserAPI.findElement(Constants.WE_WORK_REMOTELY_COMPANY_NAME_AND_LINK_SELECTOR);
 
@@ -31,7 +36,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
             organization: {
                 name: orgName?.trim(),
                 urlReference: orgLink ? Constants.WE_WORK_REMOTELY_URL + orgLink.trim() : undefined

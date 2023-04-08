@@ -1,4 +1,5 @@
 import { Inject, Service } from "typedi";
+import { JobAd } from "../../../database/models/jobAd";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
@@ -13,14 +14,18 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
     private utils: Utils;
 
     /**
-   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+      * @description Function that accepts jobAd and browserAPI.
    * Data available on CvLibrary in the scrape is (jobTitle, orgName, workLocation, isRemote, salary, timeEngagement, startDate, postedDate, jobDetails, jobDescription).
-   * @param {number | null} jobAdId
+   * @param {JobAd | null} jobAd
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<JobDTO>} Returns the a JobDTO.
+   * @returns {Promise<JobDTO | null>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_JOB_TITLE_SELECTOR);
+        if (!jobTitle) {
+            jobAd!.isAdPresentOnline = false;
+            return null;
+        }
         const jobDescription = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_JOB_DESCRIPTION_SELECTOR);
         const orgName = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_COMPANY_NAME_SELECTOR);
 
@@ -29,7 +34,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
             url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             organization: { name: orgName?.trim() } as OrganizationDTO,
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
         }
 
         const postedAgo = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_POSTED_AGO_SELECTOR);

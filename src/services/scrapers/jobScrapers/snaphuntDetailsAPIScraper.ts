@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import { Service } from "typedi";
+import { JobAd } from '../../../database/models/jobAd';
 import { Organization } from '../../../database/models/organization';
 import constants from '../../../helpers/constants';
 import Constants from '../../../helpers/constants';
@@ -10,21 +11,24 @@ import IJobApiScraper from '../interfaces/IJobApiScraper';
 @Service()
 export default class SnaphuntScraper implements IJobApiScraper {
     /**
-   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+   * @description Function that accepts jobAd or jobUrl.
    * Data available on Snaphunt in the scrape is (jobTitle, description, requiredExperience, workLocation,
    * organization.name, organization.size, organization.industry, organization.location, isRemote, timeEngagement, salary,
    * organization.logo, organization.website, organization.description, organization.urlReference
-   * @param {number | null} jobAdId
-   * @param {string} jobUrl
+   * @param {JobAd | null} jobAd
+   * @param {string?} jobUrl
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number | null, jobUrl: string): Promise<JobDTO> {    
+    public async scrape(jobAd: JobAd | null, jobUrl?: string): Promise<JobDTO | null> {    
         let jsonResponse = null;
         try {
-            console.log(`accessing ${jobUrl}`);
-            jsonResponse = await axios(jobUrl);
+            let url = jobAd?.jobLink ?? jobUrl;
+            console.log(`accessing ${url}`);
+            jsonResponse = await axios(url!);
         } catch(exception) {
-            throw `An exception occurred while accessing the url=${exception}!`;
+            console.log(`An exception occurred while accessing the url=${exception}!`);
+                jobAd!.isAdPresentOnline = false;
+                return null;
         }
 
         const data = JSON.parse(JSON.stringify(jsonResponse.data)).body;
@@ -37,12 +41,12 @@ export default class SnaphuntScraper implements IJobApiScraper {
 
         const newJob: JobDTO = {
             jobTitle: data.jobListing.jobTitle,
-            url: jobUrl,
+            url: jobAd?.jobLink ?? jobUrl!,
             description: data.jobListing.offerDescription +
                 data.jobListing.roleDescription +
                 data.jobListing.candidateDescription +
                 data.jobListing.employerDescription,
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
             requiredExperience: this.getRequiredExperienceStr(data.minimumYearsOfExperience),
             workLocation: remoteLocationStr,
             isRemote: remoteLocationStr.length > 0 || data.jobLocationType === constants.REMOTE,

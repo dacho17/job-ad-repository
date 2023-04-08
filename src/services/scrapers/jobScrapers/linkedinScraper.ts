@@ -6,6 +6,7 @@ import BrowserAPI from "../../browserAPI";
 import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
 import constants from "../../../helpers/constants";
+import { JobAd } from "../../../database/models/jobAd";
 
 @Service()
 export default class LinkedInScraper implements IJobBrowserScraper {
@@ -13,13 +14,13 @@ export default class LinkedInScraper implements IJobBrowserScraper {
     private utils: Utils;
 
     /**
-     * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+    * @description Function that accepts jobAd and browserAPI.
      * Data available on Linkedin in the scrape is (jobTitle, organization.name, organization.location, organization.urlReference, organization.industry, jobDescription, nOfApplicants, postedDate, requiredExperience, details, timeEngagement).
-     * @param {number | null} jobAdId
+     * @param {JobAd | null} jobAd
      * @param {BrowserAPI} browserAPI
-     * @returns {Promise<JobDTO>} Returns the a JobDTO.
+     * @returns {Promise<JobDTO | null>} Returns the a JobDTO.
      */
-    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
 
         const showMoreButton = await browserAPI.findElement(Constants.LN_DETAILS_SHOW_MORE_BUTTON_SELECTOR);
         if (showMoreButton) {
@@ -28,6 +29,10 @@ export default class LinkedInScraper implements IJobBrowserScraper {
         }
 
         const jobTitle = await browserAPI.getText(Constants.LN_DETAILS_JOBTITLE_SELECTOR);
+        if (!jobTitle) {
+            jobAd!.isAdPresentOnline = false;
+            return null;
+        }
         const orgName = await browserAPI.getText(Constants.LN_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
         const orgUrlRef = await browserAPI.getDataSelectorAndAttr(Constants.LN_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR, Constants.HREF_SELECTOR)
         const orgLocation = await browserAPI.getText(Constants.LN_DETAILS_COMPANY_LOCATION_SELECTOR);
@@ -54,7 +59,7 @@ export default class LinkedInScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
             nOfApplicants: this.formatNofApplicants(nOfApplicants?.trim()) ?? undefined,
             postedDate: this.utils.getPostedDate4LinkedIn(postedAgo!.trim())

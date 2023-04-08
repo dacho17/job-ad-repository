@@ -1,4 +1,5 @@
 import { Inject, Service } from "typedi";
+import { JobAd } from "../../../database/models/jobAd";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
@@ -12,15 +13,19 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
     private utils: Utils;
 
     /**
-   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+      * @description Function that accepts jobAd and browserAPI.
    * Data available on EuroJobs in the scrape is (jobTitle, orgLocation, orgName, orgWebsite, postedDate, jobDescription).
    * Information - EUworkPermitRequired, jobViews, applicationDeadline, requirements, timeEngagement are on the page as well.
-   * @param {number | null} jobAdId
+   * @param {JobAd | null} jobAd
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<JobDTO>} Returns the a JobDTO.
+   * @returns {Promise<JobDTO | null>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {    
+    public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {    
         let jobTitle = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR);
+        if (!jobTitle) {
+            jobAd!.isAdPresentOnline = false;
+            return null;
+        }
         const jobDescription = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_DESCRIPTION_SELECTOR);
         const orgName = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_COMPANY_NAME_SELECTOR);
 
@@ -30,7 +35,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
             jobTitle: jobTitle,
             url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim() } as OrganizationDTO,
         }
         
@@ -63,7 +68,9 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
                     newJob.organization.name = value?.trim() || newJob.organization.name;
                     break;
                 case Constants.LOCATION_COL:
-                    value = value!.replace(Constants.EURO_JOBS_REDUNDANT_MARK, Constants.EMPTY_STRING).trim();
+                    value = value!
+                        .replace(Constants.EURO_JOBS_REDUNDANT_MARK, Constants.EMPTY_STRING)
+                        .replace(Constants.EURO_JOBS_REDUNDANT_MARK_TWO, Constants.EMPTY_STRING).trim();
                     value = value[0].toUpperCase() + value.slice(1);
                     newJob.organization.location = value;
                     break;

@@ -1,4 +1,5 @@
 import { Inject, Service } from "typedi";
+import { JobAd } from "../../../database/models/jobAd";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
@@ -12,14 +13,18 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
     private utils: Utils;
 
     /**
-   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+      * @description Function that accepts jobAd and browserAPI.
    * Data available on Graduateland in the scrape is (jobTitle, jobDescription, orgName, orgUrlRef, postedDate, workLocation, timeEngagement, requiredSkills, requiredLanguages, and organization.orgIndustry).
-   * @param {number | null} jobAdId
+   * @param {JobAd | null} jobAd
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<JobDTO>} Returns the a JobDTO.
+   * @returns {Promise<JobDTO | null>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.GRADUATELAND_DETAILS_JOB_TITLE_SELECTOR);
+        if (!jobTitle) {
+            jobAd!.isAdPresentOnline = false;
+            return null;
+        }
         const orgNameElement = await browserAPI.findElement(Constants.GRADUATELAND_DETAILS_COMPANY_NAME_SELECTOR);
         const orgUrlRef = await browserAPI.getDataFromAttr(orgNameElement!, Constants.HREF_SELECTOR);
         const orgName = await browserAPI.getTextFromElement(orgNameElement!);
@@ -29,7 +34,7 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
             jobTitle: jobTitle!.trim(),
             url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
             organization: {
                 name: orgName?.trim(),
                 urlReference: orgUrlRef ? Constants.GRADUATELAND_URL + orgUrlRef.trim() : undefined

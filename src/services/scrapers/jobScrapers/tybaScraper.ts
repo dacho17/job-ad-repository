@@ -1,4 +1,5 @@
 import { Service } from "typedi";
+import { JobAd } from "../../../database/models/jobAd";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
@@ -8,17 +9,20 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 @Service()
 export default class TybaScraper implements IJobBrowserScraper {
     /**
-   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+   * @description Function that accepts jobAd and browserAPI.
    * Data available on Tyba in the scrape is (jobTitle, organization.name, organization.urlReference, workLocation, timeEngagement, requiredSkills, requiredLanguages, and organization.industry).
-   * @param {number | null} jobAdId
+   * @param {JobAd | null} jobAd
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.TYBA_DETAILS_JOB_TITLE_SELECTOR);
 
         if (!jobTitle) {
-            throw `No title found for the job connected to the jobAdId=${jobAdId}. This job might no longer be available.`;
+            if (!jobTitle) {
+                jobAd!.isAdPresentOnline = false;
+                return null;
+            }
         }
         const orgNameElem = await browserAPI.findElement(Constants.TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
         const orgLink = await browserAPI.getDataFromAttr(orgNameElem!, Constants.HREF_SELECTOR)
@@ -28,7 +32,7 @@ export default class TybaScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             url: browserAPI.getUrl(),
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
             description: jobDescription!.trim(),
             organization: { name: orgName?.trim(), urlReference: orgLink ? Constants.TYBA_URL + orgLink.trim() : undefined } as OrganizationDTO,
         }

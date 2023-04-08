@@ -1,4 +1,5 @@
 import { Service } from "typedi";
+import { JobAd } from "../../../database/models/jobAd";
 import { Organization } from "../../../database/models/organization";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
@@ -9,21 +10,25 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 @Service()
 export default class CareerBuilderScraper implements IJobBrowserScraper {
     /**
-   * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
+      * @description Function that accepts jobAd and browserAPI.
    * Data available on CareerBuilder in the scrape is (jobTitle, orgName, orgLocation, timeEngagement, salary, jobDescription, requiredSkills).
-   * @param {number} jobAdId
+   * @param {JobAd | null} jobAd
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<JobDTO>} Returns the a JobDTO.
+   * @returns {Promise<JobDTO | null>} Returns the a JobDTO.
    */
-    public async scrape(jobAdId: number | null, browserAPI: BrowserAPI): Promise<JobDTO> {
+    public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.CAREER_BUILDER_DETAILS_JOB_TITLE_SELECTOR);
+        if (!jobTitle) {
+            jobAd!.isAdPresentOnline = false;
+            return null;
+        }
         const jobDescription = await browserAPI.getText(Constants.CAREER_BUILDER_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
             url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
-            jobAdId: jobAdId ?? undefined,
+            jobAdId: jobAd?.id ?? undefined,
             organization: { name: Constants.UNDISLOSED_COMPANY } as Organization
         }
 
@@ -62,6 +67,7 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
         }
 
         if (timeEngagement?.toLowerCase().indexOf(Constants.CONTRACT) !== -1) newJob.timeEngagement = Constants.CONTRACT
+        else if (timeEngagement?.toLowerCase().indexOf(Constants.FULL_TIME) !== -1) newJob.timeEngagement = Constants.FULL_TIME
         else {
             newJob.timeEngagement = timeEngagement;
         }
