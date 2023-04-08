@@ -10,6 +10,7 @@ export class JobAd extends Model {
     updatedAt: Date;
     source: number;
     jobLink: string;
+    isAdPresentOnline: boolean;
     areDetailsScraped?: boolean;
     detailsScrapedDate?: Date;
     jobTitle?: string;
@@ -41,6 +42,11 @@ export const JobAdMAP = (sequelize: Sequelize) => {
         jobLink: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        isAdPresentOnline: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
         },
         areDetailsScraped: {
             type: DataTypes.BOOLEAN,

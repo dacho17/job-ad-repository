@@ -197,5 +197,5 @@ export const JobMAP = (sequelize: Sequelize) => {
         sequelize,
         modelName: 'Job',
     });
-    Job.sync({ alter: true }); // 
+    Job.sync(); // { alter: true }
 }
