@@ -15,7 +15,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on EuroJobs in the scrape is (jobTitle, orgLocation, orgName, orgWebsite, postedDate, jobDescription).
    * Information - EUworkPermitRequired, jobViews, applicationDeadline, requirements, timeEngagement are on the page as well.
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -28,6 +28,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
         jobTitle = jobTitle!.replace(Constants.EURO_JOBS_REDUNDANT_MARK, Constants.EMPTY_STRING).trim(); // getting rid of ', null' part if present
         const newJob: JobDTO = {
             jobTitle: jobTitle,
+            url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: { name: orgName?.trim() } as OrganizationDTO,

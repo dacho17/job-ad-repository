@@ -14,7 +14,7 @@ export default class NoFluffScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on NoFluff in the scrape is (jobTitle, workLocation, equipmentProvided, benefits, requirements, isRemote, timeEngagement, postedDate, organization.name, organization.urlReference, organization.founded, organization.size, and organization.location, salary, requiredSkills, goodToHaveSkills, jobDetails, jobDescription).
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -31,6 +31,7 @@ export default class NoFluffScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             description: jobDescription?.trim() || Constants.EMPTY_STRING,
             jobAdId: jobAdId ?? undefined,
             organization: { name: orgName?.trim(), urlReference: orgUrlRef ? Constants.NO_FLUFF_JOBS_URL + orgUrlRef.trim() : undefined } as OrganizationDTO,

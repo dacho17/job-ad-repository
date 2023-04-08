@@ -13,8 +13,8 @@ export default class CareerJetScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on CareerJet in the scrape is (jobTitle, orgName, orgLocation, timeEngagement, salary, postedDate, jobDescription).
-   * @param {number} jobAdId
+   * Data available on CareerJet in the scrape is (jobTitle, orgName, orgLocation, timeEngagement, isTrainingProvided, salary, postedDate, jobDescription).
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -25,7 +25,8 @@ export default class CareerJetScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
-            organization: { name: orgName?.trim() } as OrganizationDTO,
+            url: browserAPI.getUrl(),
+            organization: { name: orgName?.trim() || Constants.UNDISLOSED_COMPANY } as OrganizationDTO,
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
         }
@@ -41,7 +42,7 @@ export default class CareerJetScraper implements IJobBrowserScraper {
     }
 
    /**
-   * @description Function which scrapes a part of the page and sets orgLocation and timeManagement properties of new JobDTO,
+   * @description Function which scrapes a part of the page and sets orgLocation, timeEngagement and isTrainingProvided properties of new JobDTO,
    * If salary is found it sets that property as well.
    * @param {number} jobAdId
    * @param {BrowserAPI} browserAPI
@@ -50,15 +51,23 @@ export default class CareerJetScraper implements IJobBrowserScraper {
     private async scrapeSubtitleSection(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
         const jobSubtitleElements = await browserAPI.findElements(Constants.CAREER_JET_DETAILS_JOB_SUBTITLE_SELECTOR);
         const jobSubtitleData = await Promise.all(jobSubtitleElements.map(async elem => await browserAPI.getTextFromElement(elem)));
-
         newJob.organization.location = jobSubtitleData[0]!.trim();
-        if (jobSubtitleData.length === 3) {
-            newJob.timeEngagement = jobSubtitleData[1]!.trim() + Constants.COMMA + Constants.WHITESPACE +  jobSubtitleData[2]!.trim();
-        } else if (jobSubtitleData.length === 4) {
-            newJob.salary = jobSubtitleData[1]!.trim();
-            newJob.timeEngagement = jobSubtitleData[2]!.trim() + Constants.COMMA + Constants.WHITESPACE +  jobSubtitleData[3]!.trim();
-        } else {
-            throw `During CareerJetDetails Scraping - unexpected number of elements appeared ${jobSubtitleData.length}`;
+        
+        if (jobSubtitleData.length < 2) throw `Unexpected number of elements in subtitle section has been found while scraping ${newJob.url}`;
+        let offset = 1;
+        if (jobSubtitleData.length === 4) {
+            newJob.salary = jobSubtitleData[offset]!.trim();
+            offset += 1;
         }
+
+        let timeEngagementItems = [];
+        for (; offset < jobSubtitleData.length; offset ++) {
+            let timeEngagementItem = jobSubtitleData[offset]!.trim();
+            if (timeEngagementItem.toLowerCase() === Constants.TRAINING) {
+                newJob.isTrainingProvided = true;
+            } else timeEngagementItems.push(timeEngagementItem.toLowerCase());
+        }
+
+        newJob.timeEngagement = timeEngagementItems.join(Constants.COMMA + Constants.WHITESPACE);
     } 
 }

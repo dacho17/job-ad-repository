@@ -16,7 +16,7 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
    * Data available on ArbeitNow in the scrape is (jobTitle, officeLocation, orgName, salary, jobDetails, postedAgo, jobDescription).
    * Properties timeEngagement, requiredExperience, isRemote, isStudentPosition are expected to be attached to the job object 
    * in the parsing stage.
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -30,6 +30,7 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             organization: {
                 name: orgName?.trim() || Constants.UNDISLOSED_COMPANY,
                 location: orgLocation?.trim()

@@ -15,7 +15,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on CvLibrary in the scrape is (jobTitle, orgName, workLocation, isRemote, salary, timeEngagement, startDate, postedDate, jobDetails, jobDescription).
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -26,6 +26,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             organization: { name: orgName?.trim() } as OrganizationDTO,
             jobAdId: jobAdId ?? undefined,

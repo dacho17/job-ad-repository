@@ -11,7 +11,7 @@ export default class JobFluentScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on JobFluent in the scrape is (jobTitle, timeEngagement, jobDescription, requiredSkills, isRemote, isInternship, organization.name, organization.urlReference, organization.website, organization.industry, organization.location, organization.size, and organization.founded properties ).
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -30,6 +30,7 @@ export default class JobFluentScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,

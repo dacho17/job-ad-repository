@@ -14,7 +14,7 @@ export default class SnaphuntScraper implements IJobApiScraper {
    * Data available on Snaphunt in the scrape is (jobTitle, description, requiredExperience, workLocation,
    * organization.name, organization.size, organization.industry, organization.location, isRemote, timeEngagement, salary,
    * organization.logo, organization.website, organization.description, organization.urlReference
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {string} jobUrl
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -37,6 +37,7 @@ export default class SnaphuntScraper implements IJobApiScraper {
 
         const newJob: JobDTO = {
             jobTitle: data.jobListing.jobTitle,
+            url: jobUrl,
             description: data.jobListing.offerDescription +
                 data.jobListing.roleDescription +
                 data.jobListing.candidateDescription +

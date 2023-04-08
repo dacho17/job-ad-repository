@@ -11,7 +11,7 @@ export default class AdzunaScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on Adzuna in the scrape is (jobTitle, orgName, orgLocation, timeEngagement, description, companyLink).
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -27,8 +27,9 @@ export default class AdzunaScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             organization: { name: orgName?.trim() } as OrganizationDTO,
-            timeEngagement: timeEngagement?.trim().replace(Constants.WHITESPACE, Constants.MINUS_SIGN),
+            timeEngagement: timeEngagement?.trim().replace(Constants.WHITESPACE, Constants.MINUS_SIGN).toLowerCase(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined
         }

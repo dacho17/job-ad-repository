@@ -15,7 +15,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on WeWorkRemotely in the scrape is (jobTitle, organization.name, organization.location, organization.webiste, organization.urlReference, postedAgo, nOfApplicants, isRemote, timeEngagement, workLocation, salary, jobDetails, jobDescription).
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -29,6 +29,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: {

@@ -13,8 +13,9 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
 
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
-   * Data available on SimplyHired in the scrape is (jobTitle, organization.name, organization.location, timeEngagement, salary, postedDate, benefits, requiredSkills, jobDescription).
-   * @param {number} jobAdId
+   * Data available on SimplyHired in the scrape is (jobTitle, organization.name, organization.location,
+   * timeEngagement, salary, postedDate, benefits, requiredExperience, requiredSkills, requiredEducation jobDescription).
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -25,6 +26,7 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: { name: orgName?.trim() } as OrganizationDTO
@@ -44,8 +46,7 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
         }
         
         const reqSkill = await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_REQUIRED_SKILLS_SELECTOR, browserAPI);
-        this.handleRequiredExperience(newJob, reqSkill);
-        newJob.requiredSkills = reqSkill.join(Constants.COMMA + Constants.WHITESPACE);
+        this.handleRequiredExpEduSkills(newJob, reqSkill);
         newJob.benefits = (await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR, browserAPI)).join(Constants.COMMA + Constants.WHITESPACE);
 
         return newJob;
@@ -67,31 +68,47 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
 
     /**
      * @description Function that handles the collected required skills from SimplyHired,
-     * extracts required experience, and stores it into the new newJob property.
+     * extracts requiredExperience, requiredSkills, and requiredEducation, and stores it into the new newJob properties.
      * @param {JobDTO} newJob
      * @param {string[]} requiredExperience
      * @returns {void}
      */
-    private handleRequiredExperience(newJob: JobDTO, requiredExperience: string[]): void {
+    private handleRequiredExpEduSkills(newJob: JobDTO, requiredExperience: string[]): void {
         let reqExpSol: string[] = [];
+        let reqEdu: string[] = [];
+        let reqSkills: string[] = [];
         requiredExperience.forEach(elem => {
-            const elemParts = elem.split(Constants.WHITESPACE);
-            if (elemParts.length > 1) {
+            const elemParts = elem.split(Constants.WHITESPACE).map(el => el.toLowerCase());
+            if (elem.toLowerCase().indexOf(Constants.BACHELOR) !== -1) {
+                reqEdu.push(Constants.BACHELOR);
+            } else if (elem.toLowerCase().indexOf(Constants.MASTER) !== -1) {
+                reqEdu.push(Constants.MASTER);
+            } else if (elem.toLowerCase().indexOf(Constants.PHD) !== -1 || elemParts.includes(Constants.DOCTOR)) {
+                reqEdu.push(Constants.PHD);
+            } else if (elemParts.length > 1) {
                 const [firstPart, secondPart, _] = elemParts;
                 const firstPartNum = parseInt(firstPart);
                 const secondPartNum = parseInt(secondPart);
-                const yearsSuf = (num: number) => num === 1 ? Constants.YEAR : Constants.YEARS;
-                if (firstPart === 'Under' && !isNaN(secondPartNum)) reqExpSol.push(`Less than ${secondPart} ${yearsSuf(secondPartNum)}`);
-                if (!isNaN(firstPartNum)) reqExpSol.push(`At least ${firstPart} ${yearsSuf(firstPartNum)}`)
-                
-                const plusIndex = firstPart.indexOf(Constants.PLUS_SIGN);
-                if (plusIndex !== -1) {
-                    const years = firstPart.substring(0, plusIndex);
-                    reqExpSol.push(`More than ${years} ${yearsSuf(parseInt(years))}`);
+                if (firstPartNum || secondPartNum) {
+                    const yearsSuf = (num: number) => num === 1 ? Constants.YEAR : Constants.YEARS;
+                    if (firstPart === 'Under' && !isNaN(secondPartNum)) reqExpSol.push(`Less than ${secondPart} ${yearsSuf(secondPartNum)}`);
+                    if (!isNaN(firstPartNum)) reqExpSol.push(`At least ${firstPart} ${yearsSuf(firstPartNum)}`)
+                    
+                    const plusIndex = firstPart.indexOf(Constants.PLUS_SIGN);
+                    if (plusIndex !== -1) {
+                        const years = firstPart.substring(0, plusIndex);
+                        reqExpSol.push(`More than ${years} ${yearsSuf(parseInt(years))}`);
+                    }
+                } else {
+                    reqSkills.push(elem);    
                 }
+            } else {
+                reqSkills.push(elem);
             }
         });
 
+        newJob.requiredSkills = reqSkills.join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.requiredEducation = reqEdu.join(Constants.COMMA + Constants.WHITESPACE);
         newJob.requiredExperience = reqExpSol.join(Constants.COMMA + Constants.WHITESPACE);
     }
 

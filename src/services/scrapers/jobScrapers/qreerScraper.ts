@@ -14,7 +14,7 @@ export default class QreerScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on Qreer in the scrape is (jobTitle, organization.name, organization.location, organization.urlReference, jobDescription, applicationDeadline, requiredSKills, isInternship, workLocation, requiredEducation, requiredExperience, requiredLanguages and requiredSkills).
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -32,6 +32,7 @@ export default class QreerScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim() } as OrganizationDTO,

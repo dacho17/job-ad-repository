@@ -21,6 +21,7 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: { name: Constants.UNDISLOSED_COMPANY } as Organization
@@ -38,7 +39,7 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
     /**
    * @description Function which scrapes a part of the page and sets orgLocation and timeManagement properties of new JobDTO,
    * If orgName is found it sets that property as well.
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<void>}
    */
@@ -46,17 +47,23 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
         const jobSubtitleElement = await browserAPI.findElements(Constants.CAREER_BUILDER_DETAILS_JOB_SUBTITLE_SELECTOR);
         let firstSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[0]);
         let secondSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[1]);
+        let timeEngagement = null;
         if (jobSubtitleElement.length === 3) {
             const thirdSubtitleProperty = await browserAPI.getTextFromElement(jobSubtitleElement[2]);
             newJob.organization.name = firstSubtitleProperty?.trim() || Constants.UNDISLOSED_COMPANY;
             newJob.organization.location = secondSubtitleProperty?.trim()
-            newJob.timeEngagement = thirdSubtitleProperty?.trim();
+            timeEngagement = thirdSubtitleProperty?.trim();
         } else {
             newJob.organization.location = firstSubtitleProperty?.trim();
-            newJob.timeEngagement = secondSubtitleProperty?.trim();
+            timeEngagement = secondSubtitleProperty?.trim();
         }
         if (newJob.organization.location?.substring(0, 2) === Constants.COMMA + Constants.WHITESPACE) {
             newJob.organization.location = newJob.organization.location.slice(2);
+        }
+
+        if (timeEngagement?.toLowerCase().indexOf(Constants.CONTRACT) !== -1) newJob.timeEngagement = Constants.CONTRACT
+        else {
+            newJob.timeEngagement = timeEngagement;
         }
     }
 

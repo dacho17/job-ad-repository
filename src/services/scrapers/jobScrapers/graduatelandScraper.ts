@@ -14,7 +14,7 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on Graduateland in the scrape is (jobTitle, jobDescription, orgName, orgUrlRef, postedDate, workLocation, timeEngagement, requiredSkills, requiredLanguages, and organization.orgIndustry).
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -27,6 +27,7 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             jobAdId: jobAdId ?? undefined,
             organization: {

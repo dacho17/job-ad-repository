@@ -10,7 +10,7 @@ export default class TybaScraper implements IJobBrowserScraper {
     /**
    * @description Function that accepts jobAdId which link is being scraped, and browserAPI.
    * Data available on Tyba in the scrape is (jobTitle, organization.name, organization.urlReference, workLocation, timeEngagement, requiredSkills, requiredLanguages, and organization.industry).
-   * @param {number} jobAdId
+   * @param {number | null} jobAdId
    * @param {BrowserAPI} browserAPI
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
@@ -27,6 +27,7 @@ export default class TybaScraper implements IJobBrowserScraper {
 
         const newJob: JobDTO = {
             jobTitle: jobTitle!.trim(),
+            url: browserAPI.getUrl(),
             jobAdId: jobAdId ?? undefined,
             description: jobDescription!.trim(),
             organization: { name: orgName?.trim(), urlReference: orgLink ? Constants.TYBA_URL + orgLink.trim() : undefined } as OrganizationDTO,
