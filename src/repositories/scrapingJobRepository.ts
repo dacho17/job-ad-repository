@@ -73,7 +73,6 @@ export default class ScrapingJobRepository {
                 },
                 limit: batchSize,
                 offset: offset,
-                include: Organization
             });
 
             return jobsToParse;

@@ -11,7 +11,7 @@ import { ScrapingJobService } from "./scrapingJobService";
 
 @Service()
 export default class JobParserService {
-    private BATCH_SIZE: number = 1;
+    private BATCH_SIZE: number = 10;
     @Inject()
     private jobParserHelper: JobParserHelper;
     @Inject()
@@ -53,6 +53,54 @@ export default class JobParserService {
         return null;
     }
 
+     /**
+   * @description Function fetches the jobs which need to be parsed from the database.
+   * Jobs are then parsed and updated in the database. Finally the function returns both the number of successfully,
+   * and unsuccessfully stored entries.
+   * @returns {Promise<[number, number]>}
+   */
+    public async fetchAndParseUnparsedJobs(): Promise<[number, number]> {
+        let offset = 0;
+        let unsuccessfullyParsed = 0;
+        let successfullyParsed = 0;
+        for (;;) {
+            const jobsToParse = await this.jobRepository.getJobsToParse(offset, this.BATCH_SIZE);
+            if (jobsToParse.length === 0) {
+                break;
+            }
+            
+            for (let i = 0; i < jobsToParse.length; i++) {
+                console.log(`Job is fetched with jobAdId=${jobsToParse[i].jobAdId} organizationId=${jobsToParse[i].organizationId}.
+                   But with jobAdId=${jobsToParse[i].jobAd?.id} organizationId=${jobsToParse[i].organization?.id}`);
+                const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(jobsToParse[i].url);
+                const parser = await this.jobParserHelper.getParserFor(jobSource);
+                if (!parser) throw `Parser has not been found for job with jobId=${jobsToParse[i].id}`;
+
+                const organization = await this.organizationRepository.getById(jobsToParse[i].organizationId!);
+                jobsToParse[i].organization = organization ?? undefined;
+                const parsedJob = parser?.parseJob(jobsToParse[i]);
+
+                if (!parsedJob) {
+                    offset += 1;
+                    unsuccessfullyParsed += 1;
+                    continue;
+                }
+
+                parsedJob.requiresParsing = false;
+                parsedJob.parsedDate = new Date(Date.now());
+                const storedJob = await this.sendParsedJobForStoring(parsedJob);
+                if (!storedJob) {
+                    unsuccessfullyParsed += 1;
+                    offset += 1;
+                } else successfullyParsed += 1;
+            }
+
+            if (successfullyParsed === 10) break;
+        }
+        
+        return [successfullyParsed, unsuccessfullyParsed];
+    }
+
     /**
    * @description Function which starts a transaction and interacts with jobRepository and organizationRepository.
    * Within the transaction a new job will be updated, along with the company.
@@ -61,6 +109,8 @@ export default class JobParserService {
    */
     private async sendParsedJobForStoring(newJob: Job): Promise<Job | null> {
         const transaction = await db.sequelize.transaction();
+        console.log(`jobId=${newJob.id}, organizationId=${newJob.organization ?
+            newJob.organization.id : 'no organization connected'}`);
         try {
             const _ = await this.organizationRepository.update(newJob.organization!, transaction);
             const storedJob = await this.jobRepository.update(newJob, transaction);
@@ -70,10 +120,16 @@ export default class JobParserService {
         } catch (exception) {
             console.log(`An exception occurred while storing a 'pair (job, org)'} - [${exception}]`);
             await transaction.rollback();
-            return null;
+            throw `An exception occurred while storing a 'pair (job, org)'} - [${exception}]`;
         }
     }
 
+    /**
+   * @description Function which orders job repository to fetch the job based on the id provided, and the
+   * connected organization.
+   * @param {JobDTO} job jobDTO counterpart of the Job to be fetched from the database.
+   * @returns {Promise<Job | null>}
+   */
     private async getStoredJob(job: JobDTO): Promise<Job | null> {
         const fetchedJob = await this.jobRepository.getById(job.id!);
         console.log(`orgId=${fetchedJob?.organizationId} sads`);

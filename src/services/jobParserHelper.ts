@@ -56,4 +56,23 @@ export default class JobParserHelper {
                 return null;
         }
     }
+
+    /**
+   * @description Function which returns whether the job requires parsing based on its JobAdSource value.
+   * @param {JobAdSource} adSource
+   * @returns {boolean}
+   */
+    public requiresParsing(jobAdSource: JobAdSource): boolean {
+        switch (jobAdSource) {
+            case JobAdSource.ARBEIT_NOW:
+            case JobAdSource.CAREER_BUILDER:
+            case JobAdSource.CAREER_JET:
+            case JobAdSource.CV_LIBRARY:
+            case JobAdSource.SIMPLY_HIRED:
+            case JobAdSource.WE_WORK_REMOTELY:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

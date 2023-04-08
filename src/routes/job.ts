@@ -11,5 +11,7 @@ export default (app: any) => {
 
     router.get('/get-jobs', async (req: any, res: any, next: any) => await jobScrapingController.getJobs(req, res));
     router.post('/parse-job', async (req: any, res: any, next: any) => await parseController.scrapeAndParseJobFromUrl(req, res))
+    router.get('/parse-jobs', async (req: any, res: any, next: any) => await parseController.parseJobs(req, res))
+
     app.use(router);
 }

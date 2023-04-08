@@ -26,4 +26,17 @@ export default class ParseController extends BaseController {
             res.status(200).json({scrapedJob: jobDTO});
         }
     }
+
+    /**
+   * @description This function is an entry point for parsing unparsed Jobs in the database.
+   * @param req @param res
+   * @returns {[number, number]} Returns a pair of numbers. The number of stored Jobs and the number of unsuccessfully scraped/stored jobs.
+   */
+    public async parseJobs(req: any, res: any) {
+        const [numberOfJobsScraped, numberOfJobsUnscraped] = await this.jobParserService.fetchAndParseUnparsedJobs();
+        res.status(200).json({
+            scrapedJobs: numberOfJobsScraped,
+            unscrapedJobs: numberOfJobsUnscraped
+        });
+    }
 }

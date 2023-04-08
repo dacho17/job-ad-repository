@@ -13,6 +13,7 @@ import OrganizationRepository from "../repositories/organizationRepository";
 import { ScrapingJobAdRepository } from "../repositories/scrapingJobAdRepository";
 import ScrapingJobRepository from "../repositories/scrapingJobRepository";
 import BrowserAPI from "./browserAPI";
+import JobParserHelper from "./jobParserHelper";
 import IJobApiScraper from './scrapers/interfaces/IJobApiScraper';
 import IJobBrowserScraper from './scrapers/interfaces/IJobBrowserScraper';
 import IJobScraper from "./scrapers/interfaces/IJobScraper";
@@ -28,6 +29,7 @@ export class ScrapingJobService {
     private jobMapper: JobMapper;
     private organizationMapper: OrganizationMappper;
     private browserAPI: BrowserAPI;
+    private jobParserHelper: JobParserHelper;
     private utils: Utils;
 
     constructor(
@@ -38,6 +40,7 @@ export class ScrapingJobService {
         @Inject() jobMapper: JobMapper,
         @Inject() organizationMapper: OrganizationMappper,
         @Inject() broserAPI: BrowserAPI,
+        @Inject() jobParserHelper: JobParserHelper,
         @Inject() utils: Utils,
     )
     {
@@ -48,6 +51,7 @@ export class ScrapingJobService {
         this.jobMapper = jobMapper;
         this.organizationMapper = organizationMapper;
         this.browserAPI = broserAPI;
+        this.jobParserHelper = jobParserHelper;
         this.utils = utils;
     }
 
@@ -205,13 +209,8 @@ export class ScrapingJobService {
     private buildJobMap(newJob: JobDTO, jobUrl: string): Job {
         let newJobMAP = this.jobMapper.toMap(newJob);
         const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(jobUrl);
-        switch(jobSource) {
-            case JobAdSource.ARBEIT_NOW:
-                newJobMAP.requiresParsing = true;
-                break;
-            default:
-                newJobMAP.requiresParsing = false;  // NOTE: this marks the job as 'displayable'
-        }
+
+        newJobMAP.requiresParsing = this.jobParserHelper.requiresParsing(jobSource);
 
         return newJobMAP;
     }
