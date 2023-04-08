@@ -10,6 +10,7 @@ export class Job extends Model {
     id: number;
     createdAt: Date;
     updatedAt: Date;
+    url: string;
     jobTitle: string;
     postedDateTimestamp?: number
     postedDate?: Date;
@@ -21,6 +22,7 @@ export class Job extends Model {
     workLocation?: string;
     isRemote?: boolean;
     isHybrid?: boolean;
+    isTrainingProvided?: boolean;
     isInternship?: boolean;
     isStudentPosition?: boolean;
     euWorkPermitRequired?: boolean;
@@ -61,6 +63,10 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW,
+        },
+        url: {
+            type: DataTypes.STRING,
+            allowNull: false,
         },
         jobTitle: {
             type: DataTypes.STRING,
@@ -113,6 +119,10 @@ export const JobMAP = (sequelize: Sequelize) => {
         isHybrid: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
+        },
+        isTrainingProvided: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true
         },
         isInternship: {
             type: DataTypes.BOOLEAN,

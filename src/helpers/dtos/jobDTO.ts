@@ -4,6 +4,7 @@ import OrganizationDTO from "./organizationDTO";
 // TODO: trim this class
 export default class JobDTO {
     id?: number;
+    url: string;
     jobTitle: string;
     postedDate?: Date;
     postedDateTimestamp?: number;
@@ -20,6 +21,7 @@ export default class JobDTO {
     isHybrid?: boolean;
     isInternship?: boolean;
     isStudentPosition?: boolean;
+    isTrainingProvided?: boolean;
     requiredLanguages?: string;
     requiredSkills?: string;
     requiredExperience?: string;
