@@ -2,6 +2,8 @@ import { Inject, Service } from "typedi";
 import constants from "../helpers/constants";
 import { JobAdDTO } from "../helpers/dtos/jobAdDTO";
 import JobDTO from "../helpers/dtos/jobDTO";
+import ResponseObject from "../helpers/dtos/responseObject";
+import ScrapeError from "../helpers/errors/scrapeError";
 import Utils from "../helpers/utils";
 import JobParserService from "../services/jobParserService";
 import { BaseController } from "./baseController";
@@ -19,11 +21,25 @@ export default class ParseController extends BaseController {
    */
     public async scrapeAndParseJobFromUrl(req: any, res: any) {
         const isUrlValid = this.utils.validateUrl(req.body.url);
+        let response = new ResponseObject<JobDTO | null>();
         if (!isUrlValid) {
             this.respondToInvalidRequest(constants.URL_INVALID, res);
         } else {
-            const jobDTO = await this.jobParserService.scrapeAndParseJobFromUrl(req.body.url.trim())
-            res.status(200).json({scrapedJob: jobDTO});
+            try {
+                const jobDTO = await this.jobParserService.scrapeAndParseJobFromUrl(req.body.url.trim())
+                response.data = jobDTO;
+            } catch (err) {
+                let errMsg;
+                console.log(`caught err - [${err}]`);
+                if (err instanceof ScrapeError) {
+                    errMsg = (err as ScrapeError).getMessage();
+                }
+                
+                response.data = null;
+                response.error = errMsg;
+            }
+
+            res.status(200).json(response);
         }
     }
 
@@ -35,8 +51,8 @@ export default class ParseController extends BaseController {
     public async parseJobs(req: any, res: any) {
         const [numberOfJobsScraped, numberOfJobsUnscraped] = await this.jobParserService.fetchAndParseUnparsedJobs();
         res.status(200).json({
-            scrapedJobs: numberOfJobsScraped,
-            unscrapedJobs: numberOfJobsUnscraped
+            parsedJobs: numberOfJobsScraped,
+            unparsedJobs: numberOfJobsUnscraped
         });
     }
 }
