@@ -33,6 +33,7 @@ export default class JobMapper {
             
             timeEngagement: jobDTO.timeEngagement,
             salary: jobDTO.salary,
+            benefits: jobDTO.benefits,
             nOfApplicants: jobDTO.nOfApplicants,
             workLocation: jobDTO.workLocation,
             details: jobDTO.details,
@@ -76,6 +77,7 @@ export default class JobMapper {
             startDate: jobMAP.startDate,
             nOfApplicants: jobMAP.nOfApplicants,
             salary: jobMAP.salary,
+            benefits: jobMAP.benefits,
             timeEngagement: jobMAP.timeEngagement,
             workLocation: jobMAP.workLocation,
             isRemote: jobMAP.isRemote,

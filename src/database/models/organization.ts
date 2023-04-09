@@ -13,7 +13,6 @@ export class Organization extends Model {
     founded?: string;
     industry?: string;
     description?: string;
-    details?: string;
 }
 
 export const OrganizationMAP = (sequelize: Sequelize) => {
@@ -62,10 +61,6 @@ export const OrganizationMAP = (sequelize: Sequelize) => {
             allowNull: true
         },
         description: {
-            type: DataTypes.STRING(4096),
-            allowNull: true,
-        },
-        details: {
             type: DataTypes.STRING(4096),
             allowNull: true,
         },

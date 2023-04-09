@@ -156,6 +156,7 @@ export default {
     JOB_FLUENT_DETAILS_COMPANY_DETAILS_VALUES_SELECTOR: '.company-features > ul > li > p',
     JOB_FLUENT_DETAILS_REMOTE_SELECTOR: 'span[data-original-title="Remote"]',
     JOB_FLUENT_DETAILS_TIME_ENGAGEMENT_SELECTOR: 'b[itemprop="employmentType"]',
+    JOB_FLUENT_DETAILS_SALARY_SELECTOR: 'span[itemprop="baseSalary"] > span > span',
     JOB_FLUENT_DETAILS_INTERNSHIP_SELECTOR: 'span[data-original-title="No internship"]',
     JOB_FLUENT_DETAILS_REQUIRED_SKILLS_SELECTOR: 'meta[itemprop="skills"]',
     JOB_FLUENT_DETAILS_JOB_DESCRIPTION_SELECTOR: 'div[itemprop="description"]',
@@ -242,6 +243,7 @@ export default {
     WE_WORK_REMOTELY_COMPANY_WEBSITE_SELECTOR: '.company-card > h3 > a',
 
     // Commonly used string
+    AND_SIGN: '&',
     DOT: '.',
     UNDERSCORE: '_',
     COMMA: ',',
@@ -253,6 +255,7 @@ export default {
     LESS_SIGN: '<',
     PIPE: '|',
     PLUS_SIGN: '+',
+    SLASH: '/',
     UNDERSCORE_SIGN: '_',
     QUESTIONMARK_SIGN: '?',
     EMPTY_STRING: '',
@@ -276,7 +279,9 @@ export default {
     DEFAULT_GET_JOBS_BATCH_SIZE: 20,
 
     // Words appearing
+    ANNUM: 'annum',
     ANYWHERE_IN_THE_WORLD: 'anywhere in the world',
+    ASAP: 'asap',
     APPLY_NOW: 'Apply Now',
     BACHELOR: 'bachelor',
     CATEGORY: 'Category',
@@ -296,7 +301,7 @@ export default {
     FOUNDED_IN_COL: 'Founded in:',
     FOUNDED_IN: 'Founded in',
     FOUNDED: 'Founded',
-    FULLY_REMOTE: 'Fully remote',
+    FULLY_REMOTE: 'fully remote',
     FULL_TIME: 'full-time',
     GRADUATE_PROGRAMME: 'graduate programme',
     HEADQUARTERS: 'Headquarters',
@@ -317,17 +322,22 @@ export default {
     ENTRY_LEVEL: 'entry level',
     EU_WORK_PERMIT_REQ_COL: 'EU work permit required:',
     MASTER: 'master',
+    MS: 'MS',
     MUST_HAVE_LANGUAGE: 'Must-have language',
+    NOT_APPLICABLE: 'not applicable',
     ONLY: 'only',
     OTHER: 'other',
     PERMANENT: 'permanent',
-    PERMANENT_CONTRACT: 'Permanent contract',
+    PERMANENT_CONTRACT: 'permanent contract',
     PHD: 'phd',
     POSTED_COL: 'Posted:',
+    PROFESSIONAL: 'Professional',
     PROJECT: 'project',
+    RECRUITMENT_LANGUAGE: 'recruitment language',
     REMOTE: 'remote',
     SALARY_ICON: 'Salary Icon',
     SEASONAL: 'seasonal',
+    SECONDARY_EDUCATION: 'secondary education',
     SENIORITY_LEVEL: 'Seniority level',
     SHOW_MORE: 'Show more',
     SHOW_LESS: 'Show less',
@@ -346,17 +356,32 @@ export default {
     YEARS: 'years',
     YES: 'Yes',
 
+    P: 'P',
+
+    // language levels
+    B1: '(b1)',
+    B2: '(b2)',
+    C1: '(c1)',
+    C2: '(c2)',
+
     // currencies
+    EUR: 'eur',
+    PLN: 'pln',
     USD: 'usd',
 
     // HTTP codes
     OK: 200,
     BAD_REQUEST: 400,
+    NOT_FOUND: 404,
     SERVER_ERROR: 500,
+
+    // Digits
+    THREE: 3,
+    FIVE: 5,
 
     // other
     CV_LIBRARY_JOBLINK_SUFFIX: '-jobs',
-    JOB_DESCRIPTION_COMPOSITION_DELIMITER: ';; ',   // ', '
+    COMPOSITION_DELIMITER: ', ',
     SNAPHUNT_REDUNDANT_ADDRESS_MARK: '||&&||',
     EURO_JOBS_REDUNDANT_MARK: ', null',
     EURO_JOBS_REDUNDANT_MARK_TWO: 'Null, ',

@@ -8,5 +8,4 @@ export default class OrganizationDTO {
     founded?: string;
     industry?: string;
     description?: string;
-    details?: string;
 }

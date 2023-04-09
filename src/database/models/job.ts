@@ -33,6 +33,7 @@ export class Job extends Model {
     requiredEducation?: string;
     requirements?: string;
     responsibilities?: string;
+    benefits?: string;
     equipmentProvided?: string;
     additionalJobLink?: string;
     details?: string;

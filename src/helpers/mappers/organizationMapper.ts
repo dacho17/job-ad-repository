@@ -22,7 +22,6 @@ export default class OrganizationMappper {
             founded: organizationDTO.founded,
             industry: organizationDTO.industry,
             description: organizationDTO.description,
-            details: organizationDTO.description,
         });
     }
 
@@ -35,7 +34,6 @@ export default class OrganizationMappper {
         const organizationDTO: OrganizationDTO = {
             name: organizationMAP.name,
             description: organizationMAP.description,
-            details: organizationMAP.details,
             founded: organizationMAP.founded,
             industry: organizationMAP.industry,
             location: organizationMAP.location,
