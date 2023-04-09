@@ -5,6 +5,7 @@ import { Service } from 'typedi';
 export default class BrowserAPI {
     private browser: Browser;
     private page: Page;
+    private httpResponseCode: number | null;
 
     /**
    * @description Function that launches Puppeteer browser and attaches it to the @property {Browser} browser .
@@ -29,6 +30,13 @@ export default class BrowserAPI {
    */
     public async openPage(url: string): Promise<Page> {
         this.page = await this.browser.newPage();
+
+        this.page.on('response', res => {
+            if (!this.httpResponseCode) {
+                this.httpResponseCode = res.status();
+            }
+        });
+
         await this.page.goto(url);
         await this.page.setViewport({width: 1080, height: 1024});
         return this.page;
@@ -48,6 +56,22 @@ export default class BrowserAPI {
    */
     public getUrl(): string {
         return this.page.url();
+    }
+
+    /**
+   * @description Returns the response code of the page attempted to be openned.
+   * @returns {number}
+   */
+    public getResponseCode(): number | null {
+        return this.httpResponseCode;
+    }
+
+     /**
+   * @description Resets the response code.
+   * @returns {void}
+   */
+     public resetResponseCode(): void {
+        this.httpResponseCode = null;
     }
 
     /**
