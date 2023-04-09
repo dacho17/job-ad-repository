@@ -2,6 +2,7 @@ import { Inject, Service } from "typedi";
 import db from "../database/db";
 import { Job } from "../database/models/job";
 import JobDTO from "../helpers/dtos/jobDTO";
+import ScrapeError from "../helpers/errors/scrapeError";
 import JobMapper from "../helpers/mappers/jobMapper";
 import Utils from "../helpers/utils";
 import OrganizationRepository from "../repositories/organizationRepository";
@@ -11,7 +12,7 @@ import { ScrapingJobService } from "./scrapingJobService";
 
 @Service()
 export default class JobParserService {
-    private BATCH_SIZE: number = 10;
+    private BATCH_SIZE: number = 100;
     @Inject()
     private jobParserHelper: JobParserHelper;
     @Inject()
@@ -33,7 +34,7 @@ export default class JobParserService {
    */
     public async scrapeAndParseJobFromUrl(url: string): Promise<JobDTO | null> {
         const job = await this.jobScrapingService.scrapeJobFromUrl(url);
-        if (!job) throw `Job has not been scraped successfully from url=${url}`;
+        if (!job) throw new ScrapeError(`Job has not been scraped successfully from url=${url}`);
 
         console.log(`Organization of scraped job is ${job.organization}`);
 
@@ -70,8 +71,6 @@ export default class JobParserService {
             }
             
             for (let i = 0; i < jobsToParse.length; i++) {
-                console.log(`Job is fetched with jobAdId=${jobsToParse[i].jobAdId} organizationId=${jobsToParse[i].organizationId}.
-                   But with jobAdId=${jobsToParse[i].jobAd?.id} organizationId=${jobsToParse[i].organization?.id}`);
                 const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(jobsToParse[i].url);
                 const parser = await this.jobParserHelper.getParserFor(jobSource);
                 if (!parser) throw `Parser has not been found for job with jobId=${jobsToParse[i].id}`;
@@ -94,8 +93,6 @@ export default class JobParserService {
                     offset += 1;
                 } else successfullyParsed += 1;
             }
-
-            if (successfullyParsed === 10) break;
         }
         
         return [successfullyParsed, unsuccessfullyParsed];
@@ -109,8 +106,6 @@ export default class JobParserService {
    */
     private async sendParsedJobForStoring(newJob: Job): Promise<Job | null> {
         const transaction = await db.sequelize.transaction();
-        console.log(`jobId=${newJob.id}, organizationId=${newJob.organization ?
-            newJob.organization.id : 'no organization connected'}`);
         try {
             const _ = await this.organizationRepository.update(newJob.organization!, transaction);
             const storedJob = await this.jobRepository.update(newJob, transaction);
@@ -132,7 +127,6 @@ export default class JobParserService {
    */
     private async getStoredJob(job: JobDTO): Promise<Job | null> {
         const fetchedJob = await this.jobRepository.getById(job.id!);
-        console.log(`orgId=${fetchedJob?.organizationId} sads`);
         const fetchedOrg = await this.organizationRepository.getById(fetchedJob?.organizationId!)
         
         fetchedJob!.organization = fetchedOrg ?? undefined;

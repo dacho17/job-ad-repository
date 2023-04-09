@@ -21,7 +21,6 @@ export default class AdzunaScraper implements IJobBrowserScraper {
     
         let jobTitle = await browserAPI.getText(Constants.ADZUNA_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         let subTitleSectionElement = await browserAPI.findMultiple(Constants.ADZUNA_DETAILS_SUBTITLE_SECTION_SELECTOR)

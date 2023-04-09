@@ -23,7 +23,6 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.WE_WORK_REMOTELY_DETAIL_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const jobDescription = await browserAPI.getText(Constants.WE_WORK_REMOTELY_JOB_DESCRIPTION_SELECTOR);
@@ -84,6 +83,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         for (let i = 0; i < jobDetailElements.length; i++) {
             let jobDetail = await browserAPI.getTextFromElement(jobDetailElements[i]);
             jobDetail = jobDetail!.trim();
+            let jobDetailLowerCased = jobDetail.toLowerCase();
             switch(jobDetail.toLowerCase()) {
                 case Constants.ANYWHERE_IN_THE_WORLD:
                     newJob.isRemote = true;
@@ -92,17 +92,17 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
                     timeEngagements.push(Constants.FULL_TIME);
                     break;
                 default:
-                    if (jobDetail.indexOf(Constants.USD) !== -1) {
+                    if (jobDetailLowerCased.indexOf(Constants.USD) !== -1) {
                         newJob.salary = jobDetail;
-                    } else if (jobDetail.indexOf(Constants.ONLY) !== -1) {
+                    } else if (jobDetailLowerCased.indexOf(Constants.ONLY) !== -1) {
                         newJob.workLocation = jobDetail.substring(0, jobDetail.indexOf(Constants.ONLY) - 1);
-                    } else if (jobDetail.indexOf(Constants.CONTRACT) !== -1) {
+                    } else if (jobDetailLowerCased.indexOf(Constants.CONTRACT) !== -1) {
                         timeEngagements.push(Constants.CONTRACT);
                     } else jobDetails.push(jobDetail);
             }
         }
 
-        newJob.timeEngagement = timeEngagements.join(Constants.COMMA + Constants.WHITESPACE);
-        newJob.details = jobDetails.join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.timeEngagement = timeEngagements.join(Constants.COMPOSITION_DELIMITER);
+        newJob.details = jobDetails.join(Constants.COMPOSITION_DELIMITER);
     }
 }

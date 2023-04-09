@@ -5,20 +5,25 @@ import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from "../../helpers/stringUtils";
 import IJobParser from "../interfaces/IJobParser";
+import CommonJobParser from "./commonParser";
 
 
 @Service()
-export default class WeWorkRemotelyJobParser implements IJobParser {
+export default class WeWorkRemotelyJobParser extends CommonJobParser implements IJobParser {
     private trie: TrieNode;
 
     constructor() {
+        super();
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
         this.trie.addEntry('or more ', TrieWordType.MORE_EQUAL_COMPARATOR);
     }
     
     public parseJob(job: Job): Job {
         this.formatSalary(job);
+        if (!job.salary) this.parseSalaryFrom(job, job.jobTitle);
+        if (!job.salary) this.parseSalaryFrom(job, job.details);
 
+        this.parseValue(job.jobTitle, job);
         return job;
     }
 
@@ -113,5 +118,10 @@ export default class WeWorkRemotelyJobParser implements IJobParser {
         }
 
         job.salary = finalSalary ? salaryPrefix + reverseString(finalSalary) + constants.WHITESPACE + wageRatePeriod : undefined;
+    }
+
+
+    private parseJobDetails(job: Job): void {
+        // salary can be parsed $50,000 - $74,999 USD, $100,000 or more USD, 
     }
 }

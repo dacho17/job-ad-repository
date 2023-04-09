@@ -1,5 +1,6 @@
 import { Service } from "typedi";
 import { JobAd } from "../../../database/models/jobAd";
+import constants from "../../../helpers/constants";
 import Constants from "../../../helpers/constants";
 import JobDTO from "../../../helpers/dtos/jobDTO";
 import OrganizationDTO from "../../../helpers/dtos/organizationDTO";
@@ -17,12 +18,8 @@ export default class TybaScraper implements IJobBrowserScraper {
    */
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.TYBA_DETAILS_JOB_TITLE_SELECTOR);
-
         if (!jobTitle) {
-            if (!jobTitle) {
-                jobAd!.isAdPresentOnline = false;
-                return null;
-            }
+            return null;
         }
         const orgNameElem = await browserAPI.findElement(Constants.TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
         const orgLink = await browserAPI.getDataFromAttr(orgNameElem!, Constants.HREF_SELECTOR)
@@ -61,7 +58,7 @@ export default class TybaScraper implements IJobBrowserScraper {
                     const valueElem = await browserAPI.findElementOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
                     value = await browserAPI.getTextFromElement(valueElem!);
                     value = value?.split(Constants.WHITESPACE).map(part => part.trim()).join(Constants.EMPTY_STRING).trim();
-                    newJob.workLocation = value!.replace(Constants.COMMA, Constants.COMMA + Constants.WHITESPACE);
+                    newJob.workLocation = value!.replace(Constants.COMMA, Constants.COMPOSITION_DELIMITER);
                     break;
                 case Constants.CATEGORY:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
@@ -74,12 +71,13 @@ export default class TybaScraper implements IJobBrowserScraper {
                 case Constants.SKILLS:
                     const valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
                     let values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
-                    newJob.requiredSkills = values.filter(part => part !== Constants.EMPTY_STRING).join(Constants.COMMA + Constants.WHITESPACE);
+                    newJob.requiredSkills = values.filter(part => part !== Constants.EMPTY_STRING).join(Constants.COMPOSITION_DELIMITER);
                     break;
                 case Constants.MUST_HAVE_LANGUAGE:
                     value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-                    newJob.requiredLanguages = value?.split(Constants.WHITESPACE).map(part => part.trim())
-                        .filter(part => part.length > 1).join(Constants.COMMA + Constants.WHITESPACE);
+                    console.log(value);
+                    newJob.requiredLanguages = value?.replace(Constants.PROFESSIONAL, Constants.EMPTY_STRING).split(Constants.WHITESPACE).map(part => part.trim().replace(Constants.COMMA, constants.EMPTY_STRING))
+                        .filter(part => part.length > 1).join(Constants.WHITESPACE);
                     break;
             }
         }

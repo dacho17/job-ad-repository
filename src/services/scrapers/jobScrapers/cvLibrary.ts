@@ -23,7 +23,6 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const jobDescription = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_JOB_DESCRIPTION_SELECTOR);
@@ -83,7 +82,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
             
             switch(title) {
                 case Constants.TYPE_COL:
-                    newJob.timeEngagement = value.trim();
+                    newJob.timeEngagement = value.trim().toLowerCase();
                     break;
                 case Constants.START_DATE_COL:
                     newJob.startDate = this.utils.getStartDate4CvLibrary(value.trim())

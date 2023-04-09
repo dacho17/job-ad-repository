@@ -5,13 +5,15 @@ import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from "../../helpers/stringUtils";
 import IJobParser from "../interfaces/IJobParser";
+import CommonJobParser from "./commonParser";
 
 
 @Service()
-export default class SimplyhiredJobParser implements IJobParser {
+export default class SimplyhiredJobParser extends CommonJobParser implements IJobParser {
     private trie: TrieNode;
 
     constructor() {
+        super();
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
         this.trie.addEntry('up to ', TrieWordType.LESS_EQUAL_COMPARATOR);
         this.trie.addEntry('from ', TrieWordType.MORE_EQUAL_COMPARATOR);
@@ -23,7 +25,10 @@ export default class SimplyhiredJobParser implements IJobParser {
     
     public parseJob(job: Job): Job {
         this.formatsalary(job);
+        if (!job.salary) this.parseSalaryFrom(job, job.jobTitle);
+        if (!job.salary) this.parseSalaryFrom(job, job.details);
 
+        this.parseValue(job.jobTitle, job);
         return job;
     }
 

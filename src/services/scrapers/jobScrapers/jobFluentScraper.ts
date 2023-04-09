@@ -19,7 +19,6 @@ export default class JobFluentScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const timeEngagement = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_TIME_ENGAGEMENT_SELECTOR);
@@ -29,6 +28,17 @@ export default class JobFluentScraper implements IJobBrowserScraper {
         const orgName = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_COMPANY_NAME_SELECTOR);
         const orgUrlRef = await browserAPI.getDataSelectorAndAttr(Constants.JOB_FLUENT_DETAILS_COMPANY_LINK_SELECTOR, Constants.HREF_SELECTOR);
         const requiredSkills = await browserAPI.getDataSelectorAndAttr(Constants.JOB_FLUENT_DETAILS_REQUIRED_SKILLS_SELECTOR, Constants.CONTENT_SELECTOR);
+        
+        const salary = await browserAPI.findElements(Constants.JOB_FLUENT_DETAILS_SALARY_SELECTOR);
+        let compositeSalary: string | undefined;
+        if (salary && salary.length === 2) {
+            let minSalaryVal = await browserAPI.getTextFromElement(salary[0]);
+            let maxSalaryVal = await browserAPI.getTextFromElement(salary[1]);                
+            compositeSalary = minSalaryVal!.trim() + Constants.MINUS_SIGN + maxSalaryVal!.trim() 
+                + Constants.WHITESPACE + Constants.EUR.toUpperCase() + Constants.SLASH + Constants.YEAR;
+        }
+        
+
 
         // check! parse companyDetails into its constituent properties
         // check! gather requiredskills
@@ -40,7 +50,8 @@ export default class JobFluentScraper implements IJobBrowserScraper {
             jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
             requiredSkills: requiredSkills?.trim(),
-            timeEngagement: timeEngagement?.trim()
+            timeEngagement: timeEngagement?.trim().toLowerCase(),
+            salary: compositeSalary,
         }
         
         const remotePositionElement = await browserAPI.findElement(Constants.JOB_FLUENT_DETAILS_REMOTE_SELECTOR);

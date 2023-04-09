@@ -3,6 +3,7 @@ import IJobParser from "../dataLayer/interfaces/IJobParser";
 import ArbeitNowParser from "../dataLayer/parsers/arbeitNowJobParser";
 import CareerBuilderJobParser from "../dataLayer/parsers/careerBuilderJobParser";
 import CareerJetJobParser from "../dataLayer/parsers/careerJetJobParser";
+import CommonJobParser from "../dataLayer/parsers/commonParser";
 import CvLibraryJobParser from "../dataLayer/parsers/cvLibraryJobParser";
 import SimplyhiredJobParser from "../dataLayer/parsers/simplyHiredJobParser";
 import WeWorkRemotelyJobParser from "../dataLayer/parsers/weWorkRemotelyJobParser";
@@ -10,6 +11,7 @@ import { JobAdSource } from "../helpers/enums/jobAdSource";
 
 @Service()
 export default class JobParserHelper {
+    private commonParser: CommonJobParser;
     private arbeitNowParser: ArbeitNowParser;
     private careerBuilderParser: CareerBuilderJobParser;
     private careerJetParser: CareerJetJobParser;
@@ -18,6 +20,7 @@ export default class JobParserHelper {
     private weWorkRemotelyParser: WeWorkRemotelyJobParser;
 
     constructor(
+        @Inject() commonParser: CommonJobParser,
         @Inject() arbeitNowParser: ArbeitNowParser,
         @Inject() careerBuilderParser: CareerBuilderJobParser,
         @Inject() careerJetParser: CareerJetJobParser,
@@ -25,6 +28,7 @@ export default class JobParserHelper {
         @Inject() simplyHiredParser: SimplyhiredJobParser,
         @Inject() weWorkRemotelyParser: WeWorkRemotelyJobParser,
     ) {
+        this.commonParser = commonParser;
         this.arbeitNowParser = arbeitNowParser;
         this.careerBuilderParser = careerBuilderParser;
         this.careerJetParser = careerJetParser;
@@ -53,7 +57,7 @@ export default class JobParserHelper {
             case JobAdSource.WE_WORK_REMOTELY:
                 return this.weWorkRemotelyParser;            
             default:
-                return null;
+                return this.commonParser;
         }
     }
 

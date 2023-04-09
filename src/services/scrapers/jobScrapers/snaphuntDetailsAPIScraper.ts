@@ -37,7 +37,7 @@ export default class SnaphuntScraper implements IJobApiScraper {
 
         const companyInfo = data.user[0].companiesInformation[0];
 
-        const remoteLocationStr = data.remoteLocation.countries.join(Constants.COMMA + Constants.WHITESPACE);
+        const remoteLocationStr = data.remoteLocation.countries.join(Constants.COMPOSITION_DELIMITER);
 
         const newJob: JobDTO = {
             jobTitle: data.jobListing.jobTitle,
@@ -85,7 +85,7 @@ export default class SnaphuntScraper implements IJobApiScraper {
             return constants.WEEK;
         } else if (lowerCased.indexOf(constants.MONTH) !== - 1) {
             return constants.MONTH;
-        } else if (lowerCased.indexOf(constants.YEAR) !== - 1) {
+        } else if (lowerCased.indexOf(constants.ANNUM) !== - 1) {
             return constants.YEAR;
         }
         return constants.EMPTY_STRING;
@@ -115,6 +115,6 @@ export default class SnaphuntScraper implements IJobApiScraper {
         if (jobEngagement === constants.SNAPHUNT_FULLTIME) timeEngagements.push(Constants.FULL_TIME);
         timeEngagements.push(jobType);
 
-        newJob.timeEngagement = timeEngagements.join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.timeEngagement = timeEngagements.join(Constants.COMPOSITION_DELIMITER);
     }
 }

@@ -5,73 +5,79 @@ import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from "../../helpers/stringUtils";
 import IJobParser from "../interfaces/IJobParser";
+import CommonJobParser from "./commonParser";
 
 
 @Service()
-export default class CareerJetJobParser implements IJobParser {
+export default class CareerJetJobParser extends CommonJobParser implements IJobParser {
     private trie: TrieNode;
 
     constructor() {
+        super();
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
         this.trie.addEntry('(hybrid)', TrieWordType.IS_HYBRID);
-        this.trie.addEntry('|| ', TrieWordType.REDUNDANT);
+        // this.trie.addEntry('|| ', TrieWordType.REDUNDANT);
         ['per year', 'per month', 'per week', 'per hour'].forEach(entry => {
             this.trie.addEntry(entry, TrieWordType.SALARY_PERIOD);
         });
     }
 
     public parseJob(job: Job): Job {
-        this.parseJobTitle(job);
         this.formatsalary(job);
+        if (!job.salary) this.parseSalaryFrom(job, job.jobTitle);
+        if (!job.salary) this.parseSalaryFrom(job, job.details);
 
+        this.parseValue(job.jobTitle, job);
         return job;
     }
 
-    /**
-   * @description Function that accepts the job to be parsed. The function attempts to parse properties:
-   * isHybrid and update the job title to the value without the hybrid flag.
-   * @param {Job} job
-   * @returns {void}
-   */
-    private parseJobTitle(job: Job): void {
-        let finalJobTitleRev = constants.EMPTY_STRING;
-        let matchingPartRev = constants.EMPTY_STRING;
-        let trieMatch = null;
-        let stopParsing = false;    // stop parsing when (Hybrid) is found
-        for (let i = 0; i < job.jobTitle.length; i++) {
-            const currentLowerCasedToken = job.jobTitle[i].toLowerCase();
+//     /**
+//    * @description Function that accepts the job to be parsed. The function attempts to parse properties:
+//    * isHybrid and update the job title to the value without the hybrid flag.
+//    * @param {Job} job
+//    * @returns {void}
+//    */
+//     private parseJobTitle(job: Job): void {
+//         let finalJobTitleRev = constants.EMPTY_STRING;
+//         let matchingPartRev = constants.EMPTY_STRING;
+//         let trieMatch = null;
+//         let stopParsing = false;    // stop parsing when (Hybrid) is found
+//         for (let i = 0; i < job.jobTitle.length; i++) {
+//             const currentLowerCasedToken = job.jobTitle[i].toLowerCase();
             
-            if (trieMatch) {    // attempting to continue with the current matching sequence
-                trieMatch = trieMatch.matchToken(currentLowerCasedToken);
-            }
-            if (!trieMatch) {   // current matching sequence unmatched further. Attempting to match a new one
-                finalJobTitleRev = matchingPartRev + finalJobTitleRev;
-                matchingPartRev = constants.EMPTY_STRING;
-                trieMatch = this.trie.matchToken(currentLowerCasedToken);
-            }
+//             if (trieMatch) {    // attempting to continue with the current matching sequence
+//                 trieMatch = trieMatch.matchToken(currentLowerCasedToken);
+//             }
+//             if (!trieMatch) {   // current matching sequence unmatched further. Attempting to match a new one
+//                 finalJobTitleRev = matchingPartRev + finalJobTitleRev;
+//                 matchingPartRev = constants.EMPTY_STRING;
+//                 trieMatch = this.trie.matchToken(currentLowerCasedToken);
+//             }
 
-            if (!trieMatch) {
-                finalJobTitleRev = job.jobTitle[i] + finalJobTitleRev;
-                matchingPartRev = constants.EMPTY_STRING;
-            } else {
-                matchingPartRev = job.jobTitle[i] + matchingPartRev;
+//             if (!trieMatch) {
+//                 finalJobTitleRev = job.jobTitle[i] + finalJobTitleRev;
+//                 matchingPartRev = constants.EMPTY_STRING;
+//             } else {
+//                 matchingPartRev = job.jobTitle[i] + matchingPartRev;
 
-                switch(trieMatch.getWordType()) {
-                    case TrieWordType.IS_HYBRID:
-                        stopParsing = true;
-                        job.isHybrid = true;
-                        break;
-                    case TrieWordType.REDUNDANT:
-                        stopParsing = true;
-                        break;
-                }
+//                 switch(trieMatch.getWordType()) {
+//                     case TrieWordType.IS_HYBRID:
+//                         stopParsing = true;
+//                         job.isHybrid = true;
+//                         matchingPartRev = constants.EMPTY_STRING
+//                         break;
+//                     case TrieWordType.REDUNDANT:
+//                         stopParsing = true;
+//                         matchingPartRev = constants.EMPTY_STRING
+//                         break;
+//                 }
 
-                if (stopParsing) break;
-            }
-        }
+//                 if (stopParsing) break;
+//             }
+//         }
 
-        job.jobTitle = reverseString(finalJobTitleRev.trimStart());
-    }
+//         job.jobTitle = reverseString((matchingPartRev + finalJobTitleRev).trimStart());
+//     }
 
     /**
    * @description Function that accepts the job to be parsed. The function attempts to parse salary property,

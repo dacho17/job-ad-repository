@@ -30,7 +30,6 @@ export default class LinkedInScraper implements IJobBrowserScraper {
 
         const jobTitle = await browserAPI.getText(Constants.LN_DETAILS_JOBTITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const orgName = await browserAPI.getText(Constants.LN_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
@@ -139,17 +138,16 @@ export default class LinkedInScraper implements IJobBrowserScraper {
      * @returns {void}
      */
     private handleSeniorityLevelValue(newJob: JobDTO, seniorityLevel: string) : void {
-        switch (seniorityLevel.toLowerCase()) {
+        seniorityLevel = seniorityLevel.toLowerCase();
+        switch (seniorityLevel) {
             case Constants.INTERNSHIP:
                 newJob.isInternship = true;
                 break;
-            case Constants.ENTRY_LEVEL:
+            case Constants.NOT_APPLICABLE:
+                break;
             default:
-                newJob.requiredSkills = newJob.requiredSkills 
-                    ? newJob.requiredSkills + Constants.COMMA + Constants.WHITESPACE + seniorityLevel
-                    : seniorityLevel;
                 newJob.requiredExperience = newJob.requiredExperience
-                    ? newJob.requiredExperience + Constants.COMMA + Constants.WHITESPACE + seniorityLevel
+                    ? newJob.requiredExperience + Constants.COMPOSITION_DELIMITER + seniorityLevel
                     : seniorityLevel;
         }
     }

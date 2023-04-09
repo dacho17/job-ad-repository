@@ -9,7 +9,7 @@ import IJobBrowserScraper from "../interfaces/IJobBrowserScraper";
 @Service()
 export default class EuroJobSitesScraper implements IJobBrowserScraper {
     /**
-      * @description Function that accepts jobAd and browserAPI.
+    * @description Function that accepts jobAd and browserAPI.
    * Data available on EuroJobSites in the scrape is (jobTitle, orgName, orgLocation, additionalJobLink, jobDescription, jobDetails).
    * @param {JobAd | null} jobAd
    * @param {BrowserAPI} browserAPI
@@ -18,7 +18,6 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const [jobTitle, orgName, orgLocation] = await this.scrapeHeader(browserAPI);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const jobDescription = await browserAPI.getText(Constants.EURO_JOB_SITES_DETAILS_AD_SELECTOR);
@@ -28,7 +27,11 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
             url: browserAPI.getUrl(),
             description: jobDescription!.trim(),
             jobAdId: jobAd?.id ?? undefined,
-            organization: { name: orgName?.trim(), location: orgLocation?.trim() } as OrganizationDTO,
+            organization: { name: orgName?.trim() } as OrganizationDTO,
+        }
+
+        if (orgLocation) {
+            this.handleOrgLocationIsRemote(newJob, orgLocation);
         }
 
         const additionalJobLink = await browserAPI.getDataSelectorAndAttr(Constants.EURO_JOB_SITES_DETAILS_ADDITIONAL_JOB_LINK_SELECTOR, Constants.HREF_SELECTOR);
@@ -48,7 +51,7 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
                     continue;
                 }
                 const delimiterIndex: number = jobDetailsText.indexOf(jobDetailsKeys[i]!);
-                jobDetailsText = jobDetailsText.slice(0, delimiterIndex) + Constants.JOB_DESCRIPTION_COMPOSITION_DELIMITER + jobDetailsText.slice(delimiterIndex);
+                jobDetailsText = jobDetailsText.slice(0, delimiterIndex) + Constants.COMPOSITION_DELIMITER + jobDetailsText.slice(delimiterIndex);
             }
             jobDetailsText = jobDetailsText.replace(/: /g, Constants.EQUALS).trim();
 
@@ -75,5 +78,15 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
         const orgLocation = await browserAPI.getTextFromElement(jobHeaderElements[offset + 2]);
     
         return [jobTitle!.trim(), orgName?.trim() || null, orgLocation?.trim()];
+    }
+
+    private handleOrgLocationIsRemote(newJob: JobDTO, orgLocation: string) {
+        let remotePossib = ['Remote, ', ' or Remote'];
+        remotePossib.forEach(pos => {
+            if (orgLocation.indexOf(pos) !== -1) {
+                newJob.isRemote = true;
+                newJob.organization.location = orgLocation.replace(pos, Constants.EMPTY_STRING);
+            }
+        });
     }
 }

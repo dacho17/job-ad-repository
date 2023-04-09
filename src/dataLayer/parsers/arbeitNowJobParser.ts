@@ -6,19 +6,22 @@ import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from '../../helpers/stringUtils';
 import IParser from "../interfaces/IJobParser";
+import CommonJobParser from "./commonParser";
 
 @Service()
-export default class ArbeitNowJobParser implements IParser {
+export default class ArbeitNowJobParser extends CommonJobParser implements IParser {
     private trie: TrieNode;
 
     // within the constructor, the trie which parser uses is constructed
     constructor() {
+        super();
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
-        ['- remote', 'remote'].forEach(entry => {
+        ['- remote', 'remote', 'fully remote'].forEach(entry => {
             this.trie.addEntry(entry, TrieWordType.IS_REMOTE);
         });
         this.trie.addEntry('student', TrieWordType.IS_STUDENT);
-        ['mid-senior', 'junior', 'senior'].forEach(entry => {
+        this.trie.addEntry('no experience required / student', TrieWordType.IS_STUDENT);
+        ['mid-senior', 'junior', 'senior', 'entry', 'professional / experienced', 'experienced'].forEach(entry => {
             this.trie.addEntry(entry, TrieWordType.SENIORITY);
         });
         ['full time', 'full-time', 'permanent', 'part time', 'part-time'].forEach(entry => {
@@ -34,7 +37,7 @@ export default class ArbeitNowJobParser implements IParser {
    * @param {Organization?} job
    * @returns {Job}
    */
-    public parseJob(job: Job): Job {
+    public parseJob(job: Job): Job {      
         if (job.organization) {
             this.parseOrganizationName(job, job.organization);
         }
@@ -43,7 +46,10 @@ export default class ArbeitNowJobParser implements IParser {
         job.organization = job.organization;
 
         this.parseSalary(job);
+        if (!job.salary) this.parseSalaryFrom(job, job.jobTitle);
+        if (!job.salary) this.parseSalaryFrom(job, job.details);
 
+        this.parseValue(job.jobTitle, job);
         return job;
     }
 
@@ -173,8 +179,8 @@ export default class ArbeitNowJobParser implements IParser {
                 }
             }
 
-            job.timeEngagement = timeEngagementLabels.join(constants.COMMA + constants.WHITESPACE);
-            job.requiredExperience = requiredExperienceLabels.join(constants.COMMA + constants.WHITESPACE);
+            job.timeEngagement = timeEngagementLabels.join(constants.COMPOSITION_DELIMITER);
+            job.requiredExperience = requiredExperienceLabels.join(constants.COMPOSITION_DELIMITER);
             job.details = reverseString(finalJobDetailsRev.trimStart());
         }
     }

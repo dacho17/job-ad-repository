@@ -22,7 +22,6 @@ export default class QreerScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {    
         const jobTitle = await browserAPI.getText(Constants.QREER_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const orgName = await browserAPI.getText(Constants.QREER_DETAILS_COMPANY_NAME_SELECTOR);
@@ -117,34 +116,48 @@ export default class QreerScraper implements IJobBrowserScraper {
     */
     private async scrapeJobSkills(browserAPI: BrowserAPI, newJob: JobDTO): Promise<void> {
         const keyValPairElements = await browserAPI.findElements(Constants.QREER_DETAILS_JOB_SKILLS_KEY_VALUE_SELECTOR);
-        let educationReq = [];
+        let educationReq = new Set();
+        let requiredSkills = new Set();
         for (let i = 0; i < keyValPairElements.length; i++) {
             const [keyElement, valElement] = await browserAPI.findElementsOnElement(keyValPairElements[i], Constants.TD_SELECTOR);
             const jobDetailsKey = await browserAPI.getTextFromElement(keyElement);
             const jobDetailsValSection =await browserAPI.getInnerHTML(valElement);
             const jobDetailVals = jobDetailsValSection?.trim().split(Constants.LESS_SIGN + Constants.BR_SELECTOR + Constants.MORE_SIGN)
-                .map(part => part.trim()).join(Constants.COMMA + Constants.WHITESPACE);
+                .map(part => part.trim()).filter(el => el.length > 0).join(Constants.COMPOSITION_DELIMITER);
 
-            switch (jobDetailsKey?.trim()) {
-                case Constants.EDUCATION_COL:
-                case Constants.EDUCATION_LEVEL_COL:
-                    educationReq.push(jobDetailVals?.trim());
+            let trimmedKey = jobDetailsKey?.trim();
+            let trimmedVal = jobDetailVals?.trim();
+            switch (true) {
+                case (trimmedVal?.toLowerCase().indexOf(Constants.BACHELOR) !== -1):
+                    educationReq.add(Constants.BACHELOR);
                     break;
-                case Constants.SPECIALTIES_COL:
-                    newJob.requiredSkills = jobDetailVals?.trim();
+                case (trimmedVal?.toLowerCase().indexOf(Constants.MASTER) !== -1):
+                    educationReq.add(Constants.MASTER);
                     break;
-                case Constants.EXPERIENCE_COL:
-                    newJob.requiredExperience = jobDetailVals?.trim();
+                case (trimmedVal?.toLowerCase().indexOf(Constants.DOCTOR) !== -1):
+                    educationReq.add(Constants.DOCTOR);
                     break;
-                case Constants.LANGUAGES_SPOKEN_COL:
-                    newJob.requiredLanguages = jobDetailVals?.trim();
+                case (trimmedKey === Constants.EDUCATION_COL):
+                case (trimmedKey === Constants.EDUCATION_LEVEL_COL):
+                    requiredSkills.add(trimmedVal);
                     break;
-                case Constants.JOB_LOCATION_COL:
-                    newJob.workLocation = jobDetailVals?.trim();   
+                case (trimmedKey === Constants.SPECIALTIES_COL):
+                    requiredSkills.add(trimmedVal);
+                    break;
+                case (trimmedKey === Constants.EXPERIENCE_COL):
+                    newJob.requiredExperience = trimmedVal;
+                    break;
+                case (trimmedKey === Constants.LANGUAGES_SPOKEN_COL):
+                    let requiredLangs = trimmedVal?.toLowerCase();
+                    newJob.requiredLanguages = requiredLangs;
+                    break;
+                case (trimmedKey === Constants.JOB_LOCATION_COL):
+                    newJob.workLocation = trimmedVal;   
                     break;
             }
         }
 
-        newJob.requiredEducation = educationReq.join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.requiredSkills = Array.from(requiredSkills.values()).join(Constants.COMPOSITION_DELIMITER);
+        newJob.requiredEducation = Array.from(educationReq.values()).join(Constants.COMPOSITION_DELIMITER);
     }
 }

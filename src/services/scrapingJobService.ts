@@ -3,6 +3,7 @@ import db from "../database/db";
 import { Job } from "../database/models/job";
 import { JobAd } from "../database/models/jobAd";
 import { Organization } from "../database/models/organization";
+import constants from "../helpers/constants";
 import { GetJobsRequest } from '../helpers/dtos/getJobsRequest';
 import JobDTO from '../helpers/dtos/jobDTO';
 import { JobAdSource } from "../helpers/enums/jobAdSource";
@@ -90,6 +91,13 @@ export class ScrapingJobService {
                 try {
                     if (jobAdsWithoutScrapedJobs[i].source !== JobAdSource.SNAPHUNT) {
                         await this.browserAPI.openPage(jobAdsWithoutScrapedJobs[i].jobLink);
+                        if (this.browserAPI.getResponseCode() == 500) {
+                            console.log(`The page is unavailable at the moment`);
+                            jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
+                            this.browserAPI.resetResponseCode();
+                            continue;
+                        }
+                        this.browserAPI.resetResponseCode();
                         newJobDTO = await (jobScraper as IJobBrowserScraper).scrape(jobAdsWithoutScrapedJobs[i], this.browserAPI);
                     } else {
                         newJobDTO = await (jobScraper as IJobApiScraper).scrape(jobAdsWithoutScrapedJobs[i], jobAdsWithoutScrapedJobs[i].jobLink);                    
@@ -102,8 +110,13 @@ export class ScrapingJobService {
                 }
 
                 if (!newJobDTO) {   // handle newJobDTO = null (job is no longer present online)
-                    expired += 1;
-                    await this.jobAdRepository.update(jobAdsWithoutScrapedJobs[i]) // stores jobAd marking it as expired
+                    const responseCode = this.browserAPI.getResponseCode()?.toString();
+                    if (responseCode?.startsWith(constants.THREE.toString()) || responseCode === constants.NOT_FOUND.toString()) {
+                        expired += 1;
+                        await this.jobAdRepository.updateAsExpired(jobAdsWithoutScrapedJobs[i]) // stores jobAd marking it as expired
+                    } else if (responseCode?.startsWith(constants.FIVE.toString())) {
+                        jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
+                    }
                     continue;
                 }
 
@@ -140,6 +153,8 @@ export class ScrapingJobService {
         } else {
             newJobDTO = await (scraper as IJobApiScraper).scrape(null, url);                    
         }
+
+        if (!newJobDTO) return null;
         const newJobMAP = this.buildJobMap(newJobDTO!, url);
         newJobMAP.organization = this.organizationMapper.toMap(newJobDTO!.organization);
         // const newOrgMAP = this.organizationMapper.toMap(newJobDTO.organization);

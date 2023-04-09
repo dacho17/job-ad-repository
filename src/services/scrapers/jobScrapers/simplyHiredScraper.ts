@@ -23,7 +23,6 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {    
         const jobTitle = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const orgName = await browserAPI.getText(Constants.SIMPLY_HIRED_DETAILS_COMPANY_NAME_SELECTOR);
@@ -52,7 +51,7 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
         
         const reqSkill = await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_REQUIRED_SKILLS_SELECTOR, browserAPI);
         this.handleRequiredExpEduSkills(newJob, reqSkill);
-        newJob.benefits = (await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR, browserAPI)).join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.benefits = (await this.scrapeSimplyHiredListOfElements(Constants.SIMPLY_HIRED_DETAILS_JOB_BENEFITS_SELECTOR, browserAPI)).join(Constants.COMPOSITION_DELIMITER);
 
         return newJob;
     }
@@ -79,42 +78,42 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
      * @returns {void}
      */
     private handleRequiredExpEduSkills(newJob: JobDTO, requiredExperience: string[]): void {
-        let reqExpSol: string[] = [];
-        let reqEdu: string[] = [];
-        let reqSkills: string[] = [];
+        let reqExpSol = new Set();
+        let reqEdu = new Set();
+        let reqSkills = new Set();
         requiredExperience.forEach(elem => {
             const elemParts = elem.split(Constants.WHITESPACE).map(el => el.toLowerCase());
             if (elem.toLowerCase().indexOf(Constants.BACHELOR) !== -1) {
-                reqEdu.push(Constants.BACHELOR);
+                reqEdu.add(Constants.BACHELOR);
             } else if (elem.toLowerCase().indexOf(Constants.MASTER) !== -1) {
-                reqEdu.push(Constants.MASTER);
+                reqEdu.add(Constants.MASTER);
             } else if (elem.toLowerCase().indexOf(Constants.PHD) !== -1 || elemParts.includes(Constants.DOCTOR)) {
-                reqEdu.push(Constants.PHD);
+                reqEdu.add(Constants.PHD);
             } else if (elemParts.length > 1) {
                 const [firstPart, secondPart, _] = elemParts;
                 const firstPartNum = parseInt(firstPart);
                 const secondPartNum = parseInt(secondPart);
                 if (firstPartNum || secondPartNum) {
                     const yearsSuf = (num: number) => num === 1 ? Constants.YEAR : Constants.YEARS;
-                    if (firstPart === 'Under' && !isNaN(secondPartNum)) reqExpSol.push(`Less than ${secondPart} ${yearsSuf(secondPartNum)}`);
-                    if (!isNaN(firstPartNum)) reqExpSol.push(`At least ${firstPart} ${yearsSuf(firstPartNum)}`)
+                    if (firstPart === 'Under' && !isNaN(secondPartNum)) reqExpSol.add(`Less than ${secondPart} ${yearsSuf(secondPartNum)}`);
+                    if (!isNaN(firstPartNum)) reqExpSol.add(`At least ${firstPart} ${yearsSuf(firstPartNum)}`)
                     
                     const plusIndex = firstPart.indexOf(Constants.PLUS_SIGN);
                     if (plusIndex !== -1) {
                         const years = firstPart.substring(0, plusIndex);
-                        reqExpSol.push(`More than ${years} ${yearsSuf(parseInt(years))}`);
+                        reqExpSol.add(`More than ${years} ${yearsSuf(parseInt(years))}`);
                     }
                 } else {
-                    reqSkills.push(elem);    
+                    reqSkills.add(elem);    
                 }
             } else {
-                reqSkills.push(elem);
+                reqSkills.add(elem);
             }
         });
 
-        newJob.requiredSkills = reqSkills.join(Constants.COMMA + Constants.WHITESPACE);
-        newJob.requiredEducation = reqEdu.join(Constants.COMMA + Constants.WHITESPACE);
-        newJob.requiredExperience = reqExpSol.join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.requiredSkills = Array.from(reqSkills.values()).join(Constants.COMPOSITION_DELIMITER);
+        newJob.requiredEducation = Array.from(reqEdu.values()).join(Constants.COMPOSITION_DELIMITER);
+        newJob.requiredExperience = Array.from(reqExpSol.values()).join(Constants.COMPOSITION_DELIMITER);
     }
 
     /**
@@ -143,6 +142,6 @@ export default class SimplyHiredScraper implements IJobBrowserScraper {
             }
         }
         
-        newJob.timeEngagement = timeEngagements.join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.timeEngagement = timeEngagements.join(Constants.COMPOSITION_DELIMITER);
     }
 }

@@ -19,7 +19,6 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.CAREER_BUILDER_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const jobDescription = await browserAPI.getText(Constants.CAREER_BUILDER_DETAILS_JOB_DESCRIPTION_SELECTOR);
@@ -62,7 +61,7 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
             newJob.organization.location = firstSubtitleProperty?.trim();
             timeEngagement = secondSubtitleProperty?.trim();
         }
-        if (newJob.organization.location?.substring(0, 2) === Constants.COMMA + Constants.WHITESPACE) {
+        if (newJob.organization.location?.substring(0, 2) === Constants.COMPOSITION_DELIMITER) {
             newJob.organization.location = newJob.organization.location.slice(2);
         }
 
@@ -83,6 +82,11 @@ export default class CareerBuilderScraper implements IJobBrowserScraper {
         const listOfRequiredSkillElements = await browserAPI.findElements(Constants.CAREER_BUILDER_DETAILS_REQUIRED_SKILLS_SELECTOR);
         const requiredSkills = await Promise.all(listOfRequiredSkillElements.map(async elem => await browserAPI.getTextFromElement(elem)));
 
+        for (let i = 0; i < requiredSkills.length; i++) {
+            if (requiredSkills[i]?.toLowerCase() === Constants.SECONDARY_EDUCATION) {
+                newJob.requiredEducation = Constants.SECONDARY_EDUCATION;
+            }
+        }
         newJob.requiredSkills = requiredSkills.join(Constants.COMMA_SIGN + Constants.WHITESPACE);
     }
 }

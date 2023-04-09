@@ -22,7 +22,6 @@ export default class CareerJetScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.CAREER_JET_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
-            jobAd!.isAdPresentOnline = false;
             return null;
         }
         const orgName = await browserAPI.getText(Constants.CAREER_JET_DETAILS_COMPANY_NAME_SELECTOR);
@@ -73,6 +72,6 @@ export default class CareerJetScraper implements IJobBrowserScraper {
             } else timeEngagementItems.push(timeEngagementItem.toLowerCase());
         }
 
-        newJob.timeEngagement = timeEngagementItems.join(Constants.COMMA + Constants.WHITESPACE);
+        newJob.timeEngagement = timeEngagementItems.join(Constants.COMPOSITION_DELIMITER);
     } 
 }

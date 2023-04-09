@@ -5,16 +5,23 @@ import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from "../../helpers/stringUtils";
 import IJobParser from "../interfaces/IJobParser";
+import CommonJobParser from "./commonParser";
 
 @Service()
-export default class CareerBuilderJobParser implements IJobParser {
+export default class CareerBuilderJobParser extends CommonJobParser implements IJobParser {
     private trie: TrieNode;
 
     constructor() {
+        super()
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
-        this.trie.addEntry('(onsite)', TrieWordType.REDUNDANT);
-        this.trie.addEntry('(hybrid)', TrieWordType.IS_HYBRID);
-        this.trie.addEntry('(remote)', TrieWordType.IS_REMOTE);
+        this.trie.addEntry('onsite', TrieWordType.REDUNDANT);
+        this.trie.addEntry('100% ', TrieWordType.REDUNDANT);
+        this.trie.addEntry('hybrid', TrieWordType.IS_HYBRID);
+        this.trie.addEntry('remote', TrieWordType.IS_REMOTE);
+        this.trie.addEntry('(', TrieWordType.REDUNDANT);
+        this.trie.addEntry(')', TrieWordType.REDUNDANT);
+        this.trie.addEntry('.', TrieWordType.REDUNDANT);
+        this.trie.addEntry('- eligible', TrieWordType.REDUNDANT);
         ['year', 'month', 'week', 'hour'].forEach(entry => {
             this.trie.addEntry(entry, TrieWordType.SALARY_PERIOD);
         });
@@ -22,8 +29,12 @@ export default class CareerBuilderJobParser implements IJobParser {
 
     public parseJob(job: Job): Job {
         this.parseSalary(job);
+        if (!job.salary) this.parseSalaryFrom(job, job.jobTitle);
+        if (!job.salary) this.parseSalaryFrom(job, job.details);
+        
         this.parseOrganizationLocation(job);
 
+        this.parseValue(job.jobTitle, job);
         return job;
     }
 
@@ -61,13 +72,16 @@ export default class CareerBuilderJobParser implements IJobParser {
                     case TrieWordType.IS_REMOTE:
                         stopParsing = true;
                         job.isRemote = true;
+                        matchingPartRev = constants.EMPTY_STRING;
                         break;
                     case TrieWordType.IS_HYBRID:
                         stopParsing = true;
                         job.isHybrid = true;
+                        matchingPartRev = constants.EMPTY_STRING;
                         break;
                     case TrieWordType.REDUNDANT:
                         stopParsing = true;
+                        matchingPartRev = constants.EMPTY_STRING;
                         break;
                 }
 
@@ -75,7 +89,7 @@ export default class CareerBuilderJobParser implements IJobParser {
             }
         }
 
-        job.organization.location = reverseString(finalCompanyLocRev.trimStart());
+        job.organization.location = reverseString(matchingPartRev + finalCompanyLocRev.trimStart());
     }
 
     /**
