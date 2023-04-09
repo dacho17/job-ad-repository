@@ -88,7 +88,7 @@ export class ScrapingJobAdRepository {
     }
 
     /**
-   * @description Updates the jobAd and return it. Throws an error if encountered.
+   * @description Updates the jobAd and returns it. Throws an error if encountered.
    * @param {JobAd} jobAd JobAd MAP object which is to be updated
    * @param {Transaction?} t transaction as part of which the update query is executed
    * @returns {Promise<JobAd>} Promise containing the updated jobAd.
@@ -99,5 +99,15 @@ export class ScrapingJobAdRepository {
         } catch (exception) {
             throw `An attempt to update the jobAd with id=${jobAd.id} has failed. - [${exception}]`;
         }
+    }
+
+    /**
+   * @description Updates the jobAd and returns it. Throws an error if encountered.
+   * @param {JobAd} jobAd JobAd MAP object which is to be updated
+   * @returns {Promise<JobAd>} Promise containing the updated jobAd.
+   */
+    public async updateAsExpired(jobAd: JobAd): Promise<JobAd> {
+        jobAd.isAdPresentOnline = false;
+        return await this.update(jobAd);
     }
 }
