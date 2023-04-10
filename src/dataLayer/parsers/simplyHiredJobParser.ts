@@ -82,13 +82,13 @@ export default class SimplyhiredJobParser extends CommonJobParser implements IJo
                 }
             }
 
-            if (job.salary[i] === 'K' && i > 0 && !isNaN(parseInt(job.salary[i - 1]))) {
+            if (job.salary[i] === this.K && i > 0 && !isNaN(parseInt(job.salary[i - 1]))) {
                 if (i > 1 && (job.salary[i - 2] === constants.DOT || job.salary[i - 2] === constants.COMMA)) {
-                    salaryNumberCandidateRev = '00' + salaryNumberCandidateRev;
+                    salaryNumberCandidateRev = this.DOUBLE_ZERO + salaryNumberCandidateRev;
                     nOfDigitsAfterDot += 2;
 
                 } else {
-                    salaryNumberCandidateRev = '000.' + salaryNumberCandidateRev;
+                    salaryNumberCandidateRev = this.ZEROES_DOT + salaryNumberCandidateRev;
                     nOfDigitsAfterDot += 3;
                 }
             }
@@ -131,8 +131,10 @@ export default class SimplyhiredJobParser extends CommonJobParser implements IJo
             
         }
 
-        const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + '/' : constants.EMPTY_STRING)
-            + 'DSU' + constants.WHITESPACE + finalSalary + salaryPrefix;
-        job.salary = finalSalary ? reverseString(finalSalaryOutput) : undefined;
+        if (finalSalary) {
+            const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + constants.SLASH : constants.EMPTY_STRING)
+                + reverseString(constants.USD.toUpperCase()) + constants.WHITESPACE + finalSalary + salaryPrefix;
+            job.salary = reverseString(finalSalaryOutput);
+        }
     }
 }

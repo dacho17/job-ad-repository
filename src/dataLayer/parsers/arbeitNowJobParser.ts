@@ -202,7 +202,7 @@ export default class ArbeitNowJobParser extends CommonJobParser implements IPars
         let wageRatePeriod = null;
         for (let i = 0; i < job.salary.length; i++) {
             const currentToken = job.salary[i].toLowerCase();
-            if (currentToken === '(') break;
+            if (currentToken === constants.OPEN_PARENTHESES) break;
 
             if (currentToken === constants.DOT || currentToken === constants.COMMA) {
                 salaryNumberCandidateRev = constants.DOT + salaryNumberCandidateRev;
@@ -222,7 +222,9 @@ export default class ArbeitNowJobParser extends CommonJobParser implements IPars
                 let isYearlyFormat = nOfDigitsBeforeDot > 1 && nOfDigitsAfterDot === 3;
                 let isMonthlyFormat = nOfDigitsBeforeDot === 1 && nOfDigitsAfterDot === 3;
                 if (isYearlyFormat || isMonthlyFormat) {
-                    wageRatePeriod = isYearlyFormat ? 'EUR/year' : 'EUR/month';
+                    wageRatePeriod = isYearlyFormat 
+                        ? (constants.EUR.toUpperCase() + constants.SLASH + constants.YEAR)
+                        : (constants.EUR.toUpperCase() + constants.SLASH + constants.MONTH);
 
                     if (finalSalary) {
                         finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
@@ -240,7 +242,7 @@ export default class ArbeitNowJobParser extends CommonJobParser implements IPars
             }
 
             if (isNaN(numCurrentToken) && nOfDigitsBeforeDot > 0) {
-                wageRatePeriod = 'EUR/hour';
+                wageRatePeriod = constants.EUR.toUpperCase() + constants.SLASH + constants.HOUR;
                 if (finalSalary) {
                     finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
                 } else {
@@ -255,6 +257,8 @@ export default class ArbeitNowJobParser extends CommonJobParser implements IPars
             
         }
 
-        job.salary = finalSalary ? reverseString(finalSalary) + constants.WHITESPACE + wageRatePeriod : undefined;
+        if (finalSalary) {
+            job.salary = reverseString(finalSalary) + constants.WHITESPACE + (wageRatePeriod ?? constants.EMPTY_STRING);
+        }
     }
 }

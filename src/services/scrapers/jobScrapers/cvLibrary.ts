@@ -23,15 +23,16 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const jobDescription = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_JOB_DESCRIPTION_SELECTOR);
         const orgName = await browserAPI.getText(Constants.CV_LIBRARY_DETAILS_COMPANY_NAME_SELECTOR);
 
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             organization: { name: orgName?.trim() } as OrganizationDTO,
             jobAdId: jobAd?.id ?? undefined,
         }
@@ -69,7 +70,7 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
         
         const salaryCandidate = await browserAPI.getTextFromElement(jobDetailsValueElements[1]);
         if (/\d/.test(salaryCandidate || Constants.EMPTY_STRING)) {
-            newJob.salary = salaryCandidate!.trim();
+            newJob.salary = salaryCandidate?.trim();
         }
 
         for (let i = 2; i < jobDetailsKeyElements.length; i++) {
@@ -77,8 +78,9 @@ export default class CvLibraryScraper implements IJobBrowserScraper {
 
             let title = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
             let value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-            title = title!.trim();
-            value = value!.trim();
+            if (!title || !value) continue;
+            title = title.trim();
+            value = value.trim();
             
             switch(title) {
                 case Constants.TYPE_COL:

@@ -3,6 +3,8 @@ import { Service, Inject } from 'typedi';
 import { ScrapingJobAdService } from '../services/scrapingJobAdService';
 import { RequestValidator } from '../helpers/requestValidator';
 import { BaseController } from './baseController';
+import ResponseObject from '../helpers/dtos/responseObject';
+import constants from '../helpers/constants';
 
 @Service()
 export class ScrapingJobAdController extends BaseController {
@@ -22,9 +24,12 @@ export class ScrapingJobAdController extends BaseController {
             this.respondToInvalidRequest(errorMessage, res);
         } else {
             const result = await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!);
-            res.status(200).json({
-                numberOfScrapedAds: result
-            });
+            res.status(constants.HTTP_OK).json({
+                data: {
+                    numberOfScrapedAds: result
+                },
+                errorMessage: null
+            } as ResponseObject<object>);
         }
     }
 }

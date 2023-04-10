@@ -156,8 +156,10 @@ export default class CareerJetJobParser extends CommonJobParser implements IJobP
             
         }
 
-        const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + '/' : constants.EMPTY_STRING)
-            + 'DSU' + constants.WHITESPACE + finalSalary;
-        job.salary = finalSalary ? reverseString(finalSalaryOutput) : undefined;
+        if (finalSalary) {
+            const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + constants.SLASH : constants.EMPTY_STRING)
+                + reverseString(constants.USD.toUpperCase()) + constants.WHITESPACE + finalSalary;
+            job.salary = reverseString(finalSalaryOutput);
+        }
     }
 }

@@ -21,15 +21,11 @@ export default class LinkedInScraper implements IJobBrowserScraper {
      * @returns {Promise<JobDTO | null>} Returns the a JobDTO.
      */
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
-
-        const showMoreButton = await browserAPI.findElement(Constants.LN_DETAILS_SHOW_MORE_BUTTON_SELECTOR);
-        if (showMoreButton) {
-            console.log('show more button found')
-            await showMoreButton.click();
-        }
+        await browserAPI.clickButton(Constants.LN_DETAILS_SHOW_MORE_BUTTON_SELECTOR);
 
         const jobTitle = await browserAPI.getText(Constants.LN_DETAILS_JOBTITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const orgName = await browserAPI.getText(Constants.LN_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
@@ -54,19 +50,18 @@ export default class LinkedInScraper implements IJobBrowserScraper {
             .replace(Constants.SHOW_MORE, Constants.EMPTY_STRING)
             .replace(Constants.SHOW_LESS, Constants.EMPTY_STRING);
 
+        let postedDate = postedAgo ? this.utils.getPostedDate4LinkedIn(postedAgo.trim()) : null;
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
             nOfApplicants: this.formatNofApplicants(nOfApplicants?.trim()) ?? undefined,
-            postedDate: this.utils.getPostedDate4LinkedIn(postedAgo!.trim())
-        }
+            postedDateTimestamp: postedDate ? this.utils.transformToTimestamp(postedDate.toString()) ?? undefined : undefined
+        };
 
         await this.scrapeJobCriteria(browserAPI, newJob);
-
-        console.log(newJob);
         return newJob;
     }
 
@@ -82,14 +77,16 @@ export default class LinkedInScraper implements IJobBrowserScraper {
         const jobDetailsValueElements = await browserAPI.findElements(Constants.LN_DETAILS_JOB_CRITERIA_ITEM_VALUE_SELECTOR);
         for (let i = 0; i < jobDetailsValueElements.length; i++) {
             const value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-            jobDetailsValues.push(value!.trim());
+            if (!value) continue;
+            jobDetailsValues.push(value.trim());
         }
 
         newJob.requiredSkills = Constants.EMPTY_STRING;
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.LN_DETAILS_JOB_CRITERIA_ITEM_KEY_SELECTOR);
         for (let i = 0; i < jobDetailsKeyElements.length; i++) {
             const jobCriteriaKey = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
-            const jobCriteriaVal = jobDetailsValues[i]; 
+            const jobCriteriaVal = jobDetailsValues[i];
+            if (!jobCriteriaKey || !jobCriteriaVal) continue;
             switch(jobCriteriaKey?.trim()) {
                 case Constants.INDUSTRIES:
                     newJob.organization.industry = jobCriteriaVal;

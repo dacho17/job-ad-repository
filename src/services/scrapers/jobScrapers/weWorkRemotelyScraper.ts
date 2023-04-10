@@ -23,6 +23,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.WE_WORK_REMOTELY_DETAIL_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const jobDescription = await browserAPI.getText(Constants.WE_WORK_REMOTELY_JOB_DESCRIPTION_SELECTOR);
@@ -32,9 +33,9 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         const orgName = await browserAPI.getTextFromElement(companyNameAndLinkElement!);
 
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             jobAdId: jobAd?.id ?? undefined,
             organization: {
                 name: orgName?.trim(),
@@ -82,6 +83,7 @@ export default class WeWorkRemotelyScraper implements IJobBrowserScraper {
         let timeEngagements = [];
         for (let i = 0; i < jobDetailElements.length; i++) {
             let jobDetail = await browserAPI.getTextFromElement(jobDetailElements[i]);
+            if (!jobDetail) continue;
             jobDetail = jobDetail!.trim();
             let jobDetailLowerCased = jobDetail.toLowerCase();
             switch(jobDetail.toLowerCase()) {

@@ -22,16 +22,17 @@ export default class CareerJetScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.CAREER_JET_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const orgName = await browserAPI.getText(Constants.CAREER_JET_DETAILS_COMPANY_NAME_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.CAREER_JET_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
             organization: { name: orgName?.trim() || Constants.UNDISLOSED_COMPANY } as OrganizationDTO,
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             jobAdId: jobAd?.id ?? undefined,
         }
 
@@ -55,17 +56,18 @@ export default class CareerJetScraper implements IJobBrowserScraper {
     private async scrapeSubtitleSection(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
         const jobSubtitleElements = await browserAPI.findElements(Constants.CAREER_JET_DETAILS_JOB_SUBTITLE_SELECTOR);
         const jobSubtitleData = await Promise.all(jobSubtitleElements.map(async elem => await browserAPI.getTextFromElement(elem)));
-        newJob.organization.location = jobSubtitleData[0]!.trim();
+        newJob.organization.location = jobSubtitleData[0]?.trim();
         
         if (jobSubtitleData.length < 2) throw `Unexpected number of elements in subtitle section has been found while scraping ${newJob.url}`;
         let offset = 1;
         if (jobSubtitleData.length === 4) {
-            newJob.salary = jobSubtitleData[offset]!.trim();
+            newJob.salary = jobSubtitleData[offset]?.trim();
             offset += 1;
         }
 
         let timeEngagementItems = [];
         for (; offset < jobSubtitleData.length; offset ++) {
+            if (!jobSubtitleData[offset]) continue;
             let timeEngagementItem = jobSubtitleData[offset]!.trim();
             if (timeEngagementItem.toLowerCase() === Constants.TRAINING) {
                 newJob.isTrainingProvided = true;

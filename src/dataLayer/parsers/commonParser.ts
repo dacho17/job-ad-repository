@@ -10,6 +10,9 @@ import IParser from "../interfaces/IJobParser";
 @Service()
 export default class CommonJobParser implements IParser {
     protected commonTrie: TrieNode;
+    protected DOUBLE_ZERO: string = '00';
+    protected ZEROES_DOT: string = '000.';
+    protected K: string = 'k';
 
     // within the constructor, the commonTrie which parser uses is constructed
     constructor() {
@@ -136,13 +139,13 @@ export default class CommonJobParser implements IParser {
                 matchingPartRev = currentToken + matchingPartRev;
             }
 
-            if (currentToken === 'k' && i > 0 && !isNaN(parseInt(valueToParse[i - 1]))) {
+            if (currentToken === this.K && i > 0 && !isNaN(parseInt(valueToParse[i - 1]))) {
                 if (i > 1 && (valueToParse[i - 2] === constants.DOT || valueToParse[i - 2] === constants.COMMA)) {
-                    salaryNumberCandidateRev = '00' + salaryNumberCandidateRev;
+                    salaryNumberCandidateRev = this.DOUBLE_ZERO + salaryNumberCandidateRev;
                     nOfDigitsAfterDot += 2;
 
                 } else {
-                    salaryNumberCandidateRev = '000.' + salaryNumberCandidateRev;
+                    salaryNumberCandidateRev = this.ZEROES_DOT + salaryNumberCandidateRev;
                     nOfDigitsAfterDot += 3;
                 }
             }
@@ -184,8 +187,8 @@ export default class CommonJobParser implements IParser {
             dotSeen = false;
         }
 
-        const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + '/' : constants.EMPTY_STRING)
-            + 'DSU' + constants.WHITESPACE + finalSalary + salaryPrefix;
+        const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + constants.SLASH : constants.EMPTY_STRING)
+            + reverseString(constants.USD.toUpperCase()) + constants.WHITESPACE + finalSalary + salaryPrefix;
         job.salary = finalSalary ? reverseString(finalSalaryOutput) : undefined;
     }
 

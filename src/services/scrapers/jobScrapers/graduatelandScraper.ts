@@ -22,17 +22,23 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.GRADUATELAND_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
-        const orgNameElement = await browserAPI.findElement(Constants.GRADUATELAND_DETAILS_COMPANY_NAME_SELECTOR);
-        const orgUrlRef = await browserAPI.getDataFromAttr(orgNameElement!, Constants.HREF_SELECTOR);
-        const orgName = await browserAPI.getTextFromElement(orgNameElement!);
+
         const jobDescription = await browserAPI.getText(Constants.GRADUATELAND_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
+        const orgNameElement = await browserAPI.findElement(Constants.GRADUATELAND_DETAILS_COMPANY_NAME_SELECTOR);
+        let orgName, orgUrlRef;
+        if (orgNameElement) {
+            orgUrlRef = await browserAPI.getDataFromAttr(orgNameElement, Constants.HREF_SELECTOR);
+            orgName = await browserAPI.getTextFromElement(orgNameElement);
+        }
+
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             jobAdId: jobAd?.id ?? undefined,
             organization: {
                 name: orgName?.trim(),
@@ -46,9 +52,6 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
         }
 
         await this.scrapeJobDetails(browserAPI, newJob);
-
-        console.log(newJob.organization);
-
         return newJob;
     }
 
@@ -61,37 +64,44 @@ export default class GraduatelandScraper implements IJobBrowserScraper {
    */
     private async scrapeJobDetails(browserAPI: BrowserAPI, newJob: JobDTO): Promise<void> {
         const jobDetailsValueElements = await browserAPI.findElements(Constants.GRADUATELAND_DETAILS_JOB_DETAILS_VALUES_SELECTOR);
-
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.GRADUATELAND_DETAILS_JOB_DETAILS_KEY_SELECTOR);
         for (let i = 0; i < jobDetailsKeyElements.length; i++) {
+            if (!jobDetailsKeyElements[i] || !jobDetailsValueElements[i]) continue;
             const keyword = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
+            if (!keyword) continue;
             let value, valueElems, values;
-            switch(keyword!.trim()) {
-                case Constants.LOCATION:
-                    const valueElem = await browserAPI.findElementOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
-                    value = await browserAPI.getTextFromElement(valueElem!);
-                    value = value?.split(Constants.WHITESPACE).map(part => part.trim()).join(Constants.EMPTY_STRING).trim();
-                    newJob.workLocation = value!.replace(Constants.COMMA, Constants.COMPOSITION_DELIMITER);
-                    break;
-                case Constants.CATEGORY:
-                    valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
-                    values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
-                    newJob.organization.industry = values.filter(part => part && part.length > 1).join(Constants.COMPOSITION_DELIMITER);
-                    break;
-                case Constants.TYPE:
-                    value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-                    if (value) this.handleTimeEngagementProperty(newJob, value);
-                    break;
-                case Constants.SKILLS:
-                    valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
-                    values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
-                    newJob.requiredSkills = values.filter(part => part && part.length > 1).join(Constants.COMPOSITION_DELIMITER);
-                    break;
-                case Constants.MUST_HAVE_LANGUAGE:
-                    value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-                    newJob.requiredLanguages = value?.replace(Constants.PROFESSIONAL, Constants.EMPTY_STRING).split(Constants.WHITESPACE).map(part => part.trim().replace(Constants.COMMA, Constants.EMPTY_STRING))
-                        .filter(part => part.length > 1).join(Constants.WHITESPACE);
-                    break;
+            try {
+                switch(keyword.trim()) {
+                    case Constants.LOCATION:
+                        const valueElem = await browserAPI.findElementOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
+                        value = await browserAPI.getTextFromElement(valueElem!);
+                        value = value!.split(Constants.WHITESPACE).map(part => part.trim()).join(Constants.EMPTY_STRING).trim();
+                        newJob.workLocation = value!.replace(Constants.COMMA, Constants.COMPOSITION_DELIMITER);
+                        break;
+                    case Constants.CATEGORY:
+                        valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
+                        values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
+                        newJob.organization.industry = values.filter(part => part && part.length > 1).join(Constants.COMPOSITION_DELIMITER);
+                        break;
+                    case Constants.TYPE:
+                        value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
+                        if (value) this.handleTimeEngagementProperty(newJob, value);
+                        break;
+                    case Constants.SKILLS:
+                        valueElems = await browserAPI.findElementsOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
+                        values = await Promise.all(valueElems.map(async elem => (await browserAPI.getTextFromElement(elem))?.trim()));
+                        newJob.requiredSkills = values.filter(part => part && part.length > 1).join(Constants.COMPOSITION_DELIMITER);
+                        break;
+                    case Constants.MUST_HAVE_LANGUAGE:
+                        value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
+                        newJob.requiredLanguages = value?.replace(Constants.PROFESSIONAL, Constants.EMPTY_STRING)
+                            .split(Constants.WHITESPACE).map(part => part.trim()
+                            .replace(Constants.COMMA, Constants.EMPTY_STRING))
+                            .filter(part => part.length > 1).join(Constants.WHITESPACE);
+                        break;
+                }
+            } catch (err) {
+                console.log(`Error occurred while handling value setting for keyword=${keyword} on Graduateland.`);
             }
         }
     }

@@ -18,6 +18,7 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const [jobTitle, orgName, orgLocation] = await this.scrapeHeader(browserAPI);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const jobDescription = await browserAPI.getText(Constants.EURO_JOB_SITES_DETAILS_AD_SELECTOR);
@@ -25,7 +26,7 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle,
             url: browserAPI.getUrl(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim() } as OrganizationDTO,
         }
@@ -67,17 +68,20 @@ export default class EuroJobSitesScraper implements IJobBrowserScraper {
    * @description Function which looks to scrape jobTitle, orgName, and orgLocation,
    * The function returns the triplet.
    * @param {BrowserAPI} browserAPI
-   * @returns {Promise<[string, string | null, string | undefined]>}
+   * @returns {Promise<[string | null, string | null, string | null]>}
    */
-    private async scrapeHeader(browserAPI: BrowserAPI): Promise<[string, string | null, string | undefined]>  {
+    private async scrapeHeader(browserAPI: BrowserAPI): Promise<[string | null, string | null, string | null]>  {
         const jobHeaderElements = await browserAPI.findElements(Constants.EURO_JOB_SITES_DETAILS_HEADER_SELECTOR);
         let offset = 0;
         if (jobHeaderElements.length == 4) offset = 1;
         const jobTitle = await browserAPI.getTextFromElement(jobHeaderElements[offset]);
+        if (!jobTitle) {
+            return [null, null, null];
+        }
         const orgName = await browserAPI.getTextFromElement(jobHeaderElements[offset + 1]);
         const orgLocation = await browserAPI.getTextFromElement(jobHeaderElements[offset + 2]);
     
-        return [jobTitle!.trim(), orgName?.trim() || null, orgLocation?.trim()];
+        return [jobTitle.trim(), orgName?.trim() || null, orgLocation?.trim() || null];
     }
 
     private handleOrgLocationIsRemote(newJob: JobDTO, orgLocation: string) {

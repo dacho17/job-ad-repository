@@ -67,16 +67,16 @@ export default class JobParserHelper {
    * @returns {boolean}
    */
     public requiresParsing(jobAdSource: JobAdSource): boolean {
-        switch (jobAdSource) {
-            case JobAdSource.ARBEIT_NOW:
-            case JobAdSource.CAREER_BUILDER:
-            case JobAdSource.CAREER_JET:
-            case JobAdSource.CV_LIBRARY:
-            case JobAdSource.SIMPLY_HIRED:
-            case JobAdSource.WE_WORK_REMOTELY:
-                return true;
-            default:
-                return false;
-        }
+        // switch (jobAdSource) {
+        //     case JobAdSource.ARBEIT_NOW:
+        //     case JobAdSource.CAREER_BUILDER:
+        //     case JobAdSource.CAREER_JET:
+        //     case JobAdSource.CV_LIBRARY:
+        //     case JobAdSource.SIMPLY_HIRED:
+        //     case JobAdSource.WE_WORK_REMOTELY:
+        //         return true;
+        //     default:
+        return false;   // every job requires parsing (Common Parser). Some data may be found in title
+        // }
     }
 }

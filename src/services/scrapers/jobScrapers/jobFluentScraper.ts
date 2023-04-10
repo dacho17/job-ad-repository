@@ -19,6 +19,7 @@ export default class JobFluentScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const timeEngagement = await browserAPI.getText(Constants.JOB_FLUENT_DETAILS_TIME_ENGAGEMENT_SELECTOR);
@@ -33,20 +34,17 @@ export default class JobFluentScraper implements IJobBrowserScraper {
         let compositeSalary: string | undefined;
         if (salary && salary.length === 2) {
             let minSalaryVal = await browserAPI.getTextFromElement(salary[0]);
-            let maxSalaryVal = await browserAPI.getTextFromElement(salary[1]);                
-            compositeSalary = minSalaryVal!.trim() + Constants.MINUS_SIGN + maxSalaryVal!.trim() 
-                + Constants.WHITESPACE + Constants.EUR.toUpperCase() + Constants.SLASH + Constants.YEAR;
+            let maxSalaryVal = await browserAPI.getTextFromElement(salary[1]);
+            if (minSalaryVal && maxSalaryVal) {
+                compositeSalary = minSalaryVal.trim() + Constants.MINUS_SIGN + maxSalaryVal.trim() 
+                    + Constants.WHITESPACE + Constants.EUR.toUpperCase() + Constants.SLASH + Constants.YEAR;
+            }
         }
-        
-
-
-        // check! parse companyDetails into its constituent properties
-        // check! gather requiredskills
 
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim(), urlReference: orgUrlRef?.trim() } as OrganizationDTO,
             requiredSkills: requiredSkills?.trim(),
@@ -65,7 +63,6 @@ export default class JobFluentScraper implements IJobBrowserScraper {
         }
 
         await this.scrapeCompanyDetails(browserAPI, newJob);
-
         return newJob;
     }
 
@@ -81,27 +78,29 @@ export default class JobFluentScraper implements IJobBrowserScraper {
         const jobDetailsValueElements = await browserAPI.findElements(Constants.JOB_FLUENT_DETAILS_COMPANY_DETAILS_VALUES_SELECTOR);
         for (let i = 0; i < jobDetailsValueElements.length; i++) {
             const value = await browserAPI.getTextFromElement(jobDetailsValueElements[i]);
-            jobDetailsValues.push(value!.trim());
+            if (value) jobDetailsValues.push(value.trim());
         }
         
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.JOB_FLUENT_DETAILS_COMPANY_DETAILS_KEYS_SELECTOR);
         for (let i = 0; i < jobDetailsKeyElements.length; i++) {
             const keyword = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
+            let value = jobDetailsValues[i];
+            if (!keyword || !value) continue;
             switch(keyword!.trim()) {
                 case Constants.WEBISTE:
-                    newJob.organization.website = jobDetailsValues[i].trim()
+                    newJob.organization.website = value;
                     break;
                 case Constants.INDUSTRY:
-                    newJob.organization.industry = jobDetailsValues[i].trim();
+                    newJob.organization.industry = value;
                     break;
                 case Constants.HEADQUARTERS:
-                    newJob.organization.location = jobDetailsValues[i].trim()
+                    newJob.organization.location = value;
                     break;
                 case Constants.COMPANY_SIZE:
-                    newJob.organization.size = jobDetailsValues[i].trim()
+                    newJob.organization.size = value;
                     break;
                 case Constants.FOUNDED:
-                    newJob.organization.founded = jobDetailsValues[i].trim()
+                    newJob.organization.founded = value;
                     break;
             }
         }

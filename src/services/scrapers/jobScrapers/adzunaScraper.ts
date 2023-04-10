@@ -21,6 +21,7 @@ export default class AdzunaScraper implements IJobBrowserScraper {
     
         let jobTitle = await browserAPI.getText(Constants.ADZUNA_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         let subTitleSectionElement = await browserAPI.findMultiple(Constants.ADZUNA_DETAILS_SUBTITLE_SECTION_SELECTOR)
@@ -30,11 +31,11 @@ export default class AdzunaScraper implements IJobBrowserScraper {
         let jobDescription = await browserAPI.getText(Constants.ADZUNA_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
             organization: { name: orgName?.trim() } as OrganizationDTO,
             timeEngagement: timeEngagement?.trim().replace(Constants.WHITESPACE, Constants.MINUS_SIGN).toLowerCase(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             jobAdId: jobAd?.id ?? undefined
         }
 

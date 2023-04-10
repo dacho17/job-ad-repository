@@ -16,7 +16,7 @@ export default class JobDTO {
     nOfApplicants?: string;
     workLocation?: string;
     details?: string;
-    description: string;
+    description?: string;
     isRemote?: boolean;
     isHybrid?: boolean;
     isInternship?: boolean;

@@ -116,10 +116,14 @@ export class ScrapingJobAdService {
             return 0;
         }
 
-        const numberOfStoredAds = await this.storeJobAds(scrapedJobAds);
-        console.log(`${numberOfStoredAds} ads have been stored`);
-
-        return numberOfStoredAds;
+        try {
+            const numberOfStoredAds = await this.storeJobAds(scrapedJobAds);
+            console.log(`${numberOfStoredAds} ads have been stored in scrapeJobAds`);
+            return numberOfStoredAds;
+        } catch (err) {
+            console.log(`An error has occurred in scrapeJobAds while attempting to store the scraped jobAds to the database. - [${err}]`);
+            return 0;
+        }
     }
 
      /**

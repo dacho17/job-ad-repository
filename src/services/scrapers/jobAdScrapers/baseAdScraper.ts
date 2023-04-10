@@ -48,17 +48,28 @@ export class BaseAdScraper {
                     }
                 }
             }
-            await this.browserAPI.openPage(scraperTracker.url!);
+
+            try {
+                await this.browserAPI.openPage(scraperTracker.url!);
+            } catch (err) {
+                console.log(`An error occured while puppeteer was trying to access url=${scraperTracker.url} - [${err}]`);
+                continue;
+            }
             
             let postedAgoList: (string | null)[] = [];  // gathering postedAgo information for several websites which contain it
             if ([JobAdSource.JOB_FLUENT, JobAdSource.LINKEDIN].includes(adSource)) {
                 postedAgoList = await this.getPostedAgoList(adSource);
             }
 
-            const numberOfAdsScraped = await this.scrapePage(scraperTracker, adSource, jobAdSelector, postedAgoList);
-            if (numberOfAdsScraped === 0) break;
-
-            scraperTracker.currentPage += 1;
+            try {
+                const numberOfAdsScraped = await this.scrapePage(scraperTracker, adSource, jobAdSelector, postedAgoList);
+                if (numberOfAdsScraped === 0) break;
+                scraperTracker.currentPage += 1;
+            } catch (err) {
+                console.log(`An error occurred while trying to scrape job ads from url=${scraperTracker.url}. - [${err}]`);
+                await this.browserAPI.close();
+                return scraperTracker.scrapedAds;
+            }
         }
     
         console.log(scraperTracker.scrapedAds.length + " ads have been scraped in total.");

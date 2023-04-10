@@ -23,6 +23,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {    
         let jobTitle = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const jobDescription = await browserAPI.getText(Constants.EURO_JOBS_DETAILS_JOB_DESCRIPTION_SELECTOR);
@@ -33,7 +34,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
         const newJob: JobDTO = {
             jobTitle: jobTitle,
             url: browserAPI.getUrl(),
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim() } as OrganizationDTO,
         }
@@ -62,19 +63,20 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
         for (let i = 0; i < jobDetailsKeysElement.length; i++) {
             const key = await browserAPI.getTextFromElement(jobDetailsKeysElement[i]);
             let value = await browserAPI.getTextFromElement(jobDetailsValuesElement[i]);
-            switch (key?.trim()) {
+            if (!key || !value) continue;
+            switch (key.trim()) {
                 case Constants.CLIENT_COL:
-                    newJob.organization.name = value?.trim() || newJob.organization.name;
+                    newJob.organization.name = value.trim() || newJob.organization.name;
                     break;
                 case Constants.LOCATION_COL:
-                    value = value!
+                    value = value
                         .replace(Constants.EURO_JOBS_REDUNDANT_MARK, Constants.EMPTY_STRING)
                         .replace(Constants.EURO_JOBS_REDUNDANT_MARK_TWO, Constants.EMPTY_STRING).trim();
                     value = value[0].toUpperCase() + value.slice(1);
                     newJob.organization.location = value;
                     break;
                 case Constants.EU_WORK_PERMIT_REQ_COL:
-                    newJob.euWorkPermitRequired = value?.trim() === Constants.YES;
+                    newJob.euWorkPermitRequired = value.trim() === Constants.YES;
                     break;
                 case Constants.POSTED_COL:
                     newJob.postedDate = this.utils.getDateFromDottedDateString(value);
@@ -95,7 +97,7 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
    */
     private async scrapeRequirementsAndEngagement(newJob: JobDTO, browserAPI: BrowserAPI): Promise<void> {
         const engagementAndRequirementsElems = await browserAPI.findElements(Constants.EURO_JOBS_DETAILS_ENGAGEMENT_AND_REQUIREMENTS_SELECTOR);
-        engagementAndRequirementsElems.shift(); // fist element is jobDescription already scraped elsewhere in the class
+        if (engagementAndRequirementsElems) engagementAndRequirementsElems.shift(); // fist element is jobDescription already scraped elsewhere in the class
         for (let i = 0; i < engagementAndRequirementsElems.length; i++) {
             const titleElem = await browserAPI.findElementOnElement(engagementAndRequirementsElems[i], Constants.H3_SELECTOR);
             const valueElem = await browserAPI.findElementOnElement(engagementAndRequirementsElems[i], Constants.DIV_SELECTOR);
@@ -103,10 +105,11 @@ export default class EuroJobsScraper implements IJobBrowserScraper {
 
             let title = await browserAPI.getTextFromElement(titleElem);
             let value = await browserAPI.getTextFromElement(valueElem);
+            if (!title || !value) continue;
 
-            switch(title?.trim()) {
+            switch(title.trim()) {
                 case Constants.JOB_REQUIREMENTS_COL:
-                    newJob.requirements = value?.trim();
+                    newJob.requirements = value.trim();
                     break;
                 case Constants.EMPLOYMENT_TYPE_COL:
                     newJob.timeEngagement = value?.trim();

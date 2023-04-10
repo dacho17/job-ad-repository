@@ -19,6 +19,7 @@ export default class TybaScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.TYBA_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const orgNameElem = await browserAPI.findElement(Constants.TYBA_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
@@ -27,10 +28,10 @@ export default class TybaScraper implements IJobBrowserScraper {
         const jobDescription = await browserAPI.getText(Constants.TYBA_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
             jobAdId: jobAd?.id ?? undefined,
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             organization: { name: orgName?.trim(), urlReference: orgLink ? Constants.TYBA_URL + orgLink.trim() : undefined } as OrganizationDTO,
         }
 
@@ -52,8 +53,9 @@ export default class TybaScraper implements IJobBrowserScraper {
         const jobDetailsKeyElements = await browserAPI.findElements(Constants.TYBA_DETAILS_JOB_DETAILS_KEYS_SELECTOR);
         for (let i = 0; i < jobDetailsKeyElements.length; i++) {
             const keyword = await browserAPI.getTextFromElement(jobDetailsKeyElements[i]);
+            if (!keyword) continue;
             let value;
-            switch (keyword!.trim()) {
+            switch (keyword.trim()) {
                 case Constants.LOCATION:
                     const valueElem = await browserAPI.findElementOnElement(jobDetailsValueElements[i], Constants.SPAN_SELECTOR);
                     value = await browserAPI.getTextFromElement(valueElem!);

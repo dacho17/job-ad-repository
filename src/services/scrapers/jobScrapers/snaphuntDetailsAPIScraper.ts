@@ -20,20 +20,24 @@ export default class SnaphuntScraper implements IJobApiScraper {
    * @returns {Promise<JobDTO>} Returns the a JobDTO.
    */
     public async scrape(jobAd: JobAd | null, jobUrl?: string): Promise<JobDTO | null> {    
+        let url = jobAd?.jobLink ?? jobUrl;
         let jsonResponse = null;
         try {
-            let url = jobAd?.jobLink ?? jobUrl;
             console.log(`accessing ${url}`);
             jsonResponse = await axios(url!);
         } catch(exception) {
             console.log(`An exception occurred while accessing the url=${exception}!`);
-                jobAd!.isAdPresentOnline = false;
-                return null;
+            jobAd!.isAdPresentOnline = false;
+            return null;
         }
 
         const data = JSON.parse(JSON.stringify(jsonResponse.data)).body;
 
-        console.log(data);
+        if (!data) {
+            console.log(`Data has not been fetched from url=${url}!`);
+            jobAd!.isAdPresentOnline = false;
+            return null;
+        }
 
         const companyInfo = data.user[0].companiesInformation[0];
 

@@ -1,3 +1,4 @@
+import { QueryError } from "sequelize";
 import { Inject, Service } from "typedi";
 import db from "../database/db";
 import { Job } from "../database/models/job";
@@ -7,6 +8,10 @@ import constants from "../helpers/constants";
 import { GetJobsRequest } from '../helpers/dtos/getJobsRequest';
 import JobDTO from '../helpers/dtos/jobDTO';
 import { JobAdSource } from "../helpers/enums/jobAdSource";
+import DbQueryError from "../helpers/errors/dbQueryError";
+import PuppeteerError from "../helpers/errors/puppeteerError";
+import ScrapeError from "../helpers/errors/scrapeError";
+import UnrecognizedDataError from "../helpers/errors/unrecognizedData";
 import { JobAdMapper } from "../helpers/mappers/jobAdMapper";
 import JobMapper from "../helpers/mappers/jobMapper";
 import OrganizationMappper from "../helpers/mappers/organizationMapper";
@@ -72,10 +77,16 @@ export class ScrapingJobService {
         let succStored = 0;
         await this.browserAPI.run();
         for (;;) {
-            const jobAdsWithoutScrapedJobs = await this.jobAdRepository.getAdsWithUnscrapedJobs(jobAdQueryOffset);
+            let jobAdsWithoutScrapedJobs;
+            try {
+                jobAdsWithoutScrapedJobs = await this.jobAdRepository.getAdsWithUnscrapedJobs(jobAdQueryOffset);
+            } catch (exception) {
+                console.error(`getAdsWithoutScrapedDetails unsuccessful - [${exception}]`);
+                throw new DbQueryError(`The jobs to be scraped could not be fetched.`);
+            }
             if (jobAdsWithoutScrapedJobs.length === 0) break;
 
-            console.log(`${jobAdsWithoutScrapedJobs.length} jobads to be scraped`)
+            console.log(`${jobAdsWithoutScrapedJobs.length} jobads to be scraped`);
             for (let i = 0; i < jobAdsWithoutScrapedJobs.length; i++) {
                 // const jobAdDTO = this.jobAdMapper.toDto(jobAdsWithoutScrapedJobs[i]);
                 const jobScraper = this.jobScraperHelper.getScraperFor(jobAdsWithoutScrapedJobs[i].source);
@@ -103,17 +114,22 @@ export class ScrapingJobService {
                         newJobDTO = await (jobScraper as IJobApiScraper).scrape(jobAdsWithoutScrapedJobs[i], jobAdsWithoutScrapedJobs[i].jobLink);                    
                     }
                 } catch (exception) {
-                    console.log(exception);
-                    // TODO: mark this event somehow in the database because the ad might be inactive!
+                    console.log(`Exception occured while scraping job from url${this.browserAPI.getUrl()} - [${exception}]`);
                     jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
                     continue;
                 }
 
                 if (!newJobDTO) {   // handle newJobDTO = null (job is no longer present online)
                     const responseCode = this.browserAPI.getResponseCode()?.toString();
-                    if (responseCode?.startsWith(constants.THREE.toString()) || responseCode === constants.NOT_FOUND.toString()) {
+                    console.log(`Job unavailable to be scraped. ${responseCode} HTTP code received from ${this.browserAPI.getUrl()}`);
+                    if (responseCode?.startsWith(constants.THREE.toString()) || responseCode === constants.HTTP_NOT_FOUND.toString()) {
                         expired += 1;
-                        await this.jobAdRepository.updateAsExpired(jobAdsWithoutScrapedJobs[i]) // stores jobAd marking it as expired
+                        try {
+                            await this.jobAdRepository.updateAsExpired(jobAdsWithoutScrapedJobs[i]) // stores jobAd marking it as expired
+                        } catch (err) {
+                            console.log(`Error occurred while attempting to update jobAd id=${jobAdsWithoutScrapedJobs[i].id} as expired`);
+                            jobAdQueryOffset += 1;
+                        }
                     } else if (responseCode?.startsWith(constants.FIVE.toString())) {
                         jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
                     }
@@ -124,9 +140,13 @@ export class ScrapingJobService {
                 newJobMAP.jobAd = this.inheritPropsFromJob(jobAdsWithoutScrapedJobs[i], newJobMAP);
                 newJobMAP.organization = this.organizationMapper.toMap(newJobDTO.organization);
 
-                const hasBeenStored = await this.sendScrapedJobForStoring(newJobMAP);
-                if (hasBeenStored) succStored += 1;
-                else jobAdQueryOffset += 1; // offset is to be added for the entries unsuccessfully stored to the DB
+                let storedJob = await this.sendScrapedJobForStoring(newJobMAP);
+                if (storedJob) {
+                    succStored += 1;
+                } else {
+                    jobAdQueryOffset += 1;  // offset is to be added for the entries unsuccessfully stored to the DB
+                    console.log(`Scraped job has not been stored successfully.`)
+                }
             }
         }
 
@@ -143,25 +163,41 @@ export class ScrapingJobService {
         await this.browserAPI.run();
         const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(url);
         const scraper = this.jobScraperHelper.getScraperFor(jobSource);
-        if (!scraper) throw `Scraper not found for the provided url=${url}`;
+        if (!scraper) throw new UnrecognizedDataError(`Scraper not found for the provided url=${url}`);
 
         let newJobDTO;
         // differentiating between IJobBrowserScrapers and IJobApiScrapers
-        if (jobSource !== JobAdSource.SNAPHUNT) {
-            await this.browserAPI.openPage(url);
-            newJobDTO = await (scraper as IJobBrowserScraper).scrape(null, this.browserAPI);
-        } else {
-            newJobDTO = await (scraper as IJobApiScraper).scrape(null, url);                    
+        try {
+            if (jobSource !== JobAdSource.SNAPHUNT) {
+                try {
+                    await this.browserAPI.openPage(url);
+                } catch (err) {
+                    throw new PuppeteerError(`Error occured while openning the page url=${url}. - [${err}]`, this.browserAPI.getResponseCode()!);
+                }
+                newJobDTO = await (scraper as IJobBrowserScraper).scrape(null, this.browserAPI);
+            } else {
+                newJobDTO = await (scraper as IJobApiScraper).scrape(null, url);                    
+            }
+        } catch (err) {
+            if (err instanceof PuppeteerError) {
+                throw err;
+            } else {
+                throw new ScrapeError(`An error occurred while trying to scrape job from url=${url}`);
+            }
         }
 
-        if (!newJobDTO) return null;
+
+        if (!newJobDTO) return null;    // jobUnavailable
         const newJobMAP = this.buildJobMap(newJobDTO!, url);
         newJobMAP.organization = this.organizationMapper.toMap(newJobDTO!.organization);
         // const newOrgMAP = this.organizationMapper.toMap(newJobDTO.organization);
 
         const storedJobMAP = await this.sendScrapedJobForStoring(newJobMAP);
+        if (!storedJobMAP) {
+            throw new DbQueryError(`An error occurred while trying to store a job scraped from url=${url}`);
+        }
 
-        return storedJobMAP ? this.jobMapper.toDTO(storedJobMAP) : null;
+        return this.jobMapper.toDTO(storedJobMAP);
     }
 
     /**
@@ -170,9 +206,15 @@ export class ScrapingJobService {
    * @returns {Promise<JobDTO[]>} Promise resolving to the jobDTO list
    */
     public async getJobsPaginated(getJobsReq: GetJobsRequest): Promise<JobDTO[]> {
-        const jobs = await this.jobRepository.getJobsPaginated(getJobsReq);
-        const jobDtos = jobs.map(jobMAP => this.jobMapper.toDTO(jobMAP));
+        let jobs;
+        try {                
+            jobs = await this.jobRepository.getJobsPaginated(getJobsReq);
+        } catch (err) {
+            console.log(`An error occured in getJobsPaginated - [${err}]`);
+            throw new DbQueryError(`An error occured while trying to fetch jobs`);
+        }
 
+        const jobDtos = jobs.map(jobMAP => this.jobMapper.toDTO(jobMAP));
         return jobDtos;
     }
 
@@ -202,7 +244,7 @@ export class ScrapingJobService {
             await transaction.commit();
             return storedJob;
         } catch (exception) {
-            console.log(`An exception occurred while storing a 
+            console.log(`An exception occurred in sendScrapedJobForStoring() for url=${newJob.url}
                 ${newJob.jobAd ? 'triplet (job, org, jobAd)' : 'pair (job, org)'} - [${exception}]`);
             await transaction.rollback();
             return null;

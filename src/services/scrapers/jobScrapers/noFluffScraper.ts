@@ -23,10 +23,11 @@ export default class NoFluffScraper implements IJobBrowserScraper {
         await browserAPI.waitForSelector('DUMMY', 5000);
         const jobTitle = await browserAPI.getText((Constants.NO_FLUFF_DETAILS_JOB_TITLE_SELECTOR));
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
 
-        await this.clickShowMore(Constants.NO_FLUFF_DETAILS_JOB_DESCRIPTION_SHOW_MORE_SELECTOR, browserAPI);
+        await browserAPI.clickButton(Constants.NO_FLUFF_DETAILS_JOB_DESCRIPTION_SHOW_MORE_SELECTOR);
         const jobDescription = await browserAPI.getText(Constants.NO_FLUFF_DETAILS_JOB_DESCRIPTION_SELECTOR);
 
         const orgNameLinkEl = await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_COMPANY_NAME_AND_LINK_SELECTOR);
@@ -34,7 +35,7 @@ export default class NoFluffScraper implements IJobBrowserScraper {
         const orgName = await browserAPI.getTextFromElement(orgNameLinkEl!);
 
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
             description: jobDescription?.trim() || Constants.EMPTY_STRING,
             jobAdId: jobAd?.id ?? undefined,
@@ -61,10 +62,8 @@ export default class NoFluffScraper implements IJobBrowserScraper {
         newJob.benefits =  await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_JOB_BENEFITS_SELECTOR, browserAPI, newJob);
         newJob.equipmentProvided = await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_EQUIPMENT_SUPPLIED_SELECTOR, browserAPI, newJob);
         newJob.workLocation = await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_LOCATIONS_SELECTOR, browserAPI, newJob);
-        const showMoreResponsibilitiesButton = await browserAPI.findElement(Constants.NO_FLUFF_DETAILS_SHOW_MORE_RESPONSIBILITIES_SELECTOR);
-        if (showMoreResponsibilitiesButton) {
-            await showMoreResponsibilitiesButton.click();
-        }
+
+        await browserAPI.clickButton(Constants.NO_FLUFF_DETAILS_SHOW_MORE_RESPONSIBILITIES_SELECTOR);
         newJob.responsibilities = await this.scrapeNoFluffListOfElements(Constants.NO_FLUFF_DETAILS_JOB_RESPONSIBILITIES_SELECTOR, browserAPI, newJob);
 
         // there are two places on the page where information about 'remoteness' of the job is displayed. I am checking both places.
@@ -75,19 +74,6 @@ export default class NoFluffScraper implements IJobBrowserScraper {
         }
 
         return newJob;
-    }
-
-    /**
-   * @description Function attempts to click the button on the page if found by selecor.
-   * @param {string} selector
-   * @param {BrowserAPI} browserAPI
-   * @returns {Promise<void>}
-   */
-    private async clickShowMore(selector: string, browserAPI: BrowserAPI): Promise<void> {
-        const showMoreButton = await browserAPI.findElement(selector);
-        if (showMoreButton) {
-            await showMoreButton.click();
-        }
     }
 
     /**
@@ -102,7 +88,8 @@ export default class NoFluffScraper implements IJobBrowserScraper {
         let jobDetails = [];
         for (let i = 0; i < jobDetailValuesElements.length; i++) {
             let value = await browserAPI.getTextFromElement(jobDetailValuesElements[i]);
-            value = value?.trim().toLowerCase() || Constants.EMPTY_STRING;
+            if (!value) continue;
+            value = value.trim().toLowerCase() || Constants.EMPTY_STRING;
             switch (true) {
                 case value === Constants.FULLY_REMOTE:
                     newJob.isRemote = true;
@@ -138,7 +125,8 @@ export default class NoFluffScraper implements IJobBrowserScraper {
             const companyDetailsKeyElement = await browserAPI.findElementOnElement(companyDetailsElements[i], Constants.SPAN_SELECTOR);
             if (!companyDetailsKeyElement) continue;
             let companyDetailsKey = await browserAPI.getTextFromElement(companyDetailsKeyElement);
-            companyDetailsKey = companyDetailsKey!.trim();
+            if (!companyDetailsKey) continue;
+            companyDetailsKey = companyDetailsKey.trim();
             const companyDetailsKeyAndValueStr = await browserAPI.getTextFromElement(companyDetailsElements[i]);
             
             switch(companyDetailsKey) {
@@ -207,24 +195,25 @@ export default class NoFluffScraper implements IJobBrowserScraper {
         let selectedJobProperty = [];
         for (let i = 0; i < selectedElemList.length; i++) {
             let value = await browserAPI.getTextFromElement(selectedElemList[i]);
-            if (value?.endsWith(Constants.COMMA) || value?.endsWith(Constants.DOT)) {
+            if (!value) continue;
+            if (value.endsWith(Constants.COMMA) || value.endsWith(Constants.DOT)) {
                 value = value.slice(0, - 1).trim();
             }
 
-            let lowerCasedVal = value?.toLowerCase();
+            let lowerCasedVal = value.toLowerCase();
             switch(true) {
-                case (lowerCasedVal!.indexOf(Constants.BACHELOR) !== -1):
+                case (lowerCasedVal.indexOf(Constants.BACHELOR) !== -1):
                     console.log(`matched bachelor ${lowerCasedVal}`);
                     eduReq.add(Constants.BACHELOR);
-                case (lowerCasedVal!.indexOf(Constants.MASTER) !== - 1):
+                case (lowerCasedVal.indexOf(Constants.MASTER) !== - 1):
                 case (value?.indexOf(Constants.MS) !== -1):
                     console.log(`matched master or ms ${lowerCasedVal}`);
                     eduReq.add(Constants.MASTER);
-                case (lowerCasedVal!.indexOf(Constants.PHD) !== - 1):
+                case (lowerCasedVal.indexOf(Constants.PHD) !== - 1):
                     console.log(`matched phd ${lowerCasedVal}`);
                     eduReq.add(Constants.PHD);
                     break;
-                case (lowerCasedVal!.indexOf(Constants.YEAR) !== -1):
+                case (lowerCasedVal.indexOf(Constants.YEAR) !== -1):
                     console.log(`matched years ${lowerCasedVal}`);
                     expReq.add(value!);
                     break;

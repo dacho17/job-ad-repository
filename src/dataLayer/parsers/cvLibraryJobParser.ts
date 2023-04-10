@@ -11,6 +11,7 @@ import CommonJobParser from "./commonParser";
 @Service()
 export default class CvLibraryJobParser extends CommonJobParser implements IJobParser {
     private trie: TrieNode;
+    private M: string = 'm';
 
     constructor() {
         super();
@@ -117,7 +118,7 @@ export default class CvLibraryJobParser extends CommonJobParser implements IJobP
 
                 if (trieMatch.getWordType() === TrieWordType.SALARY_PERIOD) {
                     salaryPeriodRev = matchingPartRev;
-                    if (salaryPeriodRev[0] === 'm') salaryPeriodRev = 'raey';
+                    if (salaryPeriodRev[0] === this.M) salaryPeriodRev = reverseString(constants.YEAR);
                     matchingPartRev = constants.EMPTY_STRING;
                     trieMatch = null;
                 }
@@ -161,8 +162,8 @@ export default class CvLibraryJobParser extends CommonJobParser implements IJobP
             
         }
 
-        const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + '/' : constants.EMPTY_STRING)
-            + 'PBG' + constants.WHITESPACE + finalSalary;
+        const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + constants.SLASH : constants.EMPTY_STRING)
+            + reverseString(constants.GBP.toUpperCase()) + constants.WHITESPACE + finalSalary;
         job.salary = finalSalary ? reverseString(finalSalaryOutput) : undefined;
         job.benefits = benefitsRev ? reverseString(benefitsRev) : undefined;
     }

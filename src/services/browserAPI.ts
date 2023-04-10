@@ -172,7 +172,6 @@ export default class BrowserAPI {
     public async getTextFromElement(element: ElementHandle<Element>): Promise<string | null> {
         try {
             const text = await this.page.evaluate(el => el.textContent, element);
-            await element.dispose();
             return text;
         } catch (exception) {
             console.log(`Not able to evaluate an element`);
@@ -189,7 +188,6 @@ export default class BrowserAPI {
         try {
             const innerHtml = await this.page.evaluate(el => el.innerHTML, element);
 
-            await element.dispose();
             return innerHtml;
         } catch (exception) {
             console.log(`Not able to evaluate an element`);

@@ -46,45 +46,33 @@ export class ScrapingJobAdRepository {
    * @returns {Promise<JobAd[]>} Returns the promise resolving to the list of jobAds.
    */
     public async getAdsWithUnscrapedJobs(offset: number): Promise<JobAd[]> {
-        console.log('about to fetch entries')
-        try {
-            const jobAdsWithoutScrapedDetails = await JobAd.findAll({
-                where: {
-                    areDetailsScraped: false,
-                    isAdPresentOnline: true,
-                    // source: { [Op.not]: [JobAdSource.CV_LIBRARY.valueOf(), JobAdSource.NO_FLUFF_JOBS.valueOf()] },
-                },
-                limit: this.FETCH_JOB_AD_BATCH,
-                offset: offset
-            });
-            console.log(jobAdsWithoutScrapedDetails.length +' entries fetched');
-    
-            return jobAdsWithoutScrapedDetails;
-        } catch (exception) {
-            console.error(`getAdsWithoutScrapedDetails unsuccessful - [${exception}]`);
-            return [];
-        }
+        const jobAdsWithoutScrapedDetails = await JobAd.findAll({
+            where: {
+                areDetailsScraped: false,
+                isAdPresentOnline: true,
+                // source: { [Op.not]: [JobAdSource.CV_LIBRARY.valueOf(), JobAdSource.NO_FLUFF_JOBS.valueOf()] },
+            },
+            limit: this.FETCH_JOB_AD_BATCH,
+            offset: offset
+        });
+        return jobAdsWithoutScrapedDetails;
     }
 
     /**
-   * @description Marks job ad as scraped and sets the detailsScrapedDate. Throws an error if encountered.
+   * @description Marks job ad as scraped and sets the detailsScrapedDate.
    * @param {JobAd} jobAd JobAd MAP object which is to be stored
    * @param {Transaction} t This function is executed as a part of a transaction t.
    * @returns {Promise<JobAd>} Promise containing the updated job ad.
    */
     public async markAsScraped(jobAd: JobAd, t: Transaction): Promise<JobAd> {
-        try {
-            const updatedJobAd = await jobAd.update({
-                jobTitle: jobAd.jobTitle,
-                postedDate: jobAd.postedDate,
-                postedDateTimestamp: jobAd.postedDateTimestamp,
-                areDetailsScraped: true,
-                detailsScrapedDate: new Date(Date.now()),
-            }, { transaction: t });
-            return updatedJobAd;    
-        } catch (exception) {
-            throw `An exception occurred while updating the jobAd with id=${jobAd.id}. - [${exception}]`;
-        }
+        const updatedJobAd = await jobAd.update({
+            jobTitle: jobAd.jobTitle,
+            postedDate: jobAd.postedDate,
+            postedDateTimestamp: jobAd.postedDateTimestamp,
+            areDetailsScraped: true,
+            detailsScrapedDate: new Date(Date.now()),
+        }, { transaction: t });
+        return updatedJobAd;    
     }
 
     /**

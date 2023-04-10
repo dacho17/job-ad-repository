@@ -6,6 +6,7 @@ import { JobAd } from "../database/models/jobAd";
 import { Organization } from "../database/models/organization";
 import { GetJobsRequest } from "../helpers/dtos/getJobsRequest";
 import { JobAdSource } from "../helpers/enums/jobAdSource";
+import DbQueryError from "../helpers/errors/dbQueryError";
 
 @Service()
 export default class ScrapingJobRepository {
@@ -18,12 +19,7 @@ export default class ScrapingJobRepository {
    * @returns {Promise<Job>} Promise containing the stored job.
    */
     public async create(job: Job, t?: Transaction): Promise<Job> {
-        try {
-            const res = await job.save({ transaction: t });
-            return res;    
-        } catch (exception) {
-            throw `An exception occurred while storing a job with jobAdId=${job.jobAdId}. - [${exception}]`;
-        }
+        return await job.save({ transaction: t });
     }
 
     /**
@@ -33,52 +29,52 @@ export default class ScrapingJobRepository {
    * @returns {Promise<Job[]>} Promise containing the requested jobs.
    */
     public async getJobsPaginated(getJobsReq: GetJobsRequest): Promise<Job[]> {
-        try {
-            const paginatedJobs = await Job.findAll({
-                where: {
-                    jobTitle: {
-                        [Op.iLike]: `%${getJobsReq.jobTitleSearchWord}%`
-                    },
-                    companyName: {
-                        [Op.iLike]: `%${getJobsReq.companyNameSearchWord}%`
-                    },
-                },
-                include: [{
+        const paginatedJobs = await Job.findAll({
+            where: {
+                jobTitle: {
+                    [Op.iLike]: `%${getJobsReq.jobTitleSearchWord}%`
+                }
+            },
+            include: [
+                {
                     model: JobAd,
                     where: {source: JobAdSource.ADZUNA},
                     required: true,
-                }],
-                limit: getJobsReq.batchSize > this.MAX_BATCH_SIZE ? this.MAX_BATCH_SIZE : getJobsReq.batchSize,
-                offset: getJobsReq.offset
-            });
-    
-            return paginatedJobs;
-        } catch (exception) {
-            throw `getJobsPaginated unsuccessful - [${exception}]`;
-        }
+                },
+                {
+                    model: Organization,
+                    where: {
+                        name: {
+                            [Op.iLike]: `%${getJobsReq.companyNameSearchWord}%`
+                        }
+                    },
+                    required: true
+                }
+            
+            ],
+            limit: getJobsReq.batchSize > this.MAX_BATCH_SIZE ? this.MAX_BATCH_SIZE : getJobsReq.batchSize,
+            offset: getJobsReq.offset
+        });
+
+        return paginatedJobs;
     }
 
     /**
    * @description Fetches the jobs to parse, including the companies they are connected to.
-   * If there is an error, it is thrown.
    * @param {number} offset
    * @param {number} batchSize
    * @returns {Promise<Job[]>} Promise containing the requested jobs.
    */
     public async getJobsToParse(offset: number, batchSize: number): Promise<Job[]> {
-        try {
-            const jobsToParse = await Job.findAll({
-                where: {
-                    requiresParsing: true
-                },
-                limit: batchSize,
-                offset: offset,
-            });
+        const jobsToParse = await Job.findAll({
+            where: {
+                requiresParsing: true
+            },
+            limit: batchSize,
+            offset: offset,
+        });
 
-            return jobsToParse;
-        } catch (exception) {
-            throw `getJobsToParse failed - [${exception}]`;
-        }
+        return jobsToParse;
     }
 
     /**
@@ -88,13 +84,7 @@ export default class ScrapingJobRepository {
    * @returns {Promise<Job>} Promise containing the requested job.
    */
     public async getById(id: number): Promise<Job | null> {
-        try {
-            const job = await Job.findByPk(id);
-
-            return job;
-        } catch (exception) {
-            throw `getById failed - [${exception}]`;
-        }
+        return await Job.findByPk(id);
     }
 
     /**

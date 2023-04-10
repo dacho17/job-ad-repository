@@ -167,8 +167,8 @@ export default class CareerBuilderJobParser extends CommonJobParser implements I
             
         }
 
-        const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + '/' : constants.EMPTY_STRING)
-            + 'DSU' + constants.WHITESPACE + finalSalary;
+        const finalSalaryOutput = (salaryPeriodRev ? salaryPeriodRev + constants.SLASH : constants.EMPTY_STRING)
+            + reverseString(constants.USD.toUpperCase()) + constants.WHITESPACE + finalSalary;
         job.salary = finalSalary ? reverseString(finalSalaryOutput) : undefined;
     }
 }

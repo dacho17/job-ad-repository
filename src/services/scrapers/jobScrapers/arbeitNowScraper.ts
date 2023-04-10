@@ -24,6 +24,7 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {
         const jobTitle = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_JOB_TITLE_SELECTOR)
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         let orgName = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_COMPANY_NAME_SELECTOR);
@@ -39,15 +40,14 @@ export default class ArbeitNowScraper implements IJobBrowserScraper {
                 name: orgName?.trim() || Constants.UNDISLOSED_COMPANY,
                 location: orgLocation?.trim()
             } as OrganizationDTO,
-            description: jobDescription!.trim(),
+            description: jobDescription?.trim(),
             salary: salary?.replace(Constants.SALARY_ICON, Constants.EMPTY_STRING).trim(),
             jobAdId: jobAd?.id ?? undefined,
         }
 
         const postedDateStr = await browserAPI.getDataSelectorAndAttr(Constants.ARBEITNOW_DETAILS_POSTED_DATE_SELECTOR, Constants.DATETIME_SELECTOR)
         if (postedDateStr) {
-            newJob.postedDateTimestamp = this.utils.transformToTimestamp(postedDateStr!.trim()) ?? undefined
-            newJob.postedDate = new Date(newJob.postedDateTimestamp!);
+            newJob.postedDateTimestamp = this.utils.transformToTimestamp(postedDateStr.trim()) ?? undefined
         }
 
         const jobDetails = await browserAPI.getText(Constants.ARBEITNOW_DETAILS_JOB_DETAILS_SELECTOR);

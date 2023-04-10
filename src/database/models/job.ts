@@ -37,7 +37,7 @@ export class Job extends Model {
     equipmentProvided?: string;
     additionalJobLink?: string;
     details?: string;
-    description: string;
+    description?: string;
     requiresParsing: boolean;
     parsedDate?: Date;
 
@@ -111,7 +111,7 @@ export const JobMAP = (sequelize: Sequelize) => {
         },
         description: {
             type: DataTypes.STRING(20000),
-            allowNull: false
+            allowNull: true
         },
         isRemote: {
             type: DataTypes.BOOLEAN,
@@ -180,7 +180,7 @@ export const JobMAP = (sequelize: Sequelize) => {
         requiresParsing: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            defaultValue: false
+            defaultValue: true
         },
         parsedDate: {
             type: DataTypes.DATE,

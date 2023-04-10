@@ -84,7 +84,9 @@ export default class WeWorkRemotelyJobParser extends CommonJobParser implements 
                 let isYearlyFormat = nOfDigitsBeforeDot > 1 && nOfDigitsAfterDot === 3;
                 let isMonthlyFormat = nOfDigitsBeforeDot === 1 && nOfDigitsAfterDot === 3;
                 if (isYearlyFormat || isMonthlyFormat) {
-                    wageRatePeriod = isYearlyFormat ? 'USD/year' : 'USD/month';
+                    wageRatePeriod = isYearlyFormat 
+                        ? constants.USD.toUpperCase() + constants.SLASH + constants.YEAR 
+                        : constants.USD.toUpperCase() + constants.SLASH + constants.MONTH;
 
                     if (finalSalary) {
                         finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
@@ -102,7 +104,7 @@ export default class WeWorkRemotelyJobParser extends CommonJobParser implements 
             }
 
             if (isNaN(numCurrentToken) && nOfDigitsBeforeDot > 0) {
-                wageRatePeriod = 'USD/hour';
+                wageRatePeriod = constants.USD + constants.SLASH + constants.HOUR;
                 if (finalSalary) {
                     finalSalary = salaryNumberCandidateRev + constants.MINUS_SIGN + finalSalary;
                 } else {

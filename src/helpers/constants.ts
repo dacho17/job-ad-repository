@@ -257,6 +257,8 @@ export default {
     PLUS_SIGN: '+',
     SLASH: '/',
     UNDERSCORE_SIGN: '_',
+    OPEN_PARENTHESES: '(',
+    CLOSED_PARENTHESES: ')',
     QUESTIONMARK_SIGN: '?',
     EMPTY_STRING: '',
     WHITESPACE: ' ',
@@ -267,11 +269,13 @@ export default {
     // Messages
     AD_SOURCE_NOT_RECOGNIZED: 'AdSource not recognized',
     JOB_TITLE_INVALID: 'The job title you provided is invalid',
+    JOB_UNAVAILABLE: 'Job is not available on the website at the moment',
     INVALID_PARAMETERS: 'Some parameters received are faulty',
     MISSING_PARAMETERS: 'Not all required parameters have been received',
     NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
     UNDISLOSED_COMPANY: 'Undisclosed organization',
     UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',
+    UNKNOWN_ERROR_OCCURED: 'An unknown error has occured',
     UNKNOWN_NUMBER_OF_APPLICANTS: 'Unknown number of applicants',
     URL_INVALID: 'Url invalid',
     WORK_FROM_HOME_INVALID: 'The "Work From Home" value is invalid',
@@ -366,14 +370,16 @@ export default {
 
     // currencies
     EUR: 'eur',
+    GBP: 'gbp',
     PLN: 'pln',
     USD: 'usd',
 
     // HTTP codes
-    OK: 200,
-    BAD_REQUEST: 400,
-    NOT_FOUND: 404,
-    SERVER_ERROR: 500,
+    HTTP_OK: 200,
+    HTTP_BAD_REQUEST: 400,
+    HTTP_NOT_FOUND: 404,
+    HTTP_SERVER_ERROR: 500,
+    HTTP_SERVICE_UNAVAILABLE: 503,
 
     // Digits
     THREE: 3,

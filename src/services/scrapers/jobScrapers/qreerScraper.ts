@@ -22,6 +22,7 @@ export default class QreerScraper implements IJobBrowserScraper {
     public async scrape(jobAd: JobAd | null, browserAPI: BrowserAPI): Promise<JobDTO | null> {    
         const jobTitle = await browserAPI.getText(Constants.QREER_DETAILS_JOB_TITLE_SELECTOR);
         if (!jobTitle) {
+            console.log(`Job Title not found while attempting to scrape the job on url=${browserAPI.getUrl()}`);
             return null;
         }
         const orgName = await browserAPI.getText(Constants.QREER_DETAILS_COMPANY_NAME_SELECTOR);
@@ -35,9 +36,9 @@ export default class QreerScraper implements IJobBrowserScraper {
         }
 
         const newJob: JobDTO = {
-            jobTitle: jobTitle!.trim(),
+            jobTitle: jobTitle.trim(),
             url: browserAPI.getUrl(),
-            description: jobDescription!.trim(),
+            description: jobDescription.trim(),
             jobAdId: jobAd?.id ?? undefined,
             organization: { name: orgName?.trim(), location: orgLocation?.trim() } as OrganizationDTO,
         }
@@ -122,9 +123,10 @@ export default class QreerScraper implements IJobBrowserScraper {
             const [keyElement, valElement] = await browserAPI.findElementsOnElement(keyValPairElements[i], Constants.TD_SELECTOR);
             const jobDetailsKey = await browserAPI.getTextFromElement(keyElement);
             const jobDetailsValSection =await browserAPI.getInnerHTML(valElement);
+            if (!jobDetailsKey || !jobDetailsValSection) continue;
+
             const jobDetailVals = jobDetailsValSection?.trim().split(Constants.LESS_SIGN + Constants.BR_SELECTOR + Constants.MORE_SIGN)
                 .map(part => part.trim()).filter(el => el.length > 0).join(Constants.COMPOSITION_DELIMITER);
-
             let trimmedKey = jobDetailsKey?.trim();
             let trimmedVal = jobDetailVals?.trim();
             switch (true) {
