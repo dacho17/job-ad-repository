@@ -1,18 +1,33 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import { Association, CreationOptional, DataTypes, HasManyCreateAssociationMixin, HasManyGetAssociationsMixin, InferAttributes, InferCreationAttributes, Model, NonAttribute, Sequelize } from "sequelize";
+import { Job } from "./job";
 
-export class Organization extends Model {
-    id: number;
-    createdAt: Date;
-    updatedAt: Date;
-    name: string;
-    location?: string;
-    logo?: string;
-    website?: string;
-    urlReference?: string;
-    size?: string;
-    founded?: string;
-    industry?: string;
-    description?: string;
+export class Organization extends Model<InferAttributes<Organization>, InferCreationAttributes<Organization>> {
+    declare id: CreationOptional<number>;
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
+    declare name: CreationOptional<string>;
+    declare location?: CreationOptional<string>;
+    declare logo?: CreationOptional<string>;
+    declare website?: CreationOptional<string>;
+    declare urlReference?: CreationOptional<string>;
+    declare size?: CreationOptional<string>;
+    declare founded?: CreationOptional<string>;
+    declare industry?: CreationOptional<string>;
+    declare description?: CreationOptional<string>;
+
+    // Since TS cannot determine model association at compile time
+    // we have to declare them here purely virtually
+    // these will not exist until `Model.init` was called.
+    declare getJobs: HasManyGetAssociationsMixin<Job>;
+    declare addJob: HasManyCreateAssociationMixin<Job>;
+
+    // You can also pre-declare possible inclusions, these will only be populated if you
+    // actively include a relation.
+    declare jobs?: NonAttribute<Job[]>; // Note this is optional since it's only populated when explicitly requested in code
+
+    declare static associations: {
+        jobs: Association<Organization, Job>;
+      };
 }
 
 export const OrganizationMAP = (sequelize: Sequelize) => {

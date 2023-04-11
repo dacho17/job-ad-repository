@@ -20,12 +20,19 @@ JobAdMAP(sequelize);
 JobMAP(sequelize);
 OrganizationMAP(sequelize);
 
-// NOTE: define the associations here!
-Job.belongsTo(JobAd, {
-    foreignKey: 'jobAdId'
-});
+// Here we associate which actually populates out pre-declared `association` static and other methods.
 Job.belongsTo(Organization, {
-    foreignKey: 'organizationId'
+    foreignKey: 'organizationId',
+    as: 'organization'
+});
+Organization.hasMany(Job, {
+    sourceKey: 'id',
+    foreignKey: 'organizationId',
+    as: 'jobs' // this determines the name in `associations`!
+  });
+Job.belongsTo(JobAd, {
+    foreignKey: 'jobAdId',
+    as: 'jobAd'
 });
 
 sequelize.authenticate().then(() => {

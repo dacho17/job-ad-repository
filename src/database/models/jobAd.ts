@@ -1,21 +1,35 @@
 import {
     Sequelize,
     DataTypes,
-    Model
+    Model,
+    CreationOptional,
+    InferAttributes,
+    InferCreationAttributes,
+    Association,
+    NonAttribute
 } from 'sequelize';
+import { Job } from './job';
 
-export class JobAd extends Model {
-    id: number;
-    createdAt: Date;
-    updatedAt: Date;
-    source: number;
-    jobLink: string;
-    isAdPresentOnline: boolean;
-    areDetailsScraped?: boolean;
-    detailsScrapedDate?: Date;
-    jobTitle?: string;
-    postedDate?: Date;
-    postedDateTimestamp?: number;
+export class JobAd extends Model<InferAttributes<JobAd>, InferCreationAttributes<JobAd>> {
+    declare id: CreationOptional<number>;
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
+    declare source: number;
+    declare jobLink: string;
+    declare isAdPresentOnline: CreationOptional<boolean>;
+    declare areDetailsScraped?: CreationOptional<boolean>;
+    declare detailsScrapedDate?: CreationOptional<Date>;
+    declare jobTitle?: CreationOptional<string>;
+    declare postedDate?: CreationOptional<Date>;
+    declare postedDateTimestamp?: CreationOptional<number>;
+
+    // You can also pre-declare possible inclusions, these will only be populated if you
+    // actively include a relation.
+    declare job?: NonAttribute<Job>; // Note this is optional since it's only populated when explicitly requested in code
+
+    declare static associations: {
+        job: Association<JobAd, Job>;
+    };
 }
 
 export const JobAdMAP = (sequelize: Sequelize) => {

@@ -1,51 +1,63 @@
-import {
-    Sequelize,
-    DataTypes,
-    Model
-} from 'sequelize';
+import { BelongsToSetAssociationMixin } from 'sequelize';
+import { Model, InferAttributes, InferCreationAttributes, CreationOptional, HasManyGetAssociationsMixin, DataTypes, Sequelize, HasManySetAssociationsMixin, HasOneGetAssociationMixin, HasOneSetAssociationMixin, Association, ForeignKey, NonAttribute, BelongsToCreateAssociationMixin, BelongsToGetAssociationMixin } from 'sequelize';
 import { JobAd } from './jobAd';
 import { Organization } from './organization';
 
-export class Job extends Model {
-    id: number;
-    createdAt: Date;
-    updatedAt: Date;
-    url: string;
-    jobTitle: string;
-    postedDateTimestamp?: number
-    postedDate?: Date;
-    startDate?: string;
-    applicationDeadlineTimestamp?: number;
-    nOfApplicants?: string;
-    salary?: string;
-    timeEngagement?: string;
-    workLocation?: string;
-    isRemote?: boolean;
-    isHybrid?: boolean;
-    isTrainingProvided?: boolean;
-    isInternship?: boolean;
-    isStudentPosition?: boolean;
-    euWorkPermitRequired?: boolean;
-    requiredSkills?: string;
-    goodToHaveSkills?: string;
-    requiredLanguages?: string;
-    requiredExperience?: string;
-    requiredEducation?: string;
-    requirements?: string;
-    responsibilities?: string;
-    benefits?: string;
-    equipmentProvided?: string;
-    additionalJobLink?: string;
-    details?: string;
-    description?: string;
-    requiresParsing: boolean;
-    parsedDate?: Date;
+// order of InferAttributes & InferCreationAttributes is important.
+export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job>> {
+    declare id: CreationOptional<number>;
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
+    declare url: string;
+    declare jobTitle: string;
+    declare postedDateTimestamp?: CreationOptional<number>
+    declare postedDate?: CreationOptional<Date>;
+    declare startDate?: CreationOptional<string>;
+    declare applicationDeadlineTimestamp?: CreationOptional<number>;
+    declare nOfApplicants?: CreationOptional<string>;
+    declare salary?: CreationOptional<string>;
+    declare timeEngagement?: CreationOptional<string>;
+    declare workLocation?: CreationOptional<string>;
+    declare isRemote?: CreationOptional<boolean>;
+    declare isHybrid?: CreationOptional<boolean>;
+    declare isTrainingProvided?: CreationOptional<boolean>;
+    declare isInternship?: CreationOptional<boolean>;
+    declare isStudentPosition?: CreationOptional<boolean>;
+    declare euWorkPermitRequired?: CreationOptional<boolean>;
+    declare requiredSkills?: CreationOptional<string>;
+    declare goodToHaveSkills?: CreationOptional<string>;
+    declare requiredLanguages?: CreationOptional<string>;
+    declare requiredExperience?: CreationOptional<string>;
+    declare requiredEducation?: CreationOptional<string>;
+    declare requirements?: CreationOptional<string>;
+    declare responsibilities?: CreationOptional<string>;
+    declare benefits?: CreationOptional<string>;
+    declare equipmentProvided?: CreationOptional<string>;
+    declare additionalJobLink?: CreationOptional<string>;
+    declare details?: CreationOptional<string>;
+    declare description?: CreationOptional<string>;
+    declare requiresParsing: CreationOptional<boolean>;
+    declare parsedDate?: CreationOptional<Date>;
 
-    organization?: Organization;
-    jobAd?: JobAd;
+    declare jobAdId: ForeignKey<JobAd['id']>;
+    declare organizationId: ForeignKey<Organization['id']>;
 
-    organizationId?: number;
-    jobAdId?: number;
+    declare organization?: NonAttribute<Organization>; // Note this is optional since it's only populated when explicitly requested in code
+    declare jobAd?: NonAttribute<JobAd>; // Note this is optional since it's only populated when explicitly requested in code
+
+    // other attributes...
+    // Since TS cannot determine model association at compile time
+    // we have to declare them here purely virtually
+    // these will not exist until `Model.init` was called.
+    declare getOrg: BelongsToGetAssociationMixin<Organization>; // Note the null assertions!
+    declare setOrg: BelongsToSetAssociationMixin<Organization, number>;
+    declare getAd: BelongsToGetAssociationMixin<JobAd>;
+    declare setAd: BelongsToSetAssociationMixin<JobAd, number>;
+
+    declare static associations: {
+        organization: Association<Job, Organization>;
+        jobAd: Association<Job, JobAd>;
+    };
 }
 
 export const JobMAP = (sequelize: Sequelize) => {
@@ -185,18 +197,20 @@ export const JobMAP = (sequelize: Sequelize) => {
         parsedDate: {
             type: DataTypes.DATE,
             allowNull: true
-        },
-        jobAdId: {
-            type: DataTypes.INTEGER,
-            allowNull: true
-        },
-        organizationId: {
-            type: DataTypes.INTEGER,
-            allowNull: true
         }
+        // ,
+        // jobAdId: {
+        //     type: DataTypes.INTEGER,
+        //     allowNull: true
+        // },
+        // organizationId: {
+        //     type: DataTypes.INTEGER,
+        //     allowNull: true
+        // }
     }, {
         sequelize,
         modelName: 'Job',
     });
+
     Job.sync(); // { alter: true }
 }
