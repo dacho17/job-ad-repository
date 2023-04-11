@@ -26,16 +26,12 @@ export default class OrganizationRepository {
 
 
      /**
-   * @description Updates the organization and returns it. Throws an error if encountered.
+   * @description Updates the organization and returns it.
    * @param {Organization} job Organization MAP object which is to be stored
    * @param {Transaction?} t transaction as part of which the update query is executed
    * @returns {Promise<Organization>} Promise containing the stored organization.
    */
      public async update(org: Organization, t?: Transaction): Promise<Organization> {
-        try {
-            return await org.save({transaction: t});
-        } catch (exception) {
-            throw `An attempt to update the organization with id=${org.id} has failed. - [${exception}]`;
-        }
+        return await org.save({transaction: t});
     }
 }

@@ -7,44 +7,40 @@ import { Transaction } from 'sequelize';
 @Service()
 export class ScrapingJobAdRepository {
     private FETCH_JOB_AD_BATCH: number = 200;
-    
+
     /**
-   * @description Retrieves a scraped job ad and returns a success message. If not found returns null. If error encountered, returns an error message.
+   * @description Retrieves a scraped job ad and returns a success message. If not found returns null.
    * @param id JobAd MAP object which is to be stored
    * @returns {Promise<JobAd | null>} Returns the promise resolving to the jobAd connected to the passed id or null.
    */
     public async get(id: number): Promise<JobAd | null> {
-        const jobAdMAP = await JobAd.findByPk(id);
-        return jobAdMAP;
+        return await JobAd.findByPk(id);
     }
 
     /**
-   * @description Stores a scraped job ad and returns a success message. Throws an error if encountered.
+   * @description Stores a scraped job ad and returns a success message.
    * @param jobAd JobAd MAP object which is to be stored
    * @param {Transaction} t transaction as part of which the insert query is executed
    * @returns {Promise<JobAd>} Promise containing the stored job ad.
    */
     public async create(jobAd: JobAd): Promise<JobAd> {
-        const res = await jobAd.save();
-        return res;
+        return await jobAd.save();
     }
 
     /**
-   * @description Stores a list of scraped job ads and returns a success message. Throws an error if encountered.
+   * @description Stores a list of scraped job ads and returns a success message.
    * @param jobAds JobAd MAP objects which are to be stored
    * @returns {Promise<JobAd[]>} Promise containing the list of stored job ads.
    */
     public async createMany(jobAds: any[]): Promise<JobAd[]> {
-        const res = await db.JobAd.bulkCreate(jobAds, {ignoreDuplicates: true});
-        return res;
+        return await db.JobAd.bulkCreate(jobAds, { ignoreDuplicates: true });
     }
 
-     /**
-   * @description Retrieves a list of job ads for which the jobs have not been scraped. If an error is encountered,
-   * an empty list is returned. -> TODO: float a message to the client on what went wrong
-   * @param {number} offset offset used for the purpose of not fetching the same entries, when querying batches of unscraped job ads.
-   * @returns {Promise<JobAd[]>} Returns the promise resolving to the list of jobAds.
-   */
+    /**
+  * @description Retrieves a list of job ads for which the jobs have not been scraped.
+  * @param {number} offset offset used for the purpose of not fetching the same entries, when querying batches of unscraped job ads.
+  * @returns {Promise<JobAd[]>} Returns the promise resolving to the list of jobAds.
+  */
     public async getAdsWithUnscrapedJobs(offset: number): Promise<JobAd[]> {
         const jobAdsWithoutScrapedDetails = await JobAd.findAll({
             where: {
@@ -71,26 +67,23 @@ export class ScrapingJobAdRepository {
             postedDateTimestamp: jobAd.postedDateTimestamp,
             areDetailsScraped: true,
             detailsScrapedDate: new Date(Date.now()),
-        }, { transaction: t });
-        return updatedJobAd;    
+        }, { transaction: t }
+        );
+        return updatedJobAd;
     }
 
     /**
-   * @description Updates the jobAd and returns it. Throws an error if encountered.
+   * @description Updates the jobAd and returns it.
    * @param {JobAd} jobAd JobAd MAP object which is to be updated
    * @param {Transaction?} t transaction as part of which the update query is executed
    * @returns {Promise<JobAd>} Promise containing the updated jobAd.
    */
     public async update(jobAd: JobAd, t?: Transaction): Promise<JobAd> {
-        try {
-            return await jobAd.save({transaction: t});
-        } catch (exception) {
-            throw `An attempt to update the jobAd with id=${jobAd.id} has failed. - [${exception}]`;
-        }
+        return await jobAd.save({ transaction: t });
     }
 
     /**
-   * @description Updates the jobAd and returns it. Throws an error if encountered.
+   * @description Updates the jobAd and returns it.
    * @param {JobAd} jobAd JobAd MAP object which is to be updated
    * @returns {Promise<JobAd>} Promise containing the updated jobAd.
    */
