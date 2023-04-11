@@ -4,7 +4,6 @@ import { Job } from "../database/models/job";
 import JobDTO from "../helpers/dtos/jobDTO";
 import DbQueryError from "../helpers/errors/dbQueryError";
 import ParseError from "../helpers/errors/parseError";
-import ScrapeError from "../helpers/errors/scrapeError";
 import UnrecognizedDataError from "../helpers/errors/unrecognizedData";
 import JobMapper from "../helpers/mappers/jobMapper";
 import Utils from "../helpers/utils";
@@ -38,14 +37,6 @@ export default class JobParserService {
     public async scrapeAndParseJobFromUrl(url: string): Promise<JobDTO | null> {
         let job = await this.jobScrapingService.scrapeJobFromUrl(url);
         if (!job) return null;
-
-        let jobToBeParsed;
-        try {
-            jobToBeParsed = await this.getStoredJob(job);
-        } catch(err) {
-            console.log(`Error while fetching job to be parsed id=${job.id}, url=${job.url} from the database. - [${err}]`);
-            throw new DbQueryError(`An error occurred wile attempting to fetch the stored job.`);
-        }
         
         const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(url);
         const jobParser = this.jobParserHelper.getParserFor(jobSource);
@@ -53,24 +44,21 @@ export default class JobParserService {
             console.log(`Parser has not been found for the job with the provided url=${url}`);
             throw new UnrecognizedDataError(`Provided url can not be processed by the application.`);
         }
-        if (!jobToBeParsed){
-            console.log(`Job with the passed jobId=${job.id} has not been found`);
-            throw new DbQueryError(`There has been an error while trying to find the stored entry.`);
-        }
 
         let parsedJob;
         try {
-            parsedJob = jobParser.parseJob(jobToBeParsed);
+            parsedJob = jobParser.parseJob(job);
         } catch (err) {
             console.log(`Error occurred while parsing the job with id=${parsedJob?.id} - [${err}]`);
             throw new ParseError(`Error occurred while parsing the job.`);
         }
 
-        const updatedJob = await this.sendParsedJobForStoring(parsedJob);
-        if (updatedJob) {
+        try {
+            const updatedJob = await this.sendParsedJobForStoring(parsedJob);
             return this.jobMapper.toDTO(updatedJob);
+        } catch (err) {
+            throw err;
         }
-        return null;
     }
 
      /**
@@ -88,7 +76,8 @@ export default class JobParserService {
             try {
                 jobsToParse = await this.jobRepository.getJobsToParse(offset, this.BATCH_SIZE);
             } catch (exception) {
-                throw new DbQueryError(`getJobsToParse failed - [${exception}]`);
+                console.log(`Failed to getJobsToParse - [${exception}]`);
+                throw new DbQueryError('An error occurred while trying to fetch data');
             }
 
             if (jobsToParse.length === 0) {
@@ -97,39 +86,25 @@ export default class JobParserService {
             
             for (let i = 0; i < jobsToParse.length; i++) {
                 const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(jobsToParse[i].url);
-
                 const parser = await this.jobParserHelper.getParserFor(jobSource);
-                if (!parser) {  // should not happen...
-                    console.log(`Parser has not been found for job with jobId=${jobsToParse[i].id}`);
-                    offset += 1;
-                    unsuccessfullyParsed += 1;
-                    continue;
-                }
-
-                let organization;
-                try {
-                    organization = await this.organizationRepository.getById(jobsToParse[i].organizationId!);
-                } catch (err) {
-                    console.log(`getById failed for organization with id=${jobsToParse[i].organizationId}- [${err}]`);
-                }
-                
-                jobsToParse[i].organization = organization ?? undefined;
 
                 let parsedJob;
                 try {
                     parsedJob = parser?.parseJob(jobsToParse[i]);
                 } catch (err) {
-                    console.log(`Parsing failed for job with id=${jobsToParse[i].id}`);
+                    console.log(`Parsing failed for job with id=${jobsToParse[i].id} - [${err}]`);
                     offset += 1;
                     unsuccessfullyParsed += 1;
                     continue;
                 }
 
-                const storedJob = await this.sendParsedJobForStoring(parsedJob);
-                if (!storedJob) {
+                try {
+                    await this.sendParsedJobForStoring(parsedJob!);
+                    successfullyParsed += 1;
+                } catch (err) { // error message logged in the called method
                     unsuccessfullyParsed += 1;
                     offset += 1;
-                } else successfullyParsed += 1;
+                }
             }
         }
         
@@ -142,34 +117,18 @@ export default class JobParserService {
    * @param {Job} newJob job to be updated.
    * @returns {Promise<Job | null>}
    */
-    private async sendParsedJobForStoring(newJob: Job): Promise<Job | null> {
+    private async sendParsedJobForStoring(newJob: Job): Promise<Job> {
         const transaction = await db.sequelize.transaction();
         try {
-            newJob.requiresParsing = false;
-            newJob.parsedDate = new Date(Date.now());
             const _ = await this.organizationRepository.update(newJob.organization!, transaction);
-            const storedJob = await this.jobRepository.update(newJob, transaction);
+            const storedJob = await this.jobRepository.markJobAsParsed(newJob, transaction);
 
             await transaction.commit();
             return storedJob;
         } catch (exception) {
             console.log(`An exception occurred while storing a 'pair (job id=${newJob.id}, org id=${newJob.organization?.id})'} - [${exception}]`);
             await transaction.rollback();
-            return null;
+            throw new DbQueryError(`An error occured while attempting to store the data.`);
         }
-    }
-
-    /**
-   * @description Function which orders job repository to fetch the job based on the id provided, and the
-   * connected organization.
-   * @param {JobDTO} job jobDTO counterpart of the Job to be fetched from the database.
-   * @returns {Promise<Job | null>}
-   */
-    private async getStoredJob(job: JobDTO): Promise<Job | null> {
-        const fetchedJob = await this.jobRepository.getById(job.id!);
-        const fetchedOrg = await this.organizationRepository.getById(fetchedJob?.organizationId!)
-        
-        fetchedJob!.organization = fetchedOrg ?? undefined;
-        return fetchedJob;
     }
 }

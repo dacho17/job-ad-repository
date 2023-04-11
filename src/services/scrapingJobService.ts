@@ -103,7 +103,7 @@ export class ScrapingJobService {
                     if (jobAdsWithoutScrapedJobs[i].source !== JobAdSource.SNAPHUNT) {
                         await this.browserAPI.openPage(jobAdsWithoutScrapedJobs[i].jobLink);
                         if (this.browserAPI.getResponseCode() == 500) {
-                            console.log(`The page is unavailable at the moment`);
+                            console.log(`The page url=${this.browserAPI.getUrl()} is unavailable at the moment`);
                             jobAdQueryOffset += 1;    // offset is to be added for the unscraped entries
                             this.browserAPI.resetResponseCode();
                             continue;
@@ -127,7 +127,7 @@ export class ScrapingJobService {
                         try {
                             await this.jobAdRepository.updateAsExpired(jobAdsWithoutScrapedJobs[i]) // stores jobAd marking it as expired
                         } catch (err) {
-                            console.log(`Error occurred while attempting to update jobAd id=${jobAdsWithoutScrapedJobs[i].id} as expired`);
+                            console.log(`Error occurred while attempting to update jobAd id=${jobAdsWithoutScrapedJobs[i].id} as expired - [${err}]`);
                             jobAdQueryOffset += 1;
                         }
                     } else if (responseCode?.startsWith(constants.FIVE.toString())) {
@@ -154,17 +154,25 @@ export class ScrapingJobService {
         return [succStored, jobAdQueryOffset];
     }
 
+    public async scrapeAndFetchJobFromUrl(url: string): Promise<JobDTO | null> {
+        const scrapedJob = await this.scrapeJobFromUrl(url);
+
+        return scrapedJob ? this.jobMapper.toDTO(scrapedJob) : null;
+    }
+
     /**
    * @description Function accepts url from which a Job is to be scraped.
    * Job data is then scraped, along with the organization data, and they are stored into the Job and Organization table respectively.
    * @returns {Promise<JobDTO>} Promise resolving to JobDTO having connected OrganizationDTO as one of the properties.
    */
-    public async scrapeJobFromUrl(url: string): Promise<JobDTO | null> {
+    public async scrapeJobFromUrl(url: string): Promise<Job | null> {
         await this.browserAPI.run();
         const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(url);
         const scraper = this.jobScraperHelper.getScraperFor(jobSource);
-        if (!scraper) throw new UnrecognizedDataError(`Scraper not found for the provided url=${url}`);
-
+        if (!scraper) {
+            console.log(`Scraper not found for the provided url=${url}`);
+            throw new UnrecognizedDataError(`The provided url could not be processed by the application.`);
+        }
         let newJobDTO;
         // differentiating between IJobBrowserScrapers and IJobApiScrapers
         try {
@@ -172,7 +180,9 @@ export class ScrapingJobService {
                 try {
                     await this.browserAPI.openPage(url);
                 } catch (err) {
-                    throw new PuppeteerError(`Error occured while openning the page url=${url}. - [${err}]`, this.browserAPI.getResponseCode()!);
+                    const receivedStatusCode = this.browserAPI.getResponseCode();
+                    console.log(`Error occured while openning the page url=${url}. Status code received=${receivedStatusCode} - [${err}]`)
+                    throw new PuppeteerError(`Error occured while attempting to open the page.`, receivedStatusCode!);
                 }
                 newJobDTO = await (scraper as IJobBrowserScraper).scrape(null, this.browserAPI);
             } else {
@@ -182,7 +192,8 @@ export class ScrapingJobService {
             if (err instanceof PuppeteerError) {
                 throw err;
             } else {
-                throw new ScrapeError(`An error occurred while trying to scrape job from url=${url}`);
+                console.log(`An error occurred while trying to scrape job from url=${url} - [${err}]`);
+                throw new ScrapeError('An error occurred while processing the data from the provided url.');
             }
         }
 
@@ -197,7 +208,7 @@ export class ScrapingJobService {
             throw new DbQueryError(`An error occurred while trying to store a job scraped from url=${url}`);
         }
 
-        return this.jobMapper.toDTO(storedJobMAP);
+        return storedJobMAP;
     }
 
     /**
@@ -206,16 +217,14 @@ export class ScrapingJobService {
    * @returns {Promise<JobDTO[]>} Promise resolving to the jobDTO list
    */
     public async getJobsPaginated(getJobsReq: GetJobsRequest): Promise<JobDTO[]> {
-        let jobs;
         try {                
-            jobs = await this.jobRepository.getJobsPaginated(getJobsReq);
+            const jobs = await this.jobRepository.getJobsPaginated(getJobsReq);
+            const jobDtos = jobs.map(jobMAP => this.jobMapper.toDTO(jobMAP));
+            return jobDtos;
         } catch (err) {
             console.log(`An error occured in getJobsPaginated - [${err}]`);
             throw new DbQueryError(`An error occured while trying to fetch jobs`);
         }
-
-        const jobDtos = jobs.map(jobMAP => this.jobMapper.toDTO(jobMAP));
-        return jobDtos;
     }
 
     /**
@@ -232,14 +241,15 @@ export class ScrapingJobService {
         const transaction = await db.sequelize.transaction();
         try {
             const createdOrganization = await this.organizationRepository.create(newJob.organization!, transaction);
+            newJob.organizationId = createdOrganization.id;
 
             if (newJob.jobAd) { // job can be scraped without ad reference. This is the check if it has the reference to the ad.
                 const scrapedJobAd = await this.jobAdRepository.markAsScraped(newJob.jobAd, transaction);
-                newJob.jobAd = scrapedJobAd;
+                newJob.jobAdId = scrapedJobAd.id;
             }
 
-            newJob.organizationId = createdOrganization.id; // assigning organizationId FK to the newJob
             const storedJob = await this.jobRepository.create(newJob, transaction);
+            // const storedJob = await this.jobRepository.attachJobToOrganization(createdOrganization, newJob, transaction);
 
             await transaction.commit();
             return storedJob;
