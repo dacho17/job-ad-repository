@@ -2,7 +2,6 @@ import { Service } from "typedi";
 import db from '../../database/db';
 import { JobAd } from "../../database/models/jobAd";
 import { JobAdDTO } from "../dtos/jobAdDTO";
-import { JobAdSource } from "../enums/jobAdSource";
 
 @Service()
 export class JobAdMapper {

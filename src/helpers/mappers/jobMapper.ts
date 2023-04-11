@@ -26,8 +26,8 @@ export default class JobMapper {
         const jobMAP = db.Job.build({
             jobTitle: jobDTO.jobTitle,
             url: jobDTO.url,
-            postedDateTimestamp: this.utils.transformToTimestamp(jobDTO.postedDate?.toString() || null),
-            applicationDeadlineTimestamp: this.utils.transformToTimestamp(jobDTO.applicationDeadline?.toString() || null),
+            postedDateTimestamp: this.utils.transformToTimestamp(jobDTO.postedDate?.toString() || null) ?? undefined,
+            applicationDeadlineTimestamp: this.utils.transformToTimestamp(jobDTO.applicationDeadline?.toString() || null) ?? undefined,
             postedDate: jobDTO.postedDate,
             startDate: jobDTO.startDate,
             
@@ -53,11 +53,8 @@ export default class JobMapper {
             requirements: jobDTO.requirements,
             responsibilities: jobDTO.responsibilities,
             equipmentProvided: jobDTO.equipmentProvided,
-
-            // organization can be mapped here
-
-            jobAdId: jobDTO.jobAdId
         });
+        
         return jobMAP;
     }
 
