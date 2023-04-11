@@ -116,6 +116,7 @@ forceConsistentCasingInFileNames: When set to true, enables case sensitive file 
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "exclude": [
-    "db-interface-client"
+    "db-interface-client",
+    "test"
   ]
 }

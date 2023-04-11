@@ -271,8 +271,10 @@ export default {
     JOB_TITLE_INVALID: 'The job title you provided is invalid',
     JOB_UNAVAILABLE: 'Job is not available on the website at the moment',
     INVALID_PARAMETERS: 'Some parameters received are faulty',
+    LOGIN_FORM_INVALID: 'Data received in the login form is invalid',
     MISSING_PARAMETERS: 'Not all required parameters have been received',
     NUMBER_OF_ADS_INVALID: 'The number of ads you provided is invalid',
+    REGISTRATION_FORM_INVALID: 'Data received in the registration form is invalid',
     UNDISLOSED_COMPANY: 'Undisclosed organization',
     UNDEFINED_FIELD_OF_WORK: 'The field of work is undefined',
     UNKNOWN_ERROR_OCCURED: 'An unknown error has occured',
@@ -353,6 +355,7 @@ export default {
     TYPE: 'Type',
     TYPE_COL: 'Type:',
     UNKNOWN: 'Unknown',
+    LOGIN_REQUIRED: 'To perform this operation you must be logged in', 
     EXPIRY_DATE_COL: 'Expiry Date:',
     WEBISTE: 'Website',
     WEEK: 'week',
@@ -376,8 +379,12 @@ export default {
 
     // HTTP codes
     HTTP_OK: 200,
+    HTTP_CREATED: 201,
     HTTP_BAD_REQUEST: 400,
+    HTTP_UNAUTHORIZED: 401,
+    HTTP_FORBIDDEN: 403,
     HTTP_NOT_FOUND: 404,
+    HTTP_CONFLICT: 409,
     HTTP_SERVER_ERROR: 500,
     HTTP_SERVICE_UNAVAILABLE: 503,
 
