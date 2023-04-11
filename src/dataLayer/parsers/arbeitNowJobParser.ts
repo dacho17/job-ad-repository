@@ -5,11 +5,11 @@ import constants from "../../helpers/constants";
 import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from '../../helpers/stringUtils';
-import IParser from "../interfaces/IJobParser";
+import IJobParser from "../interfaces/IJobParser";
 import CommonJobParser from "./commonParser";
 
 @Service()
-export default class ArbeitNowJobParser extends CommonJobParser implements IParser {
+export default class ArbeitNowJobParser extends CommonJobParser implements IJobParser {
     private trie: TrieNode;
 
     // within the constructor, the trie which parser uses is constructed

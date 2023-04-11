@@ -5,10 +5,10 @@ import constants from "../../helpers/constants";
 import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from '../../helpers/stringUtils';
-import IParser from "../interfaces/IJobParser";
+import IJobParser from "../interfaces/IJobParser";
 
 @Service()
-export default class CommonJobParser implements IParser {
+export default class CommonJobParser implements IJobParser {
     protected commonTrie: TrieNode;
     protected DOUBLE_ZERO: string = '00';
     protected ZEROES_DOT: string = '000.';
