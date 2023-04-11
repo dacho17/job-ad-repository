@@ -1,7 +1,9 @@
-import setJobScrapingRoutes from '../routes/jobScraping';
-import setJobRoutes from '../routes/job';
+import setScrapingRoutes from './scrape';
+import setParsingRoutes from './parse';
+import setDbInterfaceRoutes from './dbInterface';
 
 export default (app: any) => {
-    setJobScrapingRoutes(app);
-    setJobRoutes(app);
+    setScrapingRoutes(app);
+    setParsingRoutes(app);
+    setDbInterfaceRoutes(app);
 }

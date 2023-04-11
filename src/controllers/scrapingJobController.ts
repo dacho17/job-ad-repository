@@ -1,4 +1,3 @@
-import { instance } from "ts-mockito";
 import { Inject, Service } from "typedi";
 import constants from "../helpers/constants";
 import JobDTO from "../helpers/dtos/jobDTO";
@@ -8,7 +7,6 @@ import ParseError from "../helpers/errors/parseError";
 import PuppeteerError from "../helpers/errors/puppeteerError";
 import ScrapeError from "../helpers/errors/scrapeError";
 import UnrecognizedDataError from "../helpers/errors/unrecognizedData";
-import { RequestValidator } from "../helpers/requestValidator";
 import Utils from "../helpers/utils";
 import { ScrapingJobService } from "../services/scrapingJobService";
 import { BaseController } from "./baseController";
@@ -17,8 +15,6 @@ import { BaseController } from "./baseController";
 export default class ScrapingJobController extends BaseController {
     @Inject()
     private scrapingJobService: ScrapingJobService;
-    @Inject()
-    private requestValidator: RequestValidator;
     @Inject()
     private utils: Utils;
 
@@ -64,7 +60,7 @@ export default class ScrapingJobController extends BaseController {
         } else {
             let data, errorMsg, httpCode;
             try {
-                data = await this.scrapingJobService.scrapeJobFromUrl(req.body.url.trim());
+                data = await this.scrapingJobService.scrapeAndFetchJobFromUrl(req.body.url.trim());
                 httpCode = constants.HTTP_OK;
                 if (!data) {
                     errorMsg = `Job is not available to be scraped at the moment`;
@@ -84,9 +80,6 @@ export default class ScrapingJobController extends BaseController {
                 } else if (err instanceof DbQueryError) {
                     errorMsg = (err as DbQueryError).getMessage();
                     httpCode = constants.HTTP_SERVER_ERROR;
-                } else if (err instanceof ParseError) {
-                    errorMsg = (err as ParseError).getMessage();
-                    httpCode = constants.HTTP_SERVER_ERROR;
                 } else {
                     errorMsg = constants.UNKNOWN_ERROR_OCCURED;
                     httpCode = constants.HTTP_SERVER_ERROR;
@@ -100,35 +93,5 @@ export default class ScrapingJobController extends BaseController {
                 error: errorMsg
             } as ResponseObject<JobDTO | null>);
         }
-    }
-
-    /**
-   * @description This function is an entry point for returning the jobs from repository to the client.
-   * @param req @param res
-   * @returns {JobDTO[]} Returns a list of jobDTOs.
-   */
-    public async getJobs(req: any, res: any) {
-        // 
-        const [_, getJobsReq, __] = this.requestValidator.validateGetJobsRequest(req.query);
-        console.log(`Attempt to getJobs with queryParams=${getJobsReq?.jobTitleSearchWord} ${getJobsReq?.companyNameSearchWord}!`);
-
-        let data, httpCode, errMsg;
-        try {
-            data = await this.scrapingJobService.getJobsPaginated(getJobsReq!);
-            httpCode = constants.HTTP_OK;
-        } catch (err) {
-            if (err instanceof DbQueryError) {
-                httpCode = constants.HTTP_SERVER_ERROR;
-                errMsg = (err as DbQueryError).getMessage();
-            } else {
-                httpCode = constants.HTTP_SERVER_ERROR;
-                errMsg = constants.UNKNOWN_ERROR_OCCURED;
-            }
-        }
-
-        res.status(httpCode).json({
-            data: data,
-            error: errMsg
-        } as ResponseObject<JobDTO[] | null>);
     }
 }
