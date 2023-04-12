@@ -9,6 +9,7 @@ export default (app: any) => {
     const router = express.Router();
 
     router.get('/get-jobs', async (req: any, res: any, next: any) => await dbInterfaceController.getJobs(req, res));
+    router.post('/get-job', async (req: any, res: any, next: any) => await dbInterfaceController.getJobById(req, res));
     
     app.use(router);
 }

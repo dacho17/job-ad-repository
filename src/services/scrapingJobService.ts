@@ -228,6 +228,26 @@ export class ScrapingJobService {
     }
 
     /**
+   * @description Function fetches the job matching jobId from jobRepository.
+   * @param {number} jobId
+   * @returns {Promise<JobDTO>} Promise resolving to the jobDTO
+   */
+    public async getJobById(jobId: number): Promise<JobDTO> {
+        try {
+            const job = await this.jobRepository.getById(jobId);
+            if (job) {
+                const jobDto = this.jobMapper.toDTO(job);
+                return jobDto;    
+            }
+            console.log(`Job with jobId=${jobId} has not been found`);
+            throw new UnrecognizedDataError('Job could not be fetched');
+        } catch (err) {
+            console.log(`An error occured in getJobById. JobId=${jobId} - [${err}]`);
+            throw new DbQueryError(`An error occured while tryi.ng to fetch jobs`);
+        }
+    }
+
+    /**
    * @description Function which starts a transaction and interacts with jobRepository, organizationRepository, 
    * and jobAdRepository if the newJobAd has been passed as an argument to the function.
    * Within the transaction a new job will be created, along with the company (TODO: if it already does not exist),
