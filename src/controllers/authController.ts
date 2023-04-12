@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Inject, Service } from "typedi";
 import constants from "../helpers/constants";
 import ResponseObject from "../helpers/dtos/responseObject";
+import UserDTO from "../helpers/dtos/userDTO";
 import DbQueryError from "../helpers/errors/dbQueryError";
 import UniqueDataError from "../helpers/errors/uniqueDataError";
 import UnrecognizedDataError from "../helpers/errors/unrecognizedData";
@@ -23,7 +24,7 @@ export default class AuthController extends BaseController {
    */
     public async registerUser(req: Request, res: Response) {
         // validate request -> create a user f
-        const [isValid, registrationForm, errorMessage] = await this.requestValidator.validateUserRegistration(req.body.username, req.body.password, req.body.roleNum);
+        const [isValid, registrationForm, errorMessage] = await this.requestValidator.validateUserRegistration(req.body.username, req.body.password, req.body.role);
         if (!isValid) {
             this.respondToInvalidRequest(errorMessage, res);
         } else {
@@ -48,7 +49,7 @@ export default class AuthController extends BaseController {
             res.status(httpCode).json({
                 data: data,
                 error: errorMsg
-            } as ResponseObject<string | null>);
+            } as ResponseObject<UserDTO | null>);
         }
     }
 
@@ -83,7 +84,7 @@ export default class AuthController extends BaseController {
             res.status(httpCode).json({
                 data: data,
                 error: errorMsg
-            } as ResponseObject<string | null>);
+            } as ResponseObject<UserDTO | null>);
         }       
     }
 }
