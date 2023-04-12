@@ -11,6 +11,7 @@ import UserRepository from "../repositories/userRepository";
 import { User } from "../database/models/user";
 import DbQueryError from '../helpers/errors/dbQueryError';
 import UnrecognizedDataError from '../helpers/errors/unrecognizedData';
+import UserDTO from '../helpers/dtos/userDTO';
 
 @Service()
 export default class AuthService {
@@ -22,11 +23,11 @@ export default class AuthService {
      /**
    * @description Function checks if the user with the requested username exists. If it does it throws a UniqueDataError.
    * If the user with the given username does not exist, it is created and a jwt is attached to the user.
-   * The created jwt is returned.
+   * Promise resolving to the DTO of the created user is returned.
    * @param {UserRegistrationForm} registrationForm
-   * @returns {Promise<string>}
+   * @returns {Promise<UserDTO>}
    */
-    public async registerNewUser(registrationForm: UserRegistrationForm): Promise<string> {
+    public async registerNewUser(registrationForm: UserRegistrationForm): Promise<UserDTO> {
         let existingUser;
         try {
             existingUser = await this.userRepository.getByUsername(registrationForm.getUsername());
@@ -46,7 +47,8 @@ export default class AuthService {
 
         try {
             const newUser = await this.userRepository.create(userToCreate);
-            return newUser.jwtAuthToken!;
+            const newUserDTO = this.userMapper.toDTO(newUser);
+            return newUserDTO;
         } catch (err) {
             console.log(`An error occurred while trying to store the new user in the database username=${userToCreate.username} - [${err}]`);
             throw new DbQueryError('An error occurred while attempting to create a user.');
@@ -57,11 +59,11 @@ export default class AuthService {
    * @description Function checks if the user with the requested username exists. If it does not, it throws a UnrecognizedDataError.
    * If the user with the given username does exist, the provided password is compared with the true one.
    * If the passwords match, the user is given jwt and updated in the database.
-   * The created jwt is returned.
+   * Promise resolving to the DTO of the created user is returned.
    * @param {UserLoginForm} loginForm
-   * @returns {Promise<string>}
+   * @returns {Promise<UserDTO>}
    */
-    public async loginUser(loginForm: UserLoginForm): Promise<string> {
+    public async loginUser(loginForm: UserLoginForm): Promise<UserDTO> {
         let existingUser;
         try {
             existingUser = await this.userRepository.getByUsername(loginForm.getUsername());
@@ -85,12 +87,14 @@ export default class AuthService {
         const jwt = this.createJwtToken(existingUser);
         existingUser.jwtAuthToken = jwt;
         try {
-            await this.userRepository.update(existingUser);
+            const updatedUserMAP = await this.userRepository.update(existingUser);
+            const updatedUser = this.userMapper.toDTO(updatedUserMAP);
+
+            return updatedUser;
         } catch (err) {
             console.log(`An error occurred while trying to attach a jwt token on the user with username=${existingUser.username} - [${err}]`);
             throw new DbQueryError('An error occurred while trying to login the user.');
         }
-        return existingUser.jwtAuthToken;
     }
 
     /**
