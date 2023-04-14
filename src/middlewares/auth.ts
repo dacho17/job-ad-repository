@@ -29,6 +29,7 @@ export default function (req: Request, res: Response, next: NextFunction) {
         try {
             const decodedUsername = jwt.verify(token, process.env.JWT_SECRET!);
             req.body.username = decodedUsername;
+            req.body.userJWT = token;
             console.log(`DecodedUsername value is =${decodedUsername}`);
             next();
         } catch (err) {

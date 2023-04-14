@@ -18,9 +18,8 @@ export default class AuthController extends BaseController {
     private authService: AuthService;
 
     /**
-   * @description This function is an entry point for registering a user.
+   * @description This function is an entry point for registering a user. Returns UserDTO object in the ResponseObject.
    * @param req @param res
-   * @returns {string} Returns a jwt token.
    */
     public async registerUser(req: Request, res: Response) {
         // validate request -> create a user f
@@ -54,9 +53,8 @@ export default class AuthController extends BaseController {
     }
 
     /**
-   * @description This function is an entry point for logging in a user.
+   * @description This function is an entry point for logging in a user. Returns a jwt token in the response object.
    * @param req @param res
-   * @returns {string} Returns a jwt token.
    */
     public async loginUser(req: Request, res: Response) {
         const [isValid, loginForm, errorMessage] = await this.requestValidator.validateUserLogin(req.body.username, req.body.password);
@@ -86,5 +84,47 @@ export default class AuthController extends BaseController {
                 error: errorMsg
             } as ResponseObject<UserDTO | null>);
         }       
+    }
+
+    /**
+   * @description This function is an entry point for logging out a user. Returns a UserDTO object in the response object.
+   * @param req @param res
+   */
+    public async logoutUser(req: Request, res: Response) {
+        const jwtToken = req.body.userJWT;  // passed through auth middleware. There must be one
+        const username = req.body.username;
+        let data, errMsg, httpCode;
+        if (!jwtToken || !username) {
+            errMsg = constants.REQUIRED_INFORMATION_NOT_PROVIDED
+            httpCode = constants.HTTP_BAD_REQUEST;
+        } else {
+            try {
+                const hasLoggedOut = await this.authService.logoutUser(username);
+                if (hasLoggedOut) {
+                    data = constants.SUCCESSFULLY_LOGGED_OUT;
+                    httpCode = constants.HTTP_OK;
+                } else {
+                    errMsg = constants.INVALID_PARAMETERS;
+                    httpCode = constants.HTTP_BAD_REQUEST;
+                }
+            } catch (err) {
+                if (err instanceof DbQueryError) {
+                    errMsg = (err as DbQueryError).getMessage();
+                    httpCode = constants.HTTP_SERVER_ERROR;
+                } else if (err instanceof UnrecognizedDataError) {
+                    errMsg = (err as UnrecognizedDataError).getMessage();
+                    httpCode = constants.HTTP_BAD_REQUEST;
+                } else {
+                    console.log(`An unknown error occurred - [${err}]`);
+                    errMsg = constants.UNKNOWN_ERROR_OCCURED;
+                    httpCode = constants.HTTP_SERVER_ERROR;
+                }
+            }
+        }
+
+        res.status(httpCode).json({
+            data: data,
+            error: errMsg
+        } as ResponseObject<string | null>);
     }
 }

@@ -7,7 +7,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare username: string;
     declare passwordEncoded: string;
     declare role: number;
-    declare jwtAuthToken: CreationOptional<string>;
+    declare jwtAuthToken: CreationOptional<string | null>;
 }
 
 

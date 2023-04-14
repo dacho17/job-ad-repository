@@ -36,4 +36,21 @@ export default class UserRepository {
     public async update(user: User): Promise<User> {
         return await user.save();
     }
+
+    /**
+   * @description Sets the jwtAuthToken of the user with the provided username to null.
+   * @param {string} username
+   * @returns {Promise<boolean>} True or false depending on whether the update has been successfully made.
+   */
+    public async markAsLoggedOut(username: string): Promise<boolean> {
+        const nOfLoggedOutUsers = await db.User.update({
+            jwtAuthToken: null
+        },
+        {
+            where: { username: "knownUser" }    // TODO: words between apostrophese are not accepted
+        });
+        const isUserLoggedOut = nOfLoggedOutUsers.length > 0;
+
+        return isUserLoggedOut;
+    }
 }

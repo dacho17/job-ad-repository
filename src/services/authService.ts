@@ -97,6 +97,33 @@ export default class AuthService {
         }
     }
 
+
+    /**
+   * @description Function attempts to log out the user with the requested username.
+   * If the user does not exist, an UnrecognizedDataError is thrown.
+   * If the user with the given username does exist, their jwtToken is removed and they are considered to be logged out.
+   * The return value is boolean depending on whether the user has been successfully logged out.
+   * @param {string} username
+   * @returns {Promise<boolean>}
+   */
+    public async logoutUser(username: string): Promise<boolean> {
+        try {
+            const hasLoggedOut = await this.userRepository.markAsLoggedOut(username);
+            if (!hasLoggedOut) {
+                console.log(`Attempted to log out the user with username = ${username}. The user has not been found`);
+                throw new UnrecognizedDataError('An error occurred while attempting to log out');
+            }
+            return hasLoggedOut
+        } catch (err) {
+            if (err instanceof UnrecognizedDataError) {
+                throw err;
+            } else {
+                console.log(`An error occurred while logging out the user with username=${username} - [${err}]`);
+                throw new DbQueryError('An error occurred');
+            }
+        }
+    }
+
     /**
    * @description Function creates a jwt token lasting 1 day, encoding the {username: user.username} payload.
    * @param {User} user
