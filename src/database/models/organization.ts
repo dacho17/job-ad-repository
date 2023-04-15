@@ -18,7 +18,7 @@ export class Organization extends Model<InferAttributes<Organization>, InferCrea
     // Since TS cannot determine model association at compile time
     // we have to declare them here purely virtually
     // these will not exist until `Model.init` was called.
-    declare getJobs: HasManyGetAssociationsMixin<Job>;
+    declare getJobs: HasManyGetAssociationsMixin<Job[]>;
     declare addJob: HasManyCreateAssociationMixin<Job>;
 
     // You can also pre-declare possible inclusions, these will only be populated if you

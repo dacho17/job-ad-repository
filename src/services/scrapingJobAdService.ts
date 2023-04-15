@@ -21,11 +21,25 @@ import { SimplyHiredAdScraper } from './scrapers/jobAdScrapers/simplyHiredAdScra
 import SnaphuntAdScraper from './scrapers/jobAdScrapers/snaphuntScraper';
 import { TybaAdScraper } from './scrapers/jobAdScrapers/tybaAdScraper';
 import { WeWorkRemotelyAdScraper } from './scrapers/jobAdScrapers/weWorkRemotelyAdScraper';
+import { register } from 'ts-node';
+import JobAdScrapingTaskRepository from '../repositories/jobAdScrapingTaskRepository';
+import DbQueryError from '../helpers/errors/dbQueryError';
+register();
+import { Worker, isMainThread, workerData, parentPort } from 'worker_threads';
+import UserRepository from '../repositories/userRepository';
+import { JobAdScrapingTaskStatus } from '../helpers/enums/jobAdScrapingTaskStatus';
+import { spawn } from "child_process";
+import { resolve } from 'path';
+import JobAdScrapingTaskDTO from '../helpers/dtos/jobAdScrapingTaskDTO';
+import JobAdScrapingTaskMapper from '../helpers/mappers/jobAdScrapingTaskMapper';
 
 @Service()
 export class ScrapingJobAdService {
     private scrapingJobAdRepository: ScrapingJobAdRepository;
+    private userRepository: UserRepository;
+    private jobAdScrapingTaskRepository: JobAdScrapingTaskRepository;
     private jobAdMapper: JobAdMapper;
+    private jobAdScrapingTaskMapper: JobAdScrapingTaskMapper;
 
     private adzunaAdScraper: AdzunaAdScraper;
     private arbeitNowAdScraper: ArbeitNowAdScraper;
@@ -46,7 +60,10 @@ export class ScrapingJobAdService {
 
     constructor(
         @Inject() scrapingJobAdRepository: ScrapingJobAdRepository,
+        @Inject() userRepository: UserRepository,
+        @Inject() jobAdScrapingTaskRepository: JobAdScrapingTaskRepository,
         @Inject() jobAdMapper: JobAdMapper,
+        @Inject() jobAdScrapingTaskMapper: JobAdScrapingTaskMapper,
         @Inject() adzunaAdScraper: AdzunaAdScraper,
         @Inject() arbeitNowAdScraper: ArbeitNowAdScraper,
         @Inject() careerJetAdScraper: CarerJetAdScraper,
@@ -66,7 +83,10 @@ export class ScrapingJobAdService {
     )
     {
         this.scrapingJobAdRepository = scrapingJobAdRepository;
+        this.userRepository = userRepository;
+        this.jobAdScrapingTaskRepository = jobAdScrapingTaskRepository;
         this.jobAdMapper = jobAdMapper;
+        this.jobAdScrapingTaskMapper = jobAdScrapingTaskMapper;
         this.adzunaAdScraper = adzunaAdScraper;
         this.arbeitNowAdScraper = arbeitNowAdScraper;
         this.careerJetAdScraper = careerJetAdScraper;
@@ -87,20 +107,35 @@ export class ScrapingJobAdService {
 
     /**
    * @description Function accepts client form, and based on the data provided scrapes jobs across the jobsites defined in the getScrapers() function.
+   * The function immediately returns the response on whether the jobAdScrapingTask has beeen started.
+   * The task is delegated to a separate thread which runs it in the background.
    * @param {ScrapeJobAdsForm} clientForm Client form containing the data based on which job ads are collected.
-   * @returns {Promise<number>} Promise resolving to the number of stored job ads.
+   * @returns {Promise<void>}
    */
-    public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm): Promise<number> {
-        const jobAdScrapers = this.getScrapers();
-        // const jobAdScrapers = [this.adzunaAdScraper];
+    public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm, initiatorJWT: string): Promise<void> {
+        let jobAdScrapingTask;
+        let user;
+        try {
+            user = await this.userRepository.getByJWT(initiatorJWT);
+            if (!user) {
+                throw new DbQueryError(`The user with jwt=${initiatorJWT} has not been found`);
+            }
+            console.log(`fetched user with id=${user.id}`);
 
-        let totalAdsScraped = 0;
+            const scrapeParams = JSON.stringify(clientForm);
 
-        for (let i = 0; i < jobAdScrapers.length; i++) {
-            totalAdsScraped += await this.scrapeJobAds(clientForm, jobAdScrapers[i]);
+            jobAdScrapingTask = await this.jobAdScrapingTaskRepository.createWithParams(scrapeParams, user.id);
+            if (!jobAdScrapingTask) {
+                throw new DbQueryError(`The task value after creation is null!`);
+            }
+        } catch (err) {
+            console.log(`JobAdScrapingTask was not successfully created. -[${err}]`);
+            throw new DbQueryError('Task was not started successfully. Please try again');
         }
 
-        return totalAdsScraped;
+        const jobAdScrapingTaskId = jobAdScrapingTask.id!.valueOf();
+        // delegating jobAd scraping work to a worker thread
+        this.runJobAdScrapingWorker(clientForm, jobAdScrapingTaskId, user.id);
     }
 
     /**
@@ -127,10 +162,40 @@ export class ScrapingJobAdService {
     }
 
      /**
+   * @description Function returns the list of offseted jobAdScrapingTasks for the given user.
+   * @param {number} offset
+   * @param {string} initiatorJWT
+   * @returns {Promise<JobAdScrapingTaskDTO[] | null>}
+   */
+    public async getJobAdScrapingTasks(offset: number, initiatorJWT: string): Promise<JobAdScrapingTaskDTO[] | null> {
+        let user;
+        try {
+            user = await this.userRepository.getByJWT(initiatorJWT);
+            if (!user) {
+                throw new DbQueryError(`The user with jwt=${initiatorJWT} has not been found`);
+            }
+        } catch (err) {
+            console.log(`An error occurred while attempting to retrieve user with jwt=${initiatorJWT} from the database. - [${err}]`);
+            throw new DbQueryError('An error occured while fetching the data');
+        }
+
+        let tasks;
+        try {
+            tasks = await this.jobAdScrapingTaskRepository.getJobAdScrapingTasksForUser(user.id, offset);
+        } catch (err) {
+            console.log(`An error occurred while fetching jobAdScraping tasks for user with id=${user.id}. -[${err}]`);
+            throw new DbQueryError('An error occurred while fetching the data');
+        }
+
+        const taskDTOs = tasks!.map(task => this.jobAdScrapingTaskMapper.toDTO(task));
+        return taskDTOs;
+    }
+
+     /**
    * @description Function returns the list of implemented jobAd scrapers.
    * @returns {IJobAdScraper[]}
    */
-    private getScrapers(): IJobAdScraper[] {
+    public getScrapers(): IJobAdScraper[] {
         return [
             this.adzunaAdScraper, this.arbeitNowAdScraper, this.careerBuilderScraper, this.careerJetAdScraper, this.cvLibraryAdScraper,
             this.euroJobsAdScraper, this.euroJobSitesAdScraper, this.graduatelandAdScraper, this.jobFluentAdScraper, 
@@ -161,5 +226,31 @@ export class ScrapingJobAdService {
 
         const res = await this.scrapingJobAdRepository.create(jobAdMAP);
         return !!res;
+    }
+
+    /**
+   * @description Function which runs a jobAdScrapingWorker script.
+   * @param {ScrapeJobAdsForm} clientForm
+   * @param {number} jobAdScrapeTaskId
+   * @param {number} userId
+   * @returns {void}
+   */
+    private runJobAdScrapingWorker(clientForm: ScrapeJobAdsForm, jobAdScrapeTaskId: number, userId: number): void {
+        if (isMainThread) {
+            const worker = new Worker(resolve(__dirname, '../helpers/backgroundWorkers/jobAdScrapingWorker'), {
+                workerData: {
+                    // clientForm: clientForm, attempting to deconstruct the complex object
+                    jobTitle: clientForm.jobTitle,
+                    location: clientForm.location,
+                    reqNumberOfAds: clientForm.reqNOfAds,
+                    isRemote: clientForm.scrapeOnlyRemote,
+                    jobAdScrapingTaskId: jobAdScrapeTaskId,
+                    taskInitiatorId: userId
+                }
+            });
+            // worker.on('message', (val) => {  main thread can listen to messages sent by the child thread
+            //     console.log(`On: ${val}`)
+            // });
+        }
     }
 }

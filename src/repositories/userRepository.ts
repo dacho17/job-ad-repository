@@ -20,6 +20,20 @@ export default class UserRepository {
     }
 
     /**
+   * @description Function attempts to fetch user by the jwt token.
+   * Returns either the matching user or null if one is not found.
+   * @param {string} jwt
+   * @returns {Promise<User | null>}
+   */
+    public async getByJWT(jwt: string): Promise<User | null> {
+        return await db.User.findOne({
+            where: {
+                jwtAuthToken: jwt
+            }
+        });
+    }
+
+    /**
    * @description Creates a user and returns it.
    * @param {User} user User MAP object which is to be stored
    * @returns {Promise<User>} Promise containing the stored user.
@@ -42,12 +56,12 @@ export default class UserRepository {
    * @param {string} username
    * @returns {Promise<boolean>} True or false depending on whether the update has been successfully made.
    */
-    public async markAsLoggedOut(username: string): Promise<boolean> {
+    public async markAsLoggedOut(jwtToken: string): Promise<boolean> {
         const nOfLoggedOutUsers = await db.User.update({
             jwtAuthToken: null
         },
         {
-            where: { username: "knownUser" }    // TODO: words between apostrophese are not accepted
+            where: { jwtAuthToken: jwtToken }
         });
         const isUserLoggedOut = nOfLoggedOutUsers.length > 0;
 

@@ -24,8 +24,6 @@ export default class DbInterfaceController extends BaseController {
    */
     public async getJobs(req: Request, res: Response) {
         const [_, getJobsReq, __] = this.requestValidator.validateGetJobsRequest(req.query);
-        console.log(`Attempt to getJobs with queryParams=${getJobsReq?.jobTitleSearchWord} ${getJobsReq?.companyNameSearchWord}!`);
-
         let data, httpCode, errMsg;
         try {
             data = await this.scrapingJobService.getJobsPaginated(getJobsReq!);

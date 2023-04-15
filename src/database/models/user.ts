@@ -1,4 +1,5 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model, Sequelize } from "sequelize";
+import { Association, CreationOptional, DataTypes, HasManyGetAssociationsMixin, InferAttributes, InferCreationAttributes, Model, NonAttribute, Sequelize } from "sequelize";
+import { JobAdScrapingTask } from "./jobAdScrapingTask";
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
     declare id: CreationOptional<number>;
@@ -8,6 +9,13 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare passwordEncoded: string;
     declare role: number;
     declare jwtAuthToken: CreationOptional<string | null>;
+
+    declare getJobAdScrapingTasks: HasManyGetAssociationsMixin<JobAdScrapingTask[]>;
+    declare jobAdScrapingTasks?: NonAttribute<JobAdScrapingTask[]>; // Note this is optional since it's only populated when explicitly requested in code
+
+    declare static associations: {
+        jobAdScrapingTasks: Association<User, JobAdScrapingTask>;
+    };
 }
 
 

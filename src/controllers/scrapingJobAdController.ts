@@ -5,6 +5,9 @@ import { RequestValidator } from '../helpers/requestValidator';
 import { BaseController } from './baseController';
 import ResponseObject from '../helpers/dtos/responseObject';
 import constants from '../helpers/constants';
+import DbQueryError from '../helpers/errors/dbQueryError';
+import { JobAdScrapingTask } from '../database/models/jobAdScrapingTask';
+import JobAdScrapingTaskDTO from '../helpers/dtos/jobAdScrapingTaskDTO';
 
 @Service()
 export class ScrapingJobAdController extends BaseController {
@@ -23,13 +26,56 @@ export class ScrapingJobAdController extends BaseController {
         if (!isValid) {
             this.respondToInvalidRequest(errorMessage, res);
         } else {
-            const result = await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!);
-            res.status(constants.HTTP_OK).json({
-                data: {
-                    numberOfScrapedAds: result
-                },
-                errorMessage: null
-            } as ResponseObject<object>);
+            let succMsg, errMsg, httpCode;
+            const initiatorJwt = req.body.userJWT;
+            try {
+                await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!, initiatorJwt);
+                succMsg = constants.TASK_SUCCESSFULLY_STARTED
+                httpCode = constants.HTTP_OK;
+            } catch (err) {
+                if (err instanceof DbQueryError) {
+                    errMsg = (err as DbQueryError).getMessage();
+                    httpCode = constants.HTTP_SERVER_ERROR;
+                } else {
+                    errMsg = constants.UNKNOWN_ERROR_OCCURED;
+                    httpCode = constants.HTTP_SERVER_ERROR;
+                }
+            }
+            res.status(httpCode).json({
+                data: succMsg,
+                errorMessage: errMsg
+            } as ResponseObject<string>);
+        }
+    }
+
+    /**
+   * @description This function is an entry point for fetching jobAdScrapingTasks.
+   * @param req @param res
+   * @returns {number} Returns the offset list of jobAdScrapingTasks
+   */
+    public async getJobAdScrapingTasks(req: any, res: any) {
+        const taskListOffset = req.body.offset;
+        if (isNaN(taskListOffset) || taskListOffset < 0) {
+            this.respondToInvalidRequest(constants.INVALID_PARAMETERS, res);
+        } else {
+            let data, errorMsg, httpCode;
+            try {
+                data = await this.scrapingJobAdService.getJobAdScrapingTasks(taskListOffset, req.body.userJWT);
+                httpCode = constants.HTTP_OK;
+            } catch (err) {
+                if (err instanceof DbQueryError) {
+                    errorMsg = (err as DbQueryError).getMessage();
+                    httpCode = constants.HTTP_SERVER_ERROR;
+                } else {
+                    errorMsg = constants.UNKNOWN_ERROR_OCCURED;
+                    httpCode = constants.HTTP_SERVER_ERROR;
+                }
+            }
+
+            res.status(httpCode).json({
+                data: data,
+                errorMsg: errorMsg
+            } as ResponseObject<JobAdScrapingTaskDTO[] | null>); 
         }
     }
 }
