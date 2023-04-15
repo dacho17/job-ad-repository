@@ -13,4 +13,12 @@ export class BaseController {
             message: errorMessage
         } as ResponseObject<null>);
     }
+
+    /**
+   * @description Function which returns the logged in user JWT..
+   * @param {any} req
+   */
+    protected getLoggedInUserJWT(req: any) {
+        return req.body.userJWT;
+    }
 }

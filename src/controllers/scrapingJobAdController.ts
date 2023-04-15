@@ -27,9 +27,9 @@ export class ScrapingJobAdController extends BaseController {
             this.respondToInvalidRequest(errorMessage, res);
         } else {
             let succMsg, errMsg, httpCode;
-            const initiatorJwt = req.body.userJWT;
+            const taskInitiatorJwt = this.getLoggedInUserJWT(req);
             try {
-                await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!, initiatorJwt);
+                await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!, taskInitiatorJwt);
                 succMsg = constants.TASK_SUCCESSFULLY_STARTED
                 httpCode = constants.HTTP_OK;
             } catch (err) {
@@ -60,7 +60,7 @@ export class ScrapingJobAdController extends BaseController {
         } else {
             let data, errorMsg, httpCode;
             try {
-                data = await this.scrapingJobAdService.getJobAdScrapingTasks(taskListOffset, req.body.userJWT);
+                data = await this.scrapingJobAdService.getJobAdScrapingTasks(taskListOffset, this.getLoggedInUserJWT(req));
                 httpCode = constants.HTTP_OK;
             } catch (err) {
                 if (err instanceof DbQueryError) {

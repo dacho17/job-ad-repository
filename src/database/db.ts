@@ -4,6 +4,7 @@ import { Sequelize } from 'sequelize';
 import { JobMAP, Job } from './models/job';
 import { JobAdMAP, JobAd } from './models/jobAd';
 import { JobAdScrapingTask, JobAdScrapingTaskMAP } from './models/jobAdScrapingTask';
+import { JobScrapingTask, JobScrapingTaskMAP } from './models/jobScrapingTask';
 import { Organization, OrganizationMAP } from './models/organization';
 import { User, UserMAP } from './models/user';
 
@@ -23,6 +24,7 @@ JobMAP(sequelize);
 OrganizationMAP(sequelize);
 UserMAP(sequelize);
 JobAdScrapingTaskMAP(sequelize);
+JobScrapingTaskMAP(sequelize);
 
 // Here we associate which actually populates out pre-declared `association` static and other methods.
 Job.belongsTo(Organization, {
@@ -47,6 +49,15 @@ User.hasMany(JobAdScrapingTask, {
     foreignKey: 'userId',
     as: 'jobAdScrapingTasks'
 });
+JobScrapingTask.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+});
+User.hasMany(JobScrapingTask, {
+    sourceKey: 'id',
+    foreignKey: 'userId',
+    as: 'jobScrapingTasks'
+});
 
 sequelize.authenticate().then(() => {
     console.log('Connected to the database.')
@@ -59,6 +70,7 @@ export default {
     sequelize: sequelize,
     JobAd: JobAd,
     JobAdScrapingTask: JobAdScrapingTask,
+    JobScrapingTask: JobScrapingTask,
     Job: Job,
     Organization: Organization,
     User: User,

@@ -1,9 +1,9 @@
 import { Inject, Service } from "typedi";
 import constants from "../helpers/constants";
 import JobDTO from "../helpers/dtos/jobDTO";
+import JobScrapingTaskDTO from "../helpers/dtos/jobScrapingTaskDTO";
 import ResponseObject from "../helpers/dtos/responseObject";
 import DbQueryError from "../helpers/errors/dbQueryError";
-import ParseError from "../helpers/errors/parseError";
 import PuppeteerError from "../helpers/errors/puppeteerError";
 import ScrapeError from "../helpers/errors/scrapeError";
 import UnrecognizedDataError from "../helpers/errors/unrecognizedData";
@@ -24,13 +24,16 @@ export default class ScrapingJobController extends BaseController {
    * @returns {[number, number]} Returns a pair of numbers. The number of stored Jobs and the number of unsuccessfully scraped/stored jobs.
    */
     public async scrapeJobs(req: any, res: any) {
-        let data, errMsg, httpCode;
+        const taskInitiatorId = this.getLoggedInUserJWT(req);
+        let succMsg, errMsg, httpCode;
         try {
-            const [numberOfJobsScraped, numberOfJobsUnscraped] = await this.scrapingJobService.scrapeJobs();
-            data = {
-                scrapedJobs: numberOfJobsScraped,
-                unscrapedJobs: numberOfJobsUnscraped
-            }
+            // const [numberOfJobsScraped, numberOfJobsUnscraped] = 
+            await this.scrapingJobService.scrapeJobs(taskInitiatorId);
+            // data = {
+            //     scrapedJobs: numberOfJobsScraped,
+            //     unscrapedJobs: numberOfJobsUnscraped
+            // }
+            succMsg = constants.TASK_SUCCESSFULLY_STARTED;
             httpCode = constants.HTTP_OK;
         } catch (err) {
             if (err instanceof DbQueryError) {
@@ -43,9 +46,9 @@ export default class ScrapingJobController extends BaseController {
         }
         
         res.status(httpCode).json({
-            data: data,
+            data: succMsg,
             error: errMsg
-        } as ResponseObject<object>);
+        } as ResponseObject<string>);
     }
 
     /**
@@ -92,6 +95,37 @@ export default class ScrapingJobController extends BaseController {
                 data: data,
                 error: errorMsg
             } as ResponseObject<JobDTO | null>);
+        }
+    }
+
+    /**
+   * @description This function is an entry point for fetching jobScrapingTasks.
+   * @param req @param res
+   * @returns {number} Returns the offset list of jobScrapingTasks
+   */
+    public async getJobScrapingTasks(req: any, res: any) {
+        const taskListOffset = req.body.offset;
+        if (isNaN(taskListOffset) || taskListOffset < 0) {
+            this.respondToInvalidRequest(constants.INVALID_PARAMETERS, res);
+        } else {
+            let data, errorMsg, httpCode;
+            try {
+                data = await this.scrapingJobService.getJobScrapingTasks(taskListOffset, this.getLoggedInUserJWT(req));
+                httpCode = constants.HTTP_OK;
+            } catch (err) {
+                if (err instanceof DbQueryError) {
+                    errorMsg = (err as DbQueryError).getMessage();
+                    httpCode = constants.HTTP_SERVER_ERROR;
+                } else {
+                    errorMsg = constants.UNKNOWN_ERROR_OCCURED;
+                    httpCode = constants.HTTP_SERVER_ERROR;
+                }
+            }
+
+            res.status(httpCode).json({
+                data: data,
+                errorMsg: errorMsg
+            } as ResponseObject<JobScrapingTaskDTO[] | null>); 
         }
     }
 }

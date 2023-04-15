@@ -91,7 +91,7 @@ export default class AuthController extends BaseController {
    * @param req @param res
    */
     public async logoutUser(req: Request, res: Response) {
-        const jwtToken = req.body.userJWT;  // passed through auth middleware. There must be one
+        const jwtToken = this.getLoggedInUserJWT(req);
         const username = req.body.username;
         let data, errMsg, httpCode;
         if (!jwtToken || !username) {

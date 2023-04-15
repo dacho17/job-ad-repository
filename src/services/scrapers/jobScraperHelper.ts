@@ -1,7 +1,15 @@
 import { Inject, Service } from "typedi";
+import db from "../../database/db";
+import { Job } from "../../database/models/job";
+import { JobAd } from "../../database/models/jobAd";
+import JobDTO from "../../helpers/dtos/jobDTO";
 import { JobAdSource } from "../../helpers/enums/jobAdSource";
-import IJobApiScraper from "./interfaces/IJobApiScraper";
-import IJobBrowserScraper from "./interfaces/IJobBrowserScraper";
+import JobMapper from "../../helpers/mappers/jobMapper";
+import Utils from "../../helpers/utils";
+import OrganizationRepository from "../../repositories/organizationRepository";
+import { ScrapingJobAdRepository } from "../../repositories/scrapingJobAdRepository";
+import ScrapingJobRepository from "../../repositories/scrapingJobRepository";
+import JobParserHelper from "../jobParserHelper";
 import IJobScraper from "./interfaces/IJobScraper";
 import AdzunaScraper from "./jobScrapers/adzunaScraper";
 import ArbeitNowScraper from "./jobScrapers/arbeitNowScraper";
@@ -39,6 +47,14 @@ export default class JobScraperHelper {
     private tybaScraper: TybaScraper;
     private weWorkRemotely: WeWorkRemotelyScraper;
 
+    private jobAdRepository: ScrapingJobAdRepository;
+    private jobRepository: ScrapingJobRepository;
+    private organizationRepository: OrganizationRepository;
+
+    private jobMapper: JobMapper;
+    private jobParserHelper: JobParserHelper;
+    private utils: Utils;
+
     constructor(
         @Inject() adzunaScraper: AdzunaScraper,
         @Inject() arbeitNowScraper: ArbeitNowScraper,
@@ -56,6 +72,13 @@ export default class JobScraperHelper {
         @Inject() snaphuntScraper: SnaphuntScraper,
         @Inject() tybaScraper: TybaScraper,
         @Inject() weWorkRemotely: WeWorkRemotelyScraper,
+
+        @Inject() jobAdRepository: ScrapingJobAdRepository,
+        @Inject() jobRepository: ScrapingJobRepository,
+        @Inject() organizationRepository: OrganizationRepository,
+        @Inject() jobMapper: JobMapper,
+        @Inject() jobParserHelper: JobParserHelper,
+        @Inject() utils: Utils,
     )
     {
         this.adzunaScraper = adzunaScraper;
@@ -74,6 +97,13 @@ export default class JobScraperHelper {
         this.snaphuntScraper = snaphuntScraper;
         this.tybaScraper = tybaScraper;
         this.weWorkRemotely = weWorkRemotely;
+
+        this.jobAdRepository = jobAdRepository;
+        this.jobRepository = jobRepository;
+        this.organizationRepository = organizationRepository;
+        this.jobMapper = jobMapper;
+        this.jobParserHelper = jobParserHelper;
+        this.utils = utils;
     }
 
     /**
@@ -151,5 +181,72 @@ export default class JobScraperHelper {
         }
 
         return jobScraper;
+    }
+
+    /**
+ * @description Function which starts a transaction and interacts with jobRepository, organizationRepository, 
+ * and jobAdRepository if the newJobAd has been passed as an argument to the function.
+ * Within the transaction a new job will be created, along with the company (TODO: if it already does not exist),
+ * and the detailsScraped on the corresponding jobAd will set to true - if the jobAd has been passed.
+ * @param {Job} newJob job to be stored.
+ * @param {Organization} newOrganization organization to be stored.
+ * @param {JobAd?} newJobAd optional parameter, since Job can be scraped directly from the jobLink
+ * @returns {Promise<boolean>} Promise resolving to the boolean signifying whether the SQL transaction was successful
+ */
+    public async sendScrapedJobForStoring(newJob: Job): Promise<Job | null> {
+        const transaction = await db.sequelize.transaction();
+        try {
+            const createdOrganization = await this.organizationRepository.create(newJob.organization!, transaction);
+            newJob.organizationId = createdOrganization.id;
+
+            if (newJob.jobAd) { // job can be scraped without ad reference. This is the check if it has the reference to the ad.
+                const scrapedJobAd = await this.jobAdRepository.markAsScraped(newJob.jobAd, transaction);
+                newJob.jobAdId = scrapedJobAd.id;
+            }
+
+            const storedJob = await this.jobRepository.create(newJob, transaction);
+            // const storedJob = await this.jobRepository.attachJobToOrganization(createdOrganization, newJob, transaction);
+
+            await transaction.commit();
+            return storedJob;
+        } catch (exception) {
+            console.log(`An exception occurred in sendScrapedJobForStoring() for url=${newJob.url}
+                    ${newJob.jobAd ? 'triplet (job, org, jobAd)' : 'pair (job, org)'} - [${exception}]`);
+            await transaction.rollback();
+            return null;
+        }
+    }
+
+    /**
+     * @description Function which sets JobAd properties postedDate and postedDateTimestamp from the connected Job object,
+     * if they do not exist and returns the updated JobAd object.
+     * @param {JobAd} jobAd jobAd which inherits the properties.
+     * @param {Job} job job scraped based on the jobAd
+     * @returns {Promise<JobAd>}
+     */
+    public inheritPropsFromJob(jobAd: JobAd, job: Job): JobAd {
+        if (!jobAd.postedDate && job.postedDate) {
+            jobAd.postedDate = job.postedDate;
+            jobAd.postedDateTimestamp = this.utils.transformToTimestamp(jobAd.postedDate.toString()) ?? undefined;
+        }
+
+        jobAd.jobTitle = job.jobTitle;
+        return jobAd;
+    }
+
+    /**
+     * @description Function which sets creates a Job based on JobDTO and determines whether the job object
+     * needs to be parsed in the future.
+     * @param {JobDTO} newJob
+     * @param {string} jobUrl
+     * @returns {Promise<Job>}
+     */
+    public buildJobMap(newJob: JobDTO, jobUrl: string): Job {
+        let newJobMAP = this.jobMapper.toMap(newJob);
+        const jobSource = this.utils.getJobAdSourceBasedOnTheUrl(jobUrl);
+
+        newJobMAP.requiresParsing = this.jobParserHelper.requiresParsing(jobSource);
+
+        return newJobMAP;
     }
 }

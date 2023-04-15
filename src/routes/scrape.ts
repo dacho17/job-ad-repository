@@ -17,5 +17,7 @@ export default (app: any) => {
 
     router.get('/scrape-jobs', jwtAuth, async (req: any, res: any, next: any) => await jobScrapingController.scrapeJobs(req, res));
     router.post('/scrape-from-url', jwtAuth, async (req: any, res: any, next: any) => await jobScrapingController.scrapeUrl(req, res));
+    router.post('/get-job-scraping-tasks', jwtAuth, async (req: any, res: any, next: any) => await jobScrapingController.getJobScrapingTasks(req, res));
+
     app.use(router);
 }
