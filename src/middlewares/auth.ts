@@ -2,8 +2,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import Container from 'typedi';
 import constants from '../helpers/constants';
 import ResponseObject from '../helpers/dtos/responseObject';
+import UserRepository from '../repositories/userRepository';
 
 /**
  * @description Middleware function protecting the routes.
@@ -15,7 +17,7 @@ import ResponseObject from '../helpers/dtos/responseObject';
  * @param {NextFunction} next
  * @returns {string}
  */
-export default function (req: Request, res: Response, next: NextFunction) {
+export default async function (req: Request, res: Response, next: NextFunction) {
     const token =
         req.body.jwt || req.query.jwt || req.headers["x-access-token"];
 
@@ -33,7 +35,10 @@ export default function (req: Request, res: Response, next: NextFunction) {
             console.log(`DecodedUsername value is =${decodedUsername}`);
             next();
         } catch (err) {
-            console.log(`An attempt was made to authenticate with the invalid jwt. - [${err}]`);
+            console.log(`An attempt was made to authenticate with the invalid jwt=${token}. - [${err}]`);
+            const userRepo = Container.get(UserRepository);
+            await userRepo.markAsLoggedOut(token)
+
             res.status(constants.HTTP_UNAUTHORIZED).json({
                 data: null,
                 error: constants.LOGIN_REQUIRED
