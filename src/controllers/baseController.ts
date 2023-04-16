@@ -10,7 +10,7 @@ export class BaseController {
     protected respondToInvalidRequest(errorMessage: string, res: Response) {
         res.status(Constants.HTTP_BAD_REQUEST).json({
             data: null,
-            message: errorMessage
+            error: errorMessage
         } as ResponseObject<null>);
     }
 
