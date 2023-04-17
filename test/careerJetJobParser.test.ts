@@ -9,7 +9,7 @@ _chai.should();
 
 @suite
 class CareerJetJobParserTests {
-  private careerBuilderJobParser: CareerJetJobParser = new CareerJetJobParser();
+  private careerJetJobParser: CareerJetJobParser = new CareerJetJobParser();
   private testData: Job = {
       jobTitle: 'Python Developer (hybrid)',
       organization: {
@@ -32,7 +32,7 @@ class CareerJetJobParserTests {
   setIsHybridAndFormatJobTitle() {
     let testData = this.getTestData();
 
-    this.careerBuilderJobParser.parseJob(testData);
+    this.careerJetJobParser.parseJob(testData);
 
     expect(testData.jobTitle).to.be.equal('Python Developer');
     expect(testData.isHybrid).to.be.equal(true);
@@ -42,7 +42,7 @@ class CareerJetJobParserTests {
   formatSalary1() {
     let testData = this.getTestData();
     
-    this.careerBuilderJobParser.parseJob(testData);
+    this.careerJetJobParser.parseJob(testData);
 
     expect(testData.salary).to.be.equal('90.000 USD/year');
   }
@@ -52,7 +52,7 @@ class CareerJetJobParserTests {
     let testData = this.getTestData();
     testData.salary = '$89,500-119,400 per year';
 
-    this.careerBuilderJobParser.parseJob(testData);
+    this.careerJetJobParser.parseJob(testData);
 
     expect(testData.salary).to.be.equal('89.500-119.400 USD/year');
   }

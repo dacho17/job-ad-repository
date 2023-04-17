@@ -22,6 +22,7 @@ export default class CommonJobParser implements IJobParser {
         this.commonTrie.addEntry('student', TrieWordType.IS_STUDENT);
         this.commonTrie.addEntry('training', TrieWordType.IS_TRAINING_PROVIDED);
         this.commonTrie.addEntry('hybrid', TrieWordType.IS_HYBRID);
+        // this.commonTrie.addEntry('(hybrid)', TrieWordType.IS_HYBRID);
         this.commonTrie.addEntry('intern', TrieWordType.IS_INTERNSHIP);
         this.commonTrie.addEntry('|| ', TrieWordType.REDUNDANT);  // redundant element for careerJet
         ['mid-senior', 'junior', 'senior'].forEach(entry => {
@@ -63,6 +64,7 @@ export default class CommonJobParser implements IJobParser {
         let seniorities = [];
         let timeEngagements = [];
         let commonTrieMatch = null;
+        let finalJobTitleRev = constants.EMPTY_STRING;
         for (let i = 0; i < valueToParse.length; i++) {
             const currentLowerCasedToken = valueToParse[i].toLowerCase();
             
@@ -70,11 +72,13 @@ export default class CommonJobParser implements IJobParser {
                 commonTrieMatch = commonTrieMatch.matchToken(currentLowerCasedToken);
             }
             if (!commonTrieMatch) {   // current matching sequence unmatched further. Attempting to match a new one
+                finalJobTitleRev = matchingPartRev + finalJobTitleRev;
                 matchingPartRev = constants.EMPTY_STRING;
                 commonTrieMatch = this.commonTrie.matchToken(currentLowerCasedToken);
             }
 
             if (!commonTrieMatch) {
+                finalJobTitleRev = valueToParse[i] + finalJobTitleRev;
                 matchingPartRev = constants.EMPTY_STRING;
             } else {
                 matchingPartRev = job.jobTitle[i] + matchingPartRev;
@@ -108,6 +112,8 @@ export default class CommonJobParser implements IJobParser {
             }
         }
 
+        // cheating with replace(' ()', constants.EMPTY_STRING)
+        job.jobTitle = reverseString(matchingPartRev + finalJobTitleRev).replace(' ()', constants.EMPTY_STRING).trimEnd();
         job.requiredExperience = this.attachParsedValues(job.requiredExperience, seniorities);
         job.timeEngagement = this.attachParsedValues(job.timeEngagement, timeEngagements);
     }

@@ -27,6 +27,7 @@ export default class CareerJetJobParser extends CommonJobParser implements IJobP
         if (!job.salary) this.parseSalaryFrom(job, job.jobTitle);
         if (!job.salary) this.parseSalaryFrom(job, job.details);
 
+        console.log(`About to parse title\n\n\n`)
         this.parseValue(job.jobTitle, job);
         return job;
     }

@@ -17,6 +17,7 @@ export default class CareerBuilderJobParser extends CommonJobParser implements I
         this.trie.addEntry('onsite', TrieWordType.REDUNDANT);
         this.trie.addEntry('100% ', TrieWordType.REDUNDANT);
         this.trie.addEntry('hybrid', TrieWordType.IS_HYBRID);
+        this.trie.addEntry('work from home, ', TrieWordType.IS_HYBRID);
         this.trie.addEntry('remote', TrieWordType.IS_REMOTE);
         this.trie.addEntry('(', TrieWordType.REDUNDANT);
         this.trie.addEntry(')', TrieWordType.REDUNDANT);
@@ -62,6 +63,7 @@ export default class CareerBuilderJobParser extends CommonJobParser implements I
                 trieMatch = this.trie.matchToken(currentLowerCasedToken);
             }
 
+            
             if (!trieMatch) {
                 finalCompanyLocRev = job.organization.location[i] + finalCompanyLocRev;
                 matchingPartRev = constants.EMPTY_STRING;
@@ -85,7 +87,7 @@ export default class CareerBuilderJobParser extends CommonJobParser implements I
                         break;
                 }
 
-                if (stopParsing) break;
+                // if (stopParsing) break;
             }
         }
 

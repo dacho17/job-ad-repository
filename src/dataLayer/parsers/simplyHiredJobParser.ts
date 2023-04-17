@@ -93,6 +93,17 @@ export default class SimplyhiredJobParser extends CommonJobParser implements IJo
                 }
             }
 
+            if (currentToken === this.K && i > 0 && !isNaN(parseInt(job.salary[i - 1]))) {
+                if (i > 1 && (job.salary[i - 2] === constants.DOT || job.salary[i - 2] === constants.COMMA)) {
+                    salaryNumberCandidateRev = this.DOUBLE_ZERO + salaryNumberCandidateRev;
+                    nOfDigitsAfterDot += 2;
+
+                } else {
+                    salaryNumberCandidateRev = this.ZEROES_DOT + salaryNumberCandidateRev;
+                    nOfDigitsAfterDot += 3;
+                }
+            }
+
             if (currentToken === constants.DOT || currentToken === constants.COMMA) {
                 salaryNumberCandidateRev = constants.DOT + salaryNumberCandidateRev;
                 dotSeen = true;

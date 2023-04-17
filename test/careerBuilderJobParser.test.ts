@@ -35,7 +35,7 @@ class CareerBuilderJobParserTests {
 
     this.careerBuilderJobParser.parseJob(testData);
 
-    expect(testData.organization.location).to.be.equal('Work From Home, VA');
+    expect(testData.organization.location).to.be.equal('VA');
     expect(testData.isHybrid).to.be.equal(true);
   }
 

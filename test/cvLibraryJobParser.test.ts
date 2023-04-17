@@ -9,7 +9,7 @@ _chai.should();
 
 @suite
 class CvLibraryJobParserTests {
-  private careerBuilderJobParser: CvLibraryJobParser = new CvLibraryJobParser();
+  private cvLibraryJobParser: CvLibraryJobParser = new CvLibraryJobParser();
   private testData: Job = {
       jobTitle: 'Software Engineer Python / Angular (Hybrid / Remote)',
       organization: {
@@ -33,7 +33,7 @@ class CvLibraryJobParserTests {
     let testData = this.getTestData();
     testData.jobTitle = 'Senior Software Engineer, JavaScript, React, Python, Hybrid';
 
-    this.careerBuilderJobParser.parseJob(testData);
+    this.cvLibraryJobParser.parseJob(testData);
 
     expect(testData.isHybrid).to.be.equal(true);
   }
@@ -43,7 +43,7 @@ class CvLibraryJobParserTests {
     let testData = this.getTestData();
     testData.jobTitle = 'Senior Data Engineer (Redshift, Python, SQL, AWS) - Remote';
 
-    this.careerBuilderJobParser.parseJob(testData);
+    this.cvLibraryJobParser.parseJob(testData);
 
     expect(testData.isRemote).to.be.equal(true);
   }
@@ -52,7 +52,7 @@ class CvLibraryJobParserTests {
   setIsRemoteAndIsHybridAndFormatJobTitle() {
     let testData = this.getTestData();
     
-    this.careerBuilderJobParser.parseJob(testData);
+    this.cvLibraryJobParser.parseJob(testData);
 
     expect(testData.isHybrid).to.be.equal(true);
     expect(testData.isRemote).to.be.equal(true);
