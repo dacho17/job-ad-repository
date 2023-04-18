@@ -1,6 +1,5 @@
-import { Inject, Service } from "typedi";
+import { Service } from "typedi";
 import { Job } from "../../database/models/job";
-import { Organization } from "../../database/models/organization";
 import constants from "../../helpers/constants";
 import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";

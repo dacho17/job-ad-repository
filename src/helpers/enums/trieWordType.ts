@@ -11,4 +11,5 @@ export enum TrieWordType {
     SALARY_PERIOD = 9,
     LESS_EQUAL_COMPARATOR = 10,
     MORE_EQUAL_COMPARATOR = 11,
+    TECH_SKILL = 12,
 }

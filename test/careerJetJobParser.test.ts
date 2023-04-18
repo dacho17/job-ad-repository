@@ -16,7 +16,7 @@ class CareerJetJobParserTests {
         name: 'AssemblyAI - Remote ',
         location: 'Work From Home, VA (Hybrid)',
       } as Organization,
-      salary: '$90,000 per year',   
+      salary: '$90,000 per year',
     } as Job;
 
   private getTestData() {
