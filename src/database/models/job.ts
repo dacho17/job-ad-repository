@@ -10,6 +10,7 @@ export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job
     declare updatedAt: CreationOptional<Date>;
     declare url: string;
     declare jobTitle: string;
+    declare contactEmails?: CreationOptional<string>;
     declare postedDateTimestamp?: CreationOptional<number>
     declare postedDate?: CreationOptional<Date>;
     declare startDate?: CreationOptional<string>;
@@ -26,6 +27,9 @@ export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job
     declare euWorkPermitRequired?: CreationOptional<boolean>;
     declare requiredSkills?: CreationOptional<string>;
     declare goodToHaveSkills?: CreationOptional<string>;
+    declare techTags?: CreationOptional<string>;
+    declare interestTags?: CreationOptional<string>;
+    // declare devStack?: CreationOptional<string>;
     declare requiredLanguages?: CreationOptional<string>;
     declare requiredExperience?: CreationOptional<string>;
     declare requiredEducation?: CreationOptional<string>;
@@ -84,6 +88,10 @@ export const JobMAP = (sequelize: Sequelize) => {
         jobTitle: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        contactEmails: {
+            type: DataTypes.STRING,
+            allowNull: true,
         },
         postedDate: {
             type: DataTypes.DATE,
@@ -157,6 +165,18 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.STRING(4096),
             allowNull: true,
         },
+        techTags: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        interestTags: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        // devStack: {
+        //     type: DataTypes.STRING,
+        //     allowNull: true,
+        // },
         requiredLanguages: {
             type: DataTypes.STRING,
             allowNull: true,
@@ -198,19 +218,19 @@ export const JobMAP = (sequelize: Sequelize) => {
             type: DataTypes.DATE,
             allowNull: true
         }
-        // ,
-        // jobAdId: {
-        //     type: DataTypes.INTEGER,
-        //     allowNull: true
-        // },
-        // organizationId: {
-        //     type: DataTypes.INTEGER,
-        //     allowNull: true
-        // }
+        ,
+        jobAdId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        organizationId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }
     }, {
         sequelize,
         modelName: 'Job',
     });
 
-    Job.sync(); // { alter: true }
+    Job.sync({ alter: true }); // { alter: true }
 }

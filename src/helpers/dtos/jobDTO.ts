@@ -6,6 +6,7 @@ export default class JobDTO {
     id?: number;
     url: string;
     jobTitle: string;
+    contactEmails?: string;
     postedDate?: Date;
     postedDateTimestamp?: number;
     applicationDeadline?: Date;
@@ -27,6 +28,8 @@ export default class JobDTO {
     requiredExperience?: string;
     requiredEducation?: string;
     goodToHaveSkills?: string;
+    techTags?: string;
+    interestTags?: string;
     requirements?: string;
     benefits?: string;
     equipmentProvided?: string;

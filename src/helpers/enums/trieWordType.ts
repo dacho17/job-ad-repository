@@ -12,4 +12,6 @@ export enum TrieWordType {
     LESS_EQUAL_COMPARATOR = 10,
     MORE_EQUAL_COMPARATOR = 11,
     TECH_SKILL = 12,
+    AREA_OF_INTEREST = 13,
+    DEV_STACK = 14,
 }

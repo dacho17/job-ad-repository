@@ -25,6 +25,7 @@ export default class JobMapper {
     public toMap(jobDTO: JobDTO): Job {
         const jobMAP = db.Job.build({
             jobTitle: jobDTO.jobTitle,
+            contactEmails: jobDTO.contactEmails,
             url: jobDTO.url,
             postedDateTimestamp: this.utils.transformToTimestamp(jobDTO.postedDate?.toString() || null) ?? undefined,
             applicationDeadlineTimestamp: this.utils.transformToTimestamp(jobDTO.applicationDeadline?.toString() || null) ?? undefined,
@@ -47,6 +48,8 @@ export default class JobMapper {
             additionalJobLink: jobDTO.additionalJobLink,
             euWorkPermitRequired: jobDTO.euWorkPermitRequired,
             goodToHaveSkills: jobDTO.goodToHaveSkills,
+            techTags: jobDTO.techTags,
+            interestTags: jobDTO.interestTags,
             requiredExperience: jobDTO.requiredExperience,
             requiredLanguages: jobDTO.requiredLanguages,
             requiredEducation: jobDTO.requiredEducation,
@@ -67,6 +70,7 @@ export default class JobMapper {
         const jobDTO: JobDTO = {
             id: jobMAP.id,
             jobTitle: jobMAP.jobTitle,
+            contactEmails: jobMAP.contactEmails,
             url: jobMAP.url,
             postedDateTimestamp: jobMAP.postedDateTimestamp,
             applicationDeadlineTimestamp: jobMAP.applicationDeadlineTimestamp,
@@ -84,6 +88,8 @@ export default class JobMapper {
             isStudentPosition: jobMAP.isStudentPosition,
             euWorkPermitRequired: jobMAP.euWorkPermitRequired,
             requiredSkills: jobMAP.requiredSkills,
+            techTags: jobMAP.techTags,
+            interestTags: jobMAP.interestTags,
             additionalJobLink: jobMAP.additionalJobLink,
             details: jobMAP.details,
             description: jobMAP.description,
