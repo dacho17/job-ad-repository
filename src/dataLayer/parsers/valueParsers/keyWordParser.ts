@@ -1,7 +1,9 @@
 import { Service } from "typedi";
+import { Job } from "../../../database/models/job";
 import constants from "../../../helpers/constants";
 import { TrieWordType } from "../../../helpers/enums/trieWordType";
 import TrieNode from "../../../helpers/parser/trieNode";
+import IKeyWordParser from "../../interfaces/IKeyWordParser";
 
 interface WordMatch {
     word: string;
@@ -10,11 +12,12 @@ interface WordMatch {
 }
 
 @Service()
-export default class KeyWordParser {
-    private skillTrie: TrieNode;
+export default class KeyWordParser implements IKeyWordParser {
+    private trie: TrieNode;
 
     constructor() {
-        this.skillTrie = new TrieNode(constants.EMPTY_STRING, []);
+        // adding "techTags"
+        this.trie = new TrieNode(constants.EMPTY_STRING, []);
         ['nodejs', 'kubernetes', 'mongodb', 'redis', 'ansible', 'azure', 'powershell',
         'terraform', 'kafka', 'rabbitmq', 'spark', 'hadoop', 'golang', 'pyspark', 'nosql',
         'jenkins', 'groovy', 'power bi', 'php', 'kotlin', 'clojure', 'bigquery', 'redshift', 
@@ -25,21 +28,37 @@ export default class KeyWordParser {
         'html', 'angular', 'angularjs', 'angular.js', 'linux', 'power bi', 'scala', 'javascript', 'amazon web services',
         'bitbucket', 'node.js', 'python', 'react', 'react.js', 'c++', 'git', 'django', 'flask', 'java', 'devops', 'oracle', 
         'tabelau', 'algorithm', 'artifactory', 'database', 'embedded', 'snowflake', 'etl', 'aws', 'ssis'].forEach(entry => {
-            this.skillTrie.addEntry(entry, TrieWordType.TECH_SKILL);
+            this.trie.addEntry(entry, TrieWordType.TECH_SKILL);
         });
+
+        // adding "interestTags"
+        ['software engineer', 'computer science', 'data engineer', 'data scientist', 'developer', 'cloud engineer',
+        'cloud computing', 'cloud infrastructure', 'deep learning', 'machine learning', 'architect', 'artificial intelligence',
+        'computer vision', 'ml', 'qa', 'big data', 'network security', 'cyber security', 'quant', 'quantitative',
+        'data management', 'data warehouse', 'oop', 'agile', 'iot'].forEach(entry => {
+            this.trie.addEntry(entry, TrieWordType.AREA_OF_INTEREST);
+        });
+
+        // adding "devStack"
+        // ['backend', 'back end', 'back-end', 'frontend', 'front end', 'front-end', 'full stack', 'fullstack', 'full-stack']
+        // .forEach(entry => {
+        //     this.trie.addEntry(entry, TrieWordType.DEV_STACK);
+        // })
     }
 
     /**
-   * @description Function parses and collects emails and technical skills from the string passed as a parameter.
-   * The function returns the parsed emails and technical skills.
+   * @description Function parses and collects contactEmails, techTags, and interestTags from the string passed as an argument.
+   * The function sets those properties for the job passed as an argument.
    * @param {string} inputString
-   * @returns {[Set<string>, Set<string>]}
+   * @param {Job} job
+   * @returns {void}
    */
-    public parseEmailAndSkills(inputString: string): [Set<string>, Set<string>] {
-        if (!inputString) return [new Set(), new Set()];
+    public parseKeyWords(inputString: string, job: Job): void {
+        if (!inputString) return;
         
         let skills = new Set<string>();
         let emails = new Set<string>();
+        let areasOfInterest = new Set<string>();
         
         let curMatch = null;
         let passedWordMatch: WordMatch | null = null;
@@ -54,7 +73,7 @@ export default class KeyWordParser {
 
             const curToken = inputString[i].toLowerCase();
             if (!curMatch) {
-                curMatch = this.skillTrie.matchToken(curToken);
+                curMatch = this.trie.matchToken(curToken);
                 matchedWordRev = curToken;
                 continue;
             } 
@@ -63,12 +82,20 @@ export default class KeyWordParser {
 
             if (!curMatch) {
                 matchedWordRev = constants.EMPTY_STRING;
-                if (passedWordMatch && passedWordMatch.type === TrieWordType.TECH_SKILL) {
-                    skills.add(passedWordMatch.word);
+                if (passedWordMatch) {
+                    switch(passedWordMatch.type) {
+                        case TrieWordType.TECH_SKILL:
+                            skills.add(passedWordMatch.word);
+                            break;
+                        case TrieWordType.AREA_OF_INTEREST:
+                            areasOfInterest.add(passedWordMatch.word);
+                            break;
+                    }
+
                     i = passedWordMatch.indexOfMatch;
                     passedWordMatch = null;
                 } else {
-                    curMatch = this.skillTrie.matchToken(curToken);
+                    curMatch = this.trie.matchToken(curToken);
                     matchedWordRev = curToken;
                 }
 
@@ -82,17 +109,32 @@ export default class KeyWordParser {
                     case TrieWordType.NONE:
                         break;
                     case TrieWordType.TECH_SKILL:
+                    case TrieWordType.AREA_OF_INTEREST:
                         passedWordMatch = {
                             word: this.reverseString(matchedWordRev),
                             type: wordType,
                             indexOfMatch: i
                         };
-                        break;
+                        break;    
                 }
             }
         }
 
-        return [skills, emails];
+        // if there is a remaining word which matched but was not added to the sets
+        if (passedWordMatch) {
+            switch(passedWordMatch.type) {
+                case TrieWordType.TECH_SKILL:
+                    skills.add(passedWordMatch.word);
+                    break;
+                case TrieWordType.AREA_OF_INTEREST:
+                    areasOfInterest.add(passedWordMatch.word);
+                    break;
+            }
+        }
+
+        job.contactEmails = Array.from(emails).join(constants.COMPOSITION_DELIMITER);
+        job.techTags = Array.from(skills).join(constants.COMPOSITION_DELIMITER);
+        job.interestTags = Array.from(areasOfInterest).join(constants.COMPOSITION_DELIMITER);
     }
 
      /**

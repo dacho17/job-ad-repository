@@ -12,7 +12,6 @@ import CommonJobParser from "./commonParser";
 export default class ArbeitNowJobParser extends CommonJobParser implements IJobParser {
     private trie: TrieNode;
 
-    // within the constructor, the trie which parser uses is constructed
     constructor() {
         super();
         this.trie = new TrieNode(constants.EMPTY_STRING, []);

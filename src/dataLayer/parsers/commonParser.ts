@@ -1,10 +1,12 @@
-import { Service } from "typedi";
+import { Inject, Service } from "typedi";
 import { Job } from "../../database/models/job";
 import constants from "../../helpers/constants";
 import { TrieWordType } from "../../helpers/enums/trieWordType";
 import TrieNode from "../../helpers/parser/trieNode";
 import { reverseString } from '../../helpers/stringUtils';
 import IJobParser from "../interfaces/IJobParser";
+import IKeyWordParser from "../interfaces/IKeyWordParser";
+import KeyWordParser from "./valueParsers/keyWordParser";
 
 @Service()
 export default class CommonJobParser implements IJobParser {
@@ -13,7 +15,8 @@ export default class CommonJobParser implements IJobParser {
     protected ZEROES_DOT: string = '000.';
     protected K: string = 'k';
 
-    // within the constructor, the commonTrie which parser uses is constructed
+    private keyWordParser: IKeyWordParser = new KeyWordParser();
+
     constructor() {
         this.commonTrie = new TrieNode(constants.EMPTY_STRING, []);
         this.commonTrie.addEntry('remote', TrieWordType.IS_REMOTE);
@@ -47,6 +50,10 @@ export default class CommonJobParser implements IJobParser {
 
         if (!job.salary) this.parseSalaryFrom(job, job.jobTitle);
         if (!job.salary) this.parseSalaryFrom(job, job.details);
+
+        if (job.description) {
+            this.keyWordParser.parseKeyWords(job.description, job);
+        }
 
         return job;
     }

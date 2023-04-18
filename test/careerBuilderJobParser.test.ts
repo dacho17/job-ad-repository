@@ -3,6 +3,7 @@ import * as _chai from 'chai';
 import { expect } from 'chai';
 import { Job } from 'src/database/models/job';
 import { Organization } from 'src/database/models/organization';
+import KeyWordParser from '../src/dataLayer/parsers/valueParsers/keyWordParser';
 import CareerBuilderParser from '../src/dataLayer/parsers/careerBuilderJobParser';
 
 _chai.should();

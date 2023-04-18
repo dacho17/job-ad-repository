@@ -1,7 +1,8 @@
 import { suite, test } from '@testdeck/mocha';
 import * as _chai from 'chai';
 import { expect } from 'chai';
-import { Job } from 'src/database/models/job';
+import { Job } from '../src/database/models/job';
+import constants from '../src/helpers/constants';
 import KeyWordParser from '../src/dataLayer/parsers/valueParsers/keyWordParser';
 
 _chai.should();
@@ -34,11 +35,12 @@ class KeyWordParserTests {
     parseEmailAndSkillsFromDescription() {
         let testData = this.getTestData();
 
-        const [skills, emails] = this.keyWordParser.parseEmailAndSkills(testData.description);
-        console.log(skills);
+        this.keyWordParser.parseKeyWords(testData.description, testData);
+        let contactEmails = testData.contactEmails?.split(constants.COMPOSITION_DELIMITER);
+        let techTags = testData.techTags?.split(constants.COMPOSITION_DELIMITER);
 
-        expect(this.eqEmailSet(emails, new Set(['david@david.com', 'david2@david.com']))).to.be.equal(true);
-        expect(this.eqEmailSet(skills, new Set(['python', 'react.js', 'node.js', 'c#']))).to.be.equal(true);
+        expect(this.eqEmailSet(new Set(contactEmails), new Set(['david@david.com', 'david2@david.com']))).to.be.equal(true);
+        expect(this.eqEmailSet(new Set(techTags), new Set(['python', 'react.js', 'node.js', 'c#']))).to.be.equal(true);
     }
 
     @test
@@ -47,13 +49,31 @@ class KeyWordParserTests {
         testData.description = 'This is a job description:.david@david.com. There are also some skills present:\n \
         Python,react,react.js,node.js,c#,c,angularjs,angular,angular4. david2@david.com.'
 
-        const [skills, emails] = this.keyWordParser.parseEmailAndSkills(testData.description);
-        console.log(skills);
-        console.log(emails);
+        this.keyWordParser.parseKeyWords(testData.description, testData);
+        let contactEmails = testData.contactEmails?.split(constants.COMPOSITION_DELIMITER);
+        let techTags = testData.techTags?.split(constants.COMPOSITION_DELIMITER);
 
-        expect(this.eqEmailSet(emails, new Set(['david@david.com', 'david2@david.com']))).to.be.equal(true);
-        expect(this.eqEmailSet(skills, new Set(
+        expect(this.eqEmailSet(new Set(contactEmails), new Set(['david@david.com', 'david2@david.com']))).to.be.equal(true);
+        expect(this.eqEmailSet(new Set(techTags), new Set(
             ['python', 'react.js', 'react', 'angularjs', 'angular4', 'angular', 'node.js', 'c#']
         ))).to.be.equal(true);
+    }
+
+    @test
+    parseAreasOfInterestFromDescription() {
+        let testData = this.getTestData();
+        testData.description = 'This is a job description:.david@david.com. There are also some skills present:\n \
+        Python,react,react.js,node.js,c#,c,angularjs,angular,angular4. david2@david.com. quantitative software engineer';
+
+        this.keyWordParser.parseKeyWords(testData.description, testData);
+        let contactEmails = testData.contactEmails?.split(constants.COMPOSITION_DELIMITER);
+        let techTags = testData.techTags?.split(constants.COMPOSITION_DELIMITER);
+        let areasOfInterest = testData.interestTags?.split(constants.COMPOSITION_DELIMITER);
+
+        expect(this.eqEmailSet(new Set(contactEmails), new Set(['david@david.com', 'david2@david.com']))).to.be.equal(true);
+        expect(this.eqEmailSet(new Set(techTags), new Set(
+            ['python', 'react.js', 'react', 'angularjs', 'angular4', 'angular', 'node.js', 'c#']
+        ))).to.be.equal(true);
+        expect(this.eqEmailSet(new Set(areasOfInterest), new Set(['quantitative', 'software engineer']))).to.be.equal(true);
     }
 }

@@ -1,4 +1,4 @@
-import { Service } from "typedi";
+import { Inject, Service } from "typedi";
 import { Job } from "../../database/models/job";
 import constants from "../../helpers/constants";
 import { TrieWordType } from "../../helpers/enums/trieWordType";
@@ -12,7 +12,7 @@ export default class CareerBuilderJobParser extends CommonJobParser implements I
     private trie: TrieNode;
 
     constructor() {
-        super()
+        super();
         this.trie = new TrieNode(constants.EMPTY_STRING, []);
         this.trie.addEntry('onsite', TrieWordType.REDUNDANT);
         this.trie.addEntry('100% ', TrieWordType.REDUNDANT);
