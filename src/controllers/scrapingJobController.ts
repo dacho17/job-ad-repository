@@ -21,19 +21,13 @@ export default class ScrapingJobController extends BaseController {
     /**
    * @description This function is an entry point for scraping Jobs based on the jobAds stored so far.
    * @param req @param res
-   * @returns {[number, number]} Returns a pair of numbers. The number of stored Jobs and the number of unsuccessfully scraped/stored jobs.
+   * @returns {JobScrapingTaskDTO | null} Responds with a jobScrapingTaskDTO if created. If not, responds with an error message.
    */
     public async scrapeJobs(req: any, res: any) {
         const taskInitiatorId = this.getLoggedInUserJWT(req);
-        let succMsg, errMsg, httpCode;
+        let data, errMsg, httpCode;
         try {
-            // const [numberOfJobsScraped, numberOfJobsUnscraped] = 
-            await this.scrapingJobService.scrapeJobs(taskInitiatorId);
-            // data = {
-            //     scrapedJobs: numberOfJobsScraped,
-            //     unscrapedJobs: numberOfJobsUnscraped
-            // }
-            succMsg = constants.TASK_SUCCESSFULLY_STARTED;
+            data = await this.scrapingJobService.scrapeJobs(taskInitiatorId);
             httpCode = constants.HTTP_OK;
         } catch (err) {
             if (err instanceof DbQueryError) {
@@ -46,15 +40,15 @@ export default class ScrapingJobController extends BaseController {
         }
         
         res.status(httpCode).json({
-            data: succMsg,
+            data: data || null,
             error: errMsg
-        } as ResponseObject<string>);
+        } as ResponseObject<JobScrapingTaskDTO | null>);
     }
 
     /**
    * @description This function is an entry point for scraping a job based on a passed url.
    * @param req @param res
-   * @returns {[number, number]} Returns a scraped jobDTO.
+   * @returns {JobDTO | null} Responds with a scraped jobDTO or with an error message if one is not created.
    */
     public async scrapeUrl(req: any, res: any) {
         const isUrlValid = this.utils.validateUrl(req.body.url);
@@ -101,7 +95,7 @@ export default class ScrapingJobController extends BaseController {
     /**
    * @description This function is an entry point for fetching jobScrapingTasks.
    * @param req @param res
-   * @returns {number} Returns the offset list of jobScrapingTasks
+   * @returns {JobScrapingTaskDTO[] | null} Responds with the offset list of jobScrapingTaskDTOs or an error message.
    */
     public async getJobScrapingTasks(req: any, res: any) {
         const taskListOffset = req.body.offset;

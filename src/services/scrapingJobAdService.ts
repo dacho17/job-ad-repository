@@ -27,8 +27,6 @@ import DbQueryError from '../helpers/errors/dbQueryError';
 register();
 import { Worker, isMainThread, workerData, parentPort } from 'worker_threads';
 import UserRepository from '../repositories/userRepository';
-import { JobAdScrapingTaskStatus } from '../helpers/enums/jobAdScrapingTaskStatus';
-import { spawn } from "child_process";
 import { resolve } from 'path';
 import JobAdScrapingTaskDTO from '../helpers/dtos/jobAdScrapingTaskDTO';
 import JobAdScrapingTaskMapper from '../helpers/mappers/jobAdScrapingTaskMapper';
@@ -110,9 +108,9 @@ export class ScrapingJobAdService {
    * The function immediately returns the response on whether the jobAdScrapingTask has beeen started.
    * The task is delegated to a separate thread which runs it in the background.
    * @param {ScrapeJobAdsForm} clientForm Client form containing the data based on which job ads are collected.
-   * @returns {Promise<void>}
+   * @returns {Promise<JobAdScrapingTaskDTO>}
    */
-    public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm, initiatorJWT: string): Promise<void> {
+    public async scrapeJobAdsOnAllWebsites(clientForm: ScrapeJobAdsForm, initiatorJWT: string): Promise<JobAdScrapingTaskDTO> {
         let jobAdScrapingTask;
         let user;
         try {
@@ -136,6 +134,8 @@ export class ScrapingJobAdService {
         const jobAdScrapingTaskId = jobAdScrapingTask.id!.valueOf();
         // delegating jobAd scraping work to a worker thread
         this.runJobAdScrapingWorker(clientForm, jobAdScrapingTaskId, user.id);
+
+        return this.jobAdScrapingTaskMapper.toDTO(jobAdScrapingTask);
     }
 
     /**

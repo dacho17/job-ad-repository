@@ -64,9 +64,9 @@ export class ScrapingJobService {
    * The worker thread detects job ads for which jobs have not been scraped. For each ad it calls a scrape function.
    * Job data is then scraped and stored into the database connected to the Job Ads. Job Ads are then marked as scraped.
    * @param {string} userJWT
-   * @returns {Promise<void>}
+   * @returns {Promise<JobScrapingTaskDTO>}
    */
-    public async scrapeJobs(userJWT: string): Promise<void> {
+    public async scrapeJobs(userJWT: string): Promise<JobScrapingTaskDTO> {
         let user, jobScrapingTask;
         try {
             user = await this.userRepository.getByJWT(userJWT);
@@ -91,6 +91,8 @@ export class ScrapingJobService {
         const jobScrapingTaskId = jobScrapingTask.id!.valueOf();
         // delegating job scraping work to a worker thread
         this.runJobScrapingWorker(jobScrapingTaskId, user.id);
+
+        return this.jobScrapingTaskMapper.toDTO(jobScrapingTask);
     }
 
     public async scrapeAndFetchJobFromUrl(url: string): Promise<JobDTO | null> {
@@ -185,7 +187,7 @@ export class ScrapingJobService {
         }
     }
 
-         /**
+    /**
    * @description Function returns the list of offseted jobScrapingTasks for the given user.
    * @param {number} offset
    * @param {string} initiatorJWT

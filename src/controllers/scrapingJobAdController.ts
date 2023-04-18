@@ -19,18 +19,17 @@ export class ScrapingJobAdController extends BaseController {
     /**
    * @description This function is an entry point for scraping JobAds across the webistes.
    * @param req @param res
-   * @returns {number} Returns the number of stored JobAds
+   * @returns {JobAdScrapingTaskDTO} Responds with the created JobAdScrapingTaskDTO or an error message.
    */
     public async scrapeJobAds(req: any, res: any) {
-        const [isValid, data, errorMessage] = this.requestValidator.validateScrapeJobAdsForm(req.body.jobTitle, req.body.numberOfAds, req.body.location, req.body.workFromHome);
+        const [isValid, form, errorMessage] = this.requestValidator.validateScrapeJobAdsForm(req.body.jobTitle, req.body.numberOfAds, req.body.location, req.body.workFromHome);
         if (!isValid) {
             this.respondToInvalidRequest(errorMessage, res);
         } else {
-            let succMsg, errMsg, httpCode;
+            let data, errMsg, httpCode;
             const taskInitiatorJwt = this.getLoggedInUserJWT(req);
             try {
-                await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(data!, taskInitiatorJwt);
-                succMsg = constants.TASK_SUCCESSFULLY_STARTED
+                data = await this.scrapingJobAdService.scrapeJobAdsOnAllWebsites(form!, taskInitiatorJwt);
                 httpCode = constants.HTTP_OK;
             } catch (err) {
                 if (err instanceof DbQueryError) {
@@ -42,16 +41,16 @@ export class ScrapingJobAdController extends BaseController {
                 }
             }
             res.status(httpCode).json({
-                data: succMsg,
+                data: data || null,
                 errorMessage: errMsg
-            } as ResponseObject<string>);
+            } as ResponseObject<JobAdScrapingTaskDTO>);
         }
     }
 
     /**
    * @description This function is an entry point for fetching jobAdScrapingTasks.
    * @param req @param res
-   * @returns {number} Returns the offset list of jobAdScrapingTasks
+   * @returns {JobAdScrapingTaskDTO[] | null} Responds with the offset list of jobAdScrapingTaskDTOs, or an error message
    */
     public async getJobAdScrapingTasks(req: any, res: any) {
         const taskListOffset = req.body.offset;
