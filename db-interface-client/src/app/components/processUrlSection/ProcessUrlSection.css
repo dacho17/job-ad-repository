@@ -1,0 +1,17 @@
+.process-url-section {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.process-url-section__job-display {
+    height: 500px;
+    width: 65%;
+    margin-left: 5%;
+    border: 1px solid blue;
+    border-radius: 3px;
+    overflow: scroll;
+}
+

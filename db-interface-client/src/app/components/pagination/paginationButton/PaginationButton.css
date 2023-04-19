@@ -1,0 +1,26 @@
+.pagination-row__button {
+    height: 50px;
+    width: 50px;
+    border-radius: 50px;
+    background-color: var(--light-green-background);
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.pagination-row__button:disabled {
+    background-color: var(--whiteish);
+}
+
+.pagination-row__button:hover:not(:disabled) {
+    cursor: pointer;
+    animation: change-color 1s;
+}
+
+@keyframes change-color {
+    from {
+        background-color: var(--light-green-background);
+    }
+    to {
+        background-color: var(--light-green-background__hover);
+    }
+}

@@ -1,0 +1,35 @@
+.gen-chip {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 16px;
+    font-size: 16px;
+    padding: 6px;
+    min-width: 50px;
+    max-width: 100px;
+    border: 2px solid var(--whiteish);
+    border-radius: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--whiteish);
+}
+
+.gen-chip__label {
+    margin-right: 15px;
+}
+
+.gen-chip__close {
+    width: 16px;
+    height: 16px;
+    font-size: 14px;
+    text-align: center;
+    border: 1px solid;
+    color: var(--border-color);
+    background-color: var(--whiteish);
+    border-radius: 20px;
+}
+
+.gen-chip:hover, .gen-chip > label:hover, .gen-chip > .gen-chip__close {
+    cursor: pointer;
+}

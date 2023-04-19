@@ -1,0 +1,51 @@
+#admin-panel {
+    width: 100%;
+}
+
+#admin-panel__container {
+    width: 85%;
+    margin: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+#admin-panel__content {
+    width: 100%;
+    height: 100%;
+    background-color: var(--light-blue);
+    border-radius: 10px;
+}
+
+#admin-panel__tab-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.admin-panel__navigation-tab {
+    height: 50px;
+    width: 120px;
+    border: 1px solid;
+    border-radius: 5px;
+    margin-right: 2px;
+    padding: 5px;
+    background-color: var(--light-blue);
+}
+
+.admin-panel__navigation-tab:hover {
+    animation: change-color 1s;
+    cursor: pointer;
+}
+
+@keyframes change-color {
+    from {
+        background-color: var(--light-green-background);
+    }
+    to {
+        background-color: var(--light-green-background__hover);
+    }
+}

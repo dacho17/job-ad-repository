@@ -1,0 +1,11 @@
+.gen-card {
+    background-color: var(--whiteish);
+    width: 200px;
+    height: 200px;
+    padding: 30px 50px 30px 50px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

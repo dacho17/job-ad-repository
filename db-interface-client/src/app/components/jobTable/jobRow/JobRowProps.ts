@@ -1,7 +1,7 @@
 export default interface JobRowProps {
     jobTitle: string;
     postedDate?: Date;
-    deadline?: Date;
+    applicationDeadline?: Date;
     timeEngagement?: string;
     isInternship?: boolean;
     isRemote?: boolean;

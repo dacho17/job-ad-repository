@@ -1,0 +1,31 @@
+#scrape-url-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 30%;
+}
+
+#scrape-url-form__input {
+    width: 90%;
+    height: 30px;
+    padding: 5px;
+    border: 2px solid var(--light-green-background);
+    border-radius: 5px;
+    margin-bottom: 12px;
+}
+
+.scrape-url-form__invalid-input-msg {
+    color: var(--error-red);
+    font-weight: 700;
+    font-size: 16px;
+}
+
+@keyframes change-color {
+    from {
+        background-color: var(--light-green-background);
+    }
+    to {
+        background-color: var(--light-green-background__hover);
+    }
+}

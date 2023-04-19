@@ -1,0 +1,12 @@
+.admin-panel__tab-section-navigation-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.admin-panel__navigation-tab {
+    height: 32px;
+    border-radius: 3px;
+    padding: 3px;
+}

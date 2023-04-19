@@ -1,26 +1,50 @@
-import { Box } from "@mui/material";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import GenCard from "../../components/genCard/GenCard";
 import JobTable from "../../components/jobTable/JobTable";
 import LoadingComponent from "../../components/loadingComponent/LoadingComponent";
-import PageTitle from "../../components/pageTitle/PageTitle";
 import AppPagination from "../../components/pagination/Pagination";
 import SearchRow from "../../components/searchRow/SearchRow";
-import { useAppSelector } from "../../services/store";
+import { fetchJobsAsync, setJobSearchParams } from "../../services/slices/RepositorySlice";
+import { useAppDispatch, useAppSelector } from "../../services/store";
+import './Jobs.css';
 
+export default function JobsPage()  {
+    const { loading, jobs, page, companyNameSearch, jobTitleSearch, errorMessage } = useAppSelector(state => state.repository);
+    const dispatch = useAppDispatch();
+    let [searchParams, setSearchParams] = useSearchParams();
 
-const JOBS_PAGE_TITLE = "Job Ads";
+    useEffect(() => {
+        const pageNumber = searchParams.get("pageNumber");
+        const jobTitle = searchParams.get("jobTitle");
+        const orgName = searchParams.get("orgName");
 
-export default function JobsPage() {
-    const { loading, jobs } = useAppSelector(state => state.repository);
+        setSearchParams({
+            pageNumber: pageNumber || "0",
+            orgName: orgName || "",
+            jobTitle: jobTitle || ""
+        });
+
+        dispatch(setJobSearchParams({
+            jobTitle: jobTitle || "",
+            orgName:  orgName || "",
+            pageNum: pageNumber ? parseInt(pageNumber) : 0
+        }));
+
+        dispatch(fetchJobsAsync());
+    }, [page, companyNameSearch, jobTitleSearch]);
 
     return (
-        <Box sx={{ width: "75%", margin: "auto" }}>
-            <PageTitle title={JOBS_PAGE_TITLE} />
-            <SearchRow />
-            {loading && <LoadingComponent />}
-            {!loading && jobs != null && <Box>
-                <JobTable />
-                <AppPagination />
-            </Box>}
-        </Box>
+        <div className="page-container">
+            <div className="page-container__content">
+                <SearchRow />
+                {errorMessage && <div className="page-container__card-container"><GenCard message={errorMessage} /></div>}
+                {!errorMessage && loading && <div className="page-container__card-container"><LoadingComponent/></div>}
+                {!loading && jobs != null && <>
+                    <JobTable />
+                    <AppPagination />
+                </>}            
+            </div>
+        </div>
     );
 }

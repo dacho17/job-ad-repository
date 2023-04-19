@@ -1,20 +1,16 @@
-import { Backdrop, CircularProgress, Typography } from "@mui/material";
-import { Box } from "@mui/system";
+import './LoadingComponents.css';
 
-
-interface Props {
+interface LoadingComponentProps {
     message?: string;
 }
 
-export default function LoadingComponent({message = "Packages are loading..."}: Props) {
+export default function LoadingComponent({ message }:  LoadingComponentProps) {
     return (
-        <Backdrop open={true} invisible={true}>
-            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-                <CircularProgress size={100} color="secondary" />
-                <Typography variant="h4" sx={{justifyContent: "center", position: "fixed", top: "60%" }}>
+            <div className="loading-component">
+                <div className="loading-component__spinner"></div>
+                <div>
                     {message}
-                </Typography>
-            </Box>
-        </Backdrop>
+                </div>
+            </div>
     );
 }

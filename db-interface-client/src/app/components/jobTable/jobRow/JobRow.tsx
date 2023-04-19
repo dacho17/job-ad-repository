@@ -1,30 +1,29 @@
-import { TableCell, TableRow } from "@mui/material";
-import './JobRow.css';
-import JobRowProps from "./JobRowProps";
+import { useNavigate } from "react-router-dom";
+import Job from "../../../../dtos/Job";
+import { setDisplayedJob } from "../../../services/slices/RepositorySlice";
+import { useAppDispatch } from "../../../services/store";
 
+export default function JobRow(job: Job) {
+    let navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
-export default function JobRow(jobRow: JobRowProps) {
-    // const dispatch = useAppDispatch();
-    // let navigate = useNavigate();
-
-    // function handleFetchPackageDetails(name: string) {    
-    //     dispatch(fetchPackageDetailsAsync(name));
-    //     navigate(`/package/${name}`); 
-    // }
+    function openJobPage(job: Job) {
+        dispatch(setDisplayedJob({
+            job: job
+        }));
+        navigate(`/job/${job.id}`);
+    }
 
     return (
-        <TableRow className="job-table-row">
-            <TableCell>{jobRow.jobTitle}</TableCell>
-            <TableCell>{jobRow.postedDate?.toString()}</TableCell>
-            <TableCell>{jobRow.deadline?.toString()}</TableCell>
-            <TableCell>{jobRow.timeEngagement}</TableCell>
-            <TableCell>{jobRow.isInternship}</TableCell>
-            <TableCell>{jobRow.isRemote}</TableCell>
-            <TableCell>{jobRow.workLocation}</TableCell>
-            <TableCell>{jobRow.salary}</TableCell>
-            <TableCell>{jobRow.nOfApplicants}</TableCell>
-            <TableCell>{jobRow.salary}</TableCell>
-            <TableCell>{jobRow.details}</TableCell>
-        </TableRow>
+        <tr
+            className="job-table__row"
+            onClick={() => openJobPage(job)}
+        >
+            <td className="job-table__cell">{job.jobTitle}</td>
+            <td className="job-table__cell">{job.organization.name}</td>
+            <td className="job-table__cell">{job.workLocation}</td>
+            <td className="job-table__cell">{job.salary}</td>
+            <td className="job-table__cell">{job.timeEngagement}</td>
+        </tr>
     );
 }

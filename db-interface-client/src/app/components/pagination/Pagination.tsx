@@ -1,36 +1,50 @@
-import { Box, Pagination, Typography } from "@mui/material";
-import { fetchJobsAsync, ROWS_PER_PAGE, setPageNumber } from "../../services/slices/RepositorySlice";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { setPageNumber } from "../../services/slices/RepositorySlice";
 import { useAppDispatch, useAppSelector } from "../../services/store";
 import './Pagination.css';
+import PaginationButton from "./paginationButton/PaginationButton";
 
 
-function AppPagination() {
-    const { page, totalEntries } = useAppSelector(state => state.repository);
+export default function AppPagination() {
+    const { page, jobs, batchSize } = useAppSelector(state => state.repository);
     const dispatch = useAppDispatch();
+    let navigate = useNavigate();
+    let [searchParams, setSearchParams] = useSearchParams();
 
-    function handlePageChange(page: number) {
-        dispatch(setPageNumber(page));
-        dispatch(fetchJobsAsync());
+    function handlePageChange(newPage: number) {
+        console.log(`new page is page=${newPage}`);
+        console.log(`new page as string is page=${newPage.toString()}`);
+
+        searchParams.set("jobTitle", searchParams.get("jobTitle") || "");
+        searchParams.set("orgName", searchParams.get("orgName") || "");
+        searchParams.set("pageNumber", newPage.toString());
+
+        dispatch(setPageNumber({
+            pageNumber: newPage
+        }));
+        navigate(`/jobs?${searchParams.toString()}`);
     }
 
-    return (
-        <Box className="pagination-row">
-            <Typography>
-                Displaying&nbsp;{page * ROWS_PER_PAGE + 1}-
-                {page * ROWS_PER_PAGE > totalEntries
-                    ? totalEntries
-                    : (page + 1) * ROWS_PER_PAGE }&nbsp;of
-                &nbsp;{totalEntries}&nbsp;items
-            </Typography>
-            <Pagination
-                color="secondary"
-                size="large"
-                count={Math.ceil(totalEntries / ROWS_PER_PAGE)}
-                page={page + 1}
-                onChange={(e, page: number) => handlePageChange(page - 1)}
-            />
-        </Box>
-    );
-}
+    function getButton(increment: number) {
+        return <PaginationButton
+            key={page + increment + 1}
+            pageNumber={page + increment + 1}
+            isDisabled={increment === 0}
+            onClickFn={() => handlePageChange(page + increment)}
+        />
+    }
 
-export default AppPagination;
+    let buttons = [getButton(0)];
+    if (page > 0) {
+        buttons.unshift(getButton(-1));
+    }
+    if (jobs?.length === batchSize) {
+        buttons.push(getButton(1));
+    }
+
+    return <div className="pagination-row">
+        <div className="pagination-row__content">
+            {buttons}
+        </div>
+    </div>
+}

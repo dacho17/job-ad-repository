@@ -1,11 +1,19 @@
 .pagination-row {
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
     text-align: center;
-    margin-top: 10px;
-    margin-bottom: 15px;
+    align-self: center;
+    margin-top: 20px;
+    margin-bottom: 25px;
+}
+
+.pagination-row__content {
+    background-color: var(--light-blue);
+    width: fit-content;
+    padding: 10px 30px 10px 30px;
+    border-radius: 50px;
 }
 
 @media only screen and (max-width: 900px) {

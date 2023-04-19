@@ -1,0 +1,24 @@
+.cta-button {
+    width: 100%;
+    padding: 18px 2% 18px 2%;
+    text-decoration: none;
+    background-color: var(--light-green-background);
+    color: var(--white);
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.6s;
+    max-width: 240px;
+}
+
+.cta-button:hover {
+    background-color: var(--light-green-background__hover);
+}
+
+.cta-button:disabled {
+    background-color: var(--blue-grad-darker);
+    cursor: not-allowed;
+}

@@ -1,0 +1,14 @@
+.search-field {
+    width: 250px;
+    height: 32px;
+    border: 2px solid var(--light-blue);
+    border-radius: 30px;
+    background-color: var(--white);
+    padding: 20px 14px 10px 14px;
+}
+
+.search-field__input, search-field__input:focus {
+    outline: none;
+    border: none;
+    font-size: 16px;
+}

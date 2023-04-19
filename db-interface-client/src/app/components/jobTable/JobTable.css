@@ -1,0 +1,40 @@
+.table-container {
+    height: 400px;
+    width: 100%;
+    overflow: scroll;
+    border: 2px solid var(--light-blue);
+    border-radius: 10px;
+}
+
+.job-table {
+    width: 100%;
+}
+
+.job-table__header {
+    height: 40px;
+}
+
+.job-table__row {
+    height: 30px;
+}
+
+.job-table__row:hover {
+    background-color: var(--light-green-background);
+    cursor: pointer;
+}
+
+.job-table__cell {
+    color: var(--whiteish);
+    padding: 15px;
+
+    border: 2px solid var(--light-blue);
+    border-radius: 10px;
+}
+
+.job-table__header-cell {
+    color: var(--whiteish);
+    padding: 15px;
+
+    background-color: var(--light-blue);
+    border-radius: 10px;
+}

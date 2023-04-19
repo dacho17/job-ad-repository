@@ -1,0 +1,24 @@
+.loading-component {
+    background-color: var(--whiteish);
+    width: 200px;
+    height: 200px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-component__spinner {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 10px solid grey;
+    border-top: 10px solid skyblue;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }    
+    100% { transform: rotate(360deg); }
+}

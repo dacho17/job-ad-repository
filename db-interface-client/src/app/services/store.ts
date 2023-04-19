@@ -1,11 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import { adminRepositorySlice } from "./slices/AdminRepositorySlice";
+import { authSlice } from "./slices/AuthSlice";
 import { repositorySlice } from "./slices/RepositorySlice";
 
 
 export const store = configureStore({
     reducer: {
-        repository: repositorySlice.reducer
+        repository: repositorySlice.reducer,
+        adminDashboard: adminRepositorySlice.reducer,
+        auth: authSlice.reducer,
     }
 });
 
