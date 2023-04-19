@@ -119,7 +119,9 @@ export default class CommonJobParser implements IJobParser {
         }
 
         // cheating with replace(' ()', constants.EMPTY_STRING)
-        job.jobTitle = reverseString(matchingPartRev + finalJobTitleRev).replace(' ()', constants.EMPTY_STRING).trimEnd();
+
+        // NOTE: not overriding jobtitle with 'purified' values
+        // job.jobTitle = reverseString(matchingPartRev + finalJobTitleRev).replace(' ()', constants.EMPTY_STRING).trimEnd();
         job.requiredExperience = this.attachParsedValues(job.requiredExperience, seniorities);
         job.timeEngagement = this.attachParsedValues(job.timeEngagement, timeEngagements);
     }
