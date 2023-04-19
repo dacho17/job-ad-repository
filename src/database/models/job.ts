@@ -166,11 +166,11 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true,
         },
         techTags: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(1024),
             allowNull: true,
         },
         interestTags: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(1024),
             allowNull: true,
         },
         // devStack: {
@@ -182,7 +182,7 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true,
         },
         requiredExperience: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(4096),
             allowNull: true,
         },
         requiredEducation: {
@@ -217,8 +217,7 @@ export const JobMAP = (sequelize: Sequelize) => {
         parsedDate: {
             type: DataTypes.DATE,
             allowNull: true
-        }
-        ,
+        },
         jobAdId: {
             type: DataTypes.INTEGER,
             allowNull: true
@@ -232,5 +231,5 @@ export const JobMAP = (sequelize: Sequelize) => {
         modelName: 'Job',
     });
 
-    Job.sync({ alter: true }); // { alter: true }
+    Job.sync(); // { alter: true }
 }
