@@ -76,7 +76,7 @@ export default class JobParserHelper {
         //     case JobAdSource.WE_WORK_REMOTELY:
         //         return true;
         //     default:
-        return false;   // every job requires parsing (Common Parser). Some data may be found in title
+        return true;   // every job requires parsing (Common Parser). Some data may be found in title
         // }
     }
 }
