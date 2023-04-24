@@ -1,10 +1,10 @@
-import { Op } from "sequelize";
 import { Transaction } from "sequelize";
 import { Service } from "typedi";
 import db from '../database/db';
 import { Job } from "../database/models/job";
 import { Organization } from "../database/models/organization";
 import { GetJobsRequest } from "../helpers/dtos/getJobsRequest";
+import sequelize from "sequelize";
 
 
 @Service()
@@ -34,22 +34,14 @@ export default class ScrapingJobRepository {
    */
     public async getJobsPaginated(getJobsReq: GetJobsRequest): Promise<Job[]> {
         const paginatedJobs = await db.Job.findAll({
-            where: {
-                jobTitle: {
-                    [Op.iLike]: `%${getJobsReq.jobTitleSearchWord}%`
-                }
-            },
+            where: sequelize.where(sequelize.fn('LOWER', sequelize.col('Job.jobTitle')), 'LIKE', `%${getJobsReq.jobTitleSearchWord}%`),
             include: [
                 {
                     association: db.Job.associations.jobAd,
                 },
                 {
                     association: db.Job.associations.organization,
-                    where: {
-                        name: {
-                            [Op.iLike]: `%${getJobsReq.companyNameSearchWord}%`
-                        }
-                    }
+                    where: sequelize.where(sequelize.fn('LOWER', sequelize.col('organization.name')), 'LIKE', `%${getJobsReq.companyNameSearchWord}%`)
                 }
             ],
             limit: getJobsReq.batchSize > this.MAX_BATCH_SIZE ? this.MAX_BATCH_SIZE : getJobsReq.batchSize,
