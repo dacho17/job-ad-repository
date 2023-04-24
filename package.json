@@ -4,10 +4,13 @@
   "description": "This project contains the codebase which includes scrapers collecting the data from multiple job sites across the internet, and store it to the database. The aim is for it to contain the client solution as well, which will interact with the scrapers, and display the stored data to end users.",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node ./src/index.ts",
-    "start-dev": "tsc && nodemon --es-module-specifier-resolution=node dist/src/index.js > logs/temporaryOption.log 2>&1",
+    "start-old": "ts-node ./src/index.ts",
+    "start": "tsc && nodemon --es-module-specifier-resolution=node dist/src/index.js",
     "build": "npx tsc",
     "test": "nyc ./node_modules/.bin/_mocha 'test/**/*.test.ts'"
+  },
+  "engines": {
+    "node": "18.x"
   },
   "author": "David Dosenovic",
   "license": "ISC",
@@ -31,6 +34,7 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mocha": "^10.2.0",
+    "mysql2": "^3.2.3",
     "nyc": "^15.1.0",
     "pg": "^8.10.0",
     "pg-hstore": "^2.3.4",
