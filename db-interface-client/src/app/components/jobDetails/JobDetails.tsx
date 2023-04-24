@@ -182,7 +182,7 @@ export default function JobDetails(job: Job) {
             }}>
                 <div className="content-padding">
                     <div id="job-details__job-title" className="margin-bottom-1">{job.jobTitle}</div>
-                    <div id="job-details__organization-name"><a href={job.organization.website}>{job.organization.name}</a></div>
+                    <div><a id="job-details__organization-name" href={job.organization.website}>{job.organization.name}</a></div>
                 </div>
 
                 <div className="job-details__two-columns-row">
@@ -267,10 +267,12 @@ export default function JobDetails(job: Job) {
                 </div>
 
                 <div className="card content-padding margin-bottom-3">
-                    <div id="job-details__organization-name">{job.organization.name}</div>
+                    <div id="job-details__organization-name" className='margin-bottom-1'>{job.organization.name}</div>
                     {job.organization.website
-                        ? <div>
-                            <AiOutlineGlobal size={30} />
+                        ? <div className='job-details__organization-website margin-bottom-2'>
+                            <div className='margin-right-1'>
+                                <AiOutlineGlobal size={30} />
+                            </div>
                             {job.organization.website}
                         </div>
                         : <div className="margin-bottom-2"/>

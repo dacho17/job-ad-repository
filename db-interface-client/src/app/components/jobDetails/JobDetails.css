@@ -11,8 +11,17 @@
 }
 
 #job-details__organization-name {
+    text-decoration: none;
     font-size: 22px;
     font-weight: 700;
+    color: var(--light-blue)
+}
+
+.job-details__organization-website {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .job-details__section-title {

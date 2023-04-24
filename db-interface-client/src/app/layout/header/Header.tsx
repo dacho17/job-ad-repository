@@ -29,12 +29,12 @@ export default function Header() {
     return (
         <div id="header">
             <div className="header__links">
-                <div className="header__link-container">
-                    <a className="header__link" href="/">{headerTitle}</a>
+                <div className="header__link-container" onClick={() => navigate('/')}>
+                    <span className="header__link">{headerTitle}</span>
                 </div>
                 { user && user.role === UserRole.ADMIN &&
-                <div className="header__link-container">
-                    <a className="header__link" href="/admin-panel" >Admin panel</a>
+                <div className="header__link-container" onClick={() => navigate('/admin-panel')}>
+                    <span className="header__link">Admin panel</span>
                 </div>
                 }
             </div>
