@@ -11,10 +11,10 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare role: number;
     declare jwtAuthToken: CreationOptional<string | null>;
 
-    declare getJobAdScrapingTasks: HasManyGetAssociationsMixin<JobAdScrapingTask[]>;
-    declare getJobScrapingTasks: HasManyGetAssociationsMixin<JobScrapingTask[]>;
-    declare jobAdScrapingTasks?: NonAttribute<JobAdScrapingTask[]>; // Note this is optional since it's only populated when explicitly requested in code
-    declare jobScrapingTasks?: NonAttribute<JobScrapingTask[]>;
+    // declare getJobAdScrapingTasks: HasManyGetAssociationsMixin<JobAdScrapingTask[]>;
+    // declare getJobScrapingTasks: HasManyGetAssociationsMixin<JobScrapingTask[]>;
+    // declare jobAdScrapingTasks?: NonAttribute<JobAdScrapingTask[]>; // Note this is optional since it's only populated when explicitly requested in code
+    // declare jobScrapingTasks?: NonAttribute<JobScrapingTask[]>;
 
     declare static associations: {
         jobAdScrapingTasks: Association<User, JobAdScrapingTask>;
@@ -23,7 +23,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
 }
 
 
-export const UserMAP = (sequelize: Sequelize) => {
+export const UserMAP = async (sequelize: Sequelize) => {
     User.init({
         id: {
             type: DataTypes.INTEGER,
@@ -62,5 +62,5 @@ export const UserMAP = (sequelize: Sequelize) => {
         modelName: 'User',
     });
 
-    User.sync(); // { alter: true }
+    return await User.sync(); // { alter: true }
 }

@@ -1,5 +1,4 @@
 import { Association, CreationOptional, DataTypes, ForeignKey, InferAttributes, InferCreationAttributes, Model, NonAttribute, Sequelize } from "sequelize";
-import { User } from "./user";
 
 export class JobScrapingTask extends Model<InferAttributes<JobScrapingTask>, InferCreationAttributes<JobScrapingTask>> {
     declare id: CreationOptional<number>;
@@ -11,14 +10,14 @@ export class JobScrapingTask extends Model<InferAttributes<JobScrapingTask>, Inf
     declare numberOfSuccessfullyScrapedJobs: CreationOptional<number | null>;
     declare numberOfUnSuccessfullyScrapedJobs: CreationOptional<number | null>;
     
-    declare userId: ForeignKey<User['id']>;
-    declare user?: NonAttribute<User>;
-    declare static associations: {
-        user: Association<JobScrapingTask, User>
-    }
+    declare userId: CreationOptional<number>;   // ForeignKey<User['id']>
+    // declare user?: NonAttribute<User>;
+    // declare static associations: {
+    //     user: Association<JobScrapingTask, User>
+    // }
 }
 
-export const JobScrapingTaskMAP = (sequelize: Sequelize) => {
+export const JobScrapingTaskMAP = async (sequelize: Sequelize) => {
     JobScrapingTask.init({
         id: {
             type: DataTypes.INTEGER,
@@ -64,5 +63,6 @@ export const JobScrapingTaskMAP = (sequelize: Sequelize) => {
         sequelize,
         modelName: 'JobScrapingTask',
     });
-    JobScrapingTask.sync();   // { alter: true }
+    
+    return await JobScrapingTask.sync();   // { alter: true }
 }

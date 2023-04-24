@@ -18,19 +18,19 @@ export class Organization extends Model<InferAttributes<Organization>, InferCrea
     // Since TS cannot determine model association at compile time
     // we have to declare them here purely virtually
     // these will not exist until `Model.init` was called.
-    declare getJobs: HasManyGetAssociationsMixin<Job[]>;
+    // declare getJobs: HasManyGetAssociationsMixin<Job[]>;
     declare addJob: HasManyCreateAssociationMixin<Job>;
 
     // You can also pre-declare possible inclusions, these will only be populated if you
     // actively include a relation.
-    declare jobs?: NonAttribute<Job[]>; // Note this is optional since it's only populated when explicitly requested in code
+    // declare jobs?: NonAttribute<Job[]>; // Note this is optional since it's only populated when explicitly requested in code
 
     declare static associations: {
         jobs: Association<Organization, Job>;
       };
 }
 
-export const OrganizationMAP = (sequelize: Sequelize) => {
+export const OrganizationMAP = async (sequelize: Sequelize) => {
     Organization.init({
         id: {
             type: DataTypes.INTEGER,
@@ -64,19 +64,19 @@ export const OrganizationMAP = (sequelize: Sequelize) => {
             allowNull: true,
         },
         size: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true
         },
         founded: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true
         },
         industry: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true
         },
         description: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         website: {

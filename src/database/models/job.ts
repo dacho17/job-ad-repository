@@ -43,8 +43,8 @@ export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job
     declare requiresParsing: CreationOptional<boolean>;
     declare parsedDate?: CreationOptional<Date>;
 
-    declare jobAdId: ForeignKey<JobAd['id']>;
-    declare organizationId: ForeignKey<Organization['id']>;
+    declare jobAdId: CreationOptional<number>;          // FK
+    declare organizationId: CreationOptional<number>;   // FK
 
     declare organization?: NonAttribute<Organization>; // Note this is optional since it's only populated when explicitly requested in code
     declare jobAd?: NonAttribute<JobAd>; // Note this is optional since it's only populated when explicitly requested in code
@@ -53,10 +53,10 @@ export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job
     // Since TS cannot determine model association at compile time
     // we have to declare them here purely virtually
     // these will not exist until `Model.init` was called.
-    declare getOrg: BelongsToGetAssociationMixin<Organization>; // Note the null assertions!
-    declare setOrg: BelongsToSetAssociationMixin<Organization, number>;
-    declare getAd: BelongsToGetAssociationMixin<JobAd>;
-    declare setAd: BelongsToSetAssociationMixin<JobAd, number>;
+    // declare getOrg: BelongsToGetAssociationMixin<Organization>; // Note the null assertions!
+    // declare setOrg: BelongsToSetAssociationMixin<Organization, number>;
+    // declare getAd: BelongsToGetAssociationMixin<JobAd>;
+    // declare setAd: BelongsToSetAssociationMixin<JobAd, number>;
 
     declare static associations: {
         organization: Association<Job, Organization>;
@@ -64,7 +64,7 @@ export class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job
     };
 }
 
-export const JobMAP = (sequelize: Sequelize) => {
+export const JobMAP = async (sequelize: Sequelize) => {
     Job.init({
         id: {
             type: DataTypes.INTEGER,
@@ -82,15 +82,15 @@ export const JobMAP = (sequelize: Sequelize) => {
             defaultValue: DataTypes.NOW,
         },
         url: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false,
         },
         jobTitle: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false,
         },
         contactEmails: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         postedDate: {
@@ -110,27 +110,27 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true,
         },
         timeEngagement: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         salary: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         nOfApplicants: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true
         },
         workLocation: {
-            type: DataTypes.STRING(1024),
+            type: DataTypes.TEXT,
             allowNull: true
         },
         details: {
-            type: DataTypes.STRING(10000),
+            type: DataTypes.TEXT,
             allowNull: true
         },
         description: {
-            type: DataTypes.STRING(20000),
+            type: DataTypes.TEXT,
             allowNull: true
         },
         isRemote: {
@@ -158,19 +158,19 @@ export const JobMAP = (sequelize: Sequelize) => {
             allowNull: true,
         },
         requiredSkills: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         goodToHaveSkills: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         techTags: {
-            type: DataTypes.STRING(1024),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         interestTags: {
-            type: DataTypes.STRING(1024),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         // devStack: {
@@ -178,31 +178,31 @@ export const JobMAP = (sequelize: Sequelize) => {
         //     allowNull: true,
         // },
         requiredLanguages: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         requiredExperience: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         requiredEducation: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         requirements: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         benefits: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         equipmentProvided: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         responsibilities: {
-            type: DataTypes.STRING(4096),
+            type: DataTypes.TEXT,
             allowNull: true,
         },
         additionalJobLink: {
@@ -231,5 +231,5 @@ export const JobMAP = (sequelize: Sequelize) => {
         modelName: 'Job',
     });
 
-    Job.sync(); // { alter: true }
+    return await Job.sync(); // { alter: true }
 }

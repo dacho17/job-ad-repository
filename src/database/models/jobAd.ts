@@ -25,14 +25,14 @@ export class JobAd extends Model<InferAttributes<JobAd>, InferCreationAttributes
 
     // You can also pre-declare possible inclusions, these will only be populated if you
     // actively include a relation.
-    declare job?: NonAttribute<Job>; // Note this is optional since it's only populated when explicitly requested in code
+    // declare job?: NonAttribute<Job>; // Note this is optional since it's only populated when explicitly requested in code
 
     declare static associations: {
         job: Association<JobAd, Job>;
     };
 }
 
-export const JobAdMAP = (sequelize: Sequelize) => {
+export const JobAdMAP = async (sequelize: Sequelize) => {
     JobAd.init({
         id: {
             type: DataTypes.INTEGER,
@@ -88,5 +88,6 @@ export const JobAdMAP = (sequelize: Sequelize) => {
         sequelize,
         modelName: 'JobAd',
     });
-    JobAd.sync();   // { alter: true }
+    
+    return await JobAd.sync();   // { alter: true }
 }
