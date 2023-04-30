@@ -1,1 +1,1 @@
-web: ./db-interface-client npm start
+web: npm start --prefix db-interface-client
