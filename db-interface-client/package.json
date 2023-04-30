@@ -25,7 +25,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "npm install && react-scripts --optimize_for_size --max_old_space_size=2560 --gc_interval=100 start",
+    "start": "react-scripts --optimize_for_size --max_old_space_size=480 --gc_interval=100 start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
