@@ -17,22 +17,25 @@ export default function JobTable() {
     return (
         <div className="table-container">
             <table className="job-table">
-                <tr className="job-table__header">
-                    {TABLE_HEADER.map((heading, index) =>
-                        <th className="job-table__header-cell"
-                            key={index}>
-                            {heading}
-                        </th>
-                    )}
-                </tr>
-                {jobs?.map((job, index) => (
-                    <JobRow
-                        key={index}
-                        {...job}
-                    />
-                ))}
+                <thead>
+                    <tr className="job-table__header">
+                        {TABLE_HEADER.map((heading, index) =>
+                            <th className="job-table__header-cell"
+                                key={index}>
+                                {heading}
+                            </th>
+                        )}
+                    </tr>
+                </thead>
+                <tbody>
+                    {jobs?.map((job, index) => (
+                        <JobRow
+                            key={index}
+                            {...job}
+                        />
+                    ))}                    
+                </tbody>
             </table>
         </div>
-        
     );
 }
