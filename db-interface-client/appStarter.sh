@@ -3,7 +3,7 @@ npm install
 
 # export NODE_OPTIONS="--max_old_space_size=448"
 
-npm run start
+# npm run start
 
 # npm run build
 
@@ -12,3 +12,5 @@ npm run start
 # cd build
 
 # serve -s
+
+npm run deploy
