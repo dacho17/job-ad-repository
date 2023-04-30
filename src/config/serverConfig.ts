@@ -16,7 +16,7 @@ export default class ServerCluster {
     public run() {
         if (cluster.isPrimary) {
             const cpuCount = os.cpus().length;
-            for (let i = 0; i < cpuCount; i++) {
+            for (let i = 0; i < 2; i++) {    // NOTE: due to free tier, cpuConunt is not used. 2 Workers are used
                 cluster.fork();
             }
 
