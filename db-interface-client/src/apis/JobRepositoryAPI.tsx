@@ -64,7 +64,8 @@ const requests = {
     post: (url: string, body: {}) => axios.post(url, body).then(appResponse),
 }
 
-const BE_API_URL = process.env.BE_API_URL || 'http://localhost:1700';
+// const BE_API_URL = 'process.env.BE_API_URL' || 'http://localhost:1700';
+const BE_API_URL = 'https://job-ad-repo-api.herokuapp.com'; // NOTE/TODO!: very bad practice, but I am building locally
 const jobRepositoryAPI = {
     login: (values: User) => requests.post(`${BE_API_URL}/login`, values) as Promise<AppResponse<User | null>>,
     signup: (values: User) => requests.post(`${BE_API_URL}/register`, values) as Promise<AppResponse<User | null>>,
