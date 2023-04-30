@@ -3,3 +3,5 @@ logs
 dist
 .nyc_output
 coverage
+db-interface-client/bin
+db-interface-client/build

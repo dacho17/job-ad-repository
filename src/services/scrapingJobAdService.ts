@@ -144,7 +144,14 @@ export class ScrapingJobAdService {
    * @returns {Promise<number>} Promise resolving to the number of stored job ads.
    */
     public async scrapeJobAds(clientForm: ScrapeJobAdsForm, scraper: IJobAdScraper): Promise<number> {
-        const scrapedJobAds = await scraper.scrape(clientForm);
+        let scrapedJobAds;
+        try {
+            scrapedJobAds = await scraper.scrape(clientForm);
+        } catch (err) {
+            console.log(`An error occurred while attempting to scrape the job ads from a site [${err}]`);
+            return 0;
+        }
+
         console.log(scrapedJobAds.length + ' ads have been scraped.');
 
         if (scrapedJobAds?.length == 0) {
