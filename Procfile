@@ -1,1 +1,1 @@
-worker: npm start
+web: ./db-interface-client npm start

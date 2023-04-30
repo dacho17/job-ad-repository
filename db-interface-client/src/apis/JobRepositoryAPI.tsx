@@ -64,21 +64,22 @@ const requests = {
     post: (url: string, body: {}) => axios.post(url, body).then(appResponse),
 }
 
+const HOST_URL = process.env.HOST_URL || 'http://localhost:1700';
 const jobRepositoryAPI = {
-    login: (values: User) => requests.post("http://localhost:1700/login", values) as Promise<AppResponse<User | null>>,
-    signup: (values: User) => requests.post("http://localhost:1700/register", values) as Promise<AppResponse<User | null>>,
-    signout: (values: User) => requests.post("http://localhost:1700/logout", values) as Promise<AppResponse<User | null>>,
+    login: (values: User) => requests.post(`${HOST_URL}/login`, values) as Promise<AppResponse<User | null>>,
+    signup: (values: User) => requests.post(`${HOST_URL}/register`, values) as Promise<AppResponse<User | null>>,
+    signout: (values: User) => requests.post(`${HOST_URL}/logout`, values) as Promise<AppResponse<User | null>>,
 
-    getJobs: (params: URLSearchParams) => requests.get('http://localhost:1700/get-jobs', params) as Promise<AppResponse<Job[] | null>>,
-    getJob: (values: object) => requests.post("http://localhost:1700/get-job", values) as Promise<AppResponse<Job | null>>,
+    getJobs: (params: URLSearchParams) => requests.get(`${HOST_URL}/get-jobs`, params) as Promise<AppResponse<Job[] | null>>,
+    getJob: (values: object) => requests.post(`${HOST_URL}/get-job`, values) as Promise<AppResponse<Job | null>>,
 
-    scrapeJobFromUrl: (values: object) => requests.post("http://localhost:1700/scrape-from-url", values) as Promise<AppResponse<Job | null>>,
-    scrapeAndParseJobFromUrl: (values: object) => requests.post("http://localhost:1700/parse-job", values) as Promise<AppResponse<Job | null>>,
+    scrapeJobFromUrl: (values: object) => requests.post(`${HOST_URL}/scrape-from-url`, values) as Promise<AppResponse<Job | null>>,
+    scrapeAndParseJobFromUrl: (values: object) => requests.post(`${HOST_URL}/parse-job`, values) as Promise<AppResponse<Job | null>>,
 
-    scrapeJobAds: (values: JobAdScrapingForm) => requests.post("http://localhost:1700/scrape-job-ads", values) as Promise<AppResponse<JobAdScrapingTask | null>>,
-    scrapeJobs: () => requests.get("http://localhost:1700/scrape-jobs") as Promise<AppResponse<JobScrapingTask | null>>,
-    getJobAdScrapingTasks: (values: object) => requests.post("http://localhost:1700/get-job-ad-scraping-tasks", values) as Promise<AppResponse<JobAdScrapingTask[] | null>>,
-    getJobScrapingTasks: (values: object) => requests.post("http://localhost:1700/get-job-scraping-tasks", values) as Promise<AppResponse<JobScrapingTask[] | null>>,
+    scrapeJobAds: (values: JobAdScrapingForm) => requests.post(`${HOST_URL}/scrape-job-ads`, values) as Promise<AppResponse<JobAdScrapingTask | null>>,
+    scrapeJobs: () => requests.get(`${HOST_URL}/scrape-jobs`) as Promise<AppResponse<JobScrapingTask | null>>,
+    getJobAdScrapingTasks: (values: object) => requests.post(`${HOST_URL}/get-job-ad-scraping-tasks`, values) as Promise<AppResponse<JobAdScrapingTask[] | null>>,
+    getJobScrapingTasks: (values: object) => requests.post(`${HOST_URL}/get-job-scraping-tasks`, values) as Promise<AppResponse<JobScrapingTask[] | null>>,
 }
 
 export default jobRepositoryAPI;
