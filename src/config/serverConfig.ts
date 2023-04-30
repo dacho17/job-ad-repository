@@ -9,8 +9,8 @@ import setRoutes from '../routes/index';
 
 // About master-worker arch: https://www.arubacloud.com/tutorial/how-to-use-cluster-to-increase-node-js-performance.aspx
 export default class ServerCluster {
-    private port: string = process.env.PORT!;
-    private host: string = process.env.HOST!;
+    private port: string = process.env.SERVER_PORT!;
+    private host: string = process.env.SERVER_HOST!;
     private env: string = process.env.ENV!;
 
     public run() {
