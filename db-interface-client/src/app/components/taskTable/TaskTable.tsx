@@ -19,8 +19,8 @@ function getTaskStatus(status: JobAdScrapingTaskStatus) {
             return "CREATED";
         case JobAdScrapingTaskStatus.RUNNING:
             return "RUNNING";
-        case JobAdScrapingTaskStatus.STOPPED:
-            return "STOPPED";
+        case JobAdScrapingTaskStatus.TERMINATED:
+            return "TERMINATED";
         case JobAdScrapingTaskStatus.FINISHED:
             return "FINISHED";
     }
