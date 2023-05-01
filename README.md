@@ -7,3 +7,7 @@ To refer to the application's package.json file, use the command: npm --prefix .
 JobAd Scrapers which could be implemented:
     jobsInNetwork -> not uniform detail scraper
     indeed -> getting access denied
+
+TODOs/Improvements:
+    - If there is no jobTasks for an admin user, show a prettier table
+    
