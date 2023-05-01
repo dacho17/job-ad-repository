@@ -27,7 +27,10 @@ export default class SnaphuntScraper implements IJobApiScraper {
             jsonResponse = await axios(url!);
         } catch(exception) {
             console.log(`An exception occurred while accessing the url=${exception}!`);
-            jobAd!.isAdPresentOnline = false;
+            if (jobAd) {
+                jobAd.isAdPresentOnline = false;
+            }
+
             return null;
         }
 
@@ -35,13 +38,16 @@ export default class SnaphuntScraper implements IJobApiScraper {
 
         if (!data) {
             console.log(`Data has not been fetched from url=${url}!`);
-            jobAd!.isAdPresentOnline = false;
+            if (jobAd) {
+                jobAd.isAdPresentOnline = false;
+            }
+
             return null;
         }
 
         const companyInfo = data.user[0].companiesInformation[0];
 
-        const remoteLocationStr = data.remoteLocation.countries.join(Constants.COMPOSITION_DELIMITER);
+        const remoteLocationStr = data.remoteLocation.countries?.join(Constants.COMPOSITION_DELIMITER);
 
         const newJob: JobDTO = {
             jobTitle: data.jobListing.jobTitle,
@@ -53,7 +59,7 @@ export default class SnaphuntScraper implements IJobApiScraper {
             jobAdId: jobAd?.id ?? undefined,
             requiredExperience: this.getRequiredExperienceStr(data.minimumYearsOfExperience),
             workLocation: remoteLocationStr,
-            isRemote: remoteLocationStr.length > 0 || data.jobLocationType === constants.REMOTE,
+            isRemote: remoteLocationStr?.length > 0 || data.jobLocationType === constants.REMOTE,
             salary: data.showSalary 
                 ? `${data.minSalary + constants.MINUS_SIGN + data.maxSalary} ${data.currency}/${this.getSalaryPeriod(data.salaryTimePeriod)}`
                 : undefined,
