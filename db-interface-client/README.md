@@ -1,3 +1,9 @@
+DEPLOYMENT STEPS:
+    1. Build app locally by running `npm run build` command in the db-interface-client folder.
+    2. Push the build folder to the deploy-client-app branch.
+    3. On Heroku, access job-ad-repo-client app and deploy from the deploy-client-app branch.
+        - I could enable automatic deployment as well
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
