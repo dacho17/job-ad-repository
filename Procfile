@@ -1,1 +1,1 @@
-web: npm cache clean --force && npm install && npm start
+web: npm start

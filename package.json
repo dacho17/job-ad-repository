@@ -7,7 +7,8 @@
     "start-old": "ts-node ./src/index.ts",
     "start": "tsc && node dist/src/index.js",
     "build": "npx tsc",
-    "test": "nyc ./node_modules/.bin/_mocha 'test/**/*.test.ts'"
+    "test": "nyc ./node_modules/.bin/_mocha 'test/**/*.test.ts'",
+    "heroku-postbuild": "bash herokuPostbuild.bash"
   },
   "engines": {
     "node": "18.x"
