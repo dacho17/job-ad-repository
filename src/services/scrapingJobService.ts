@@ -224,6 +224,18 @@ export class ScrapingJobService {
                     jobScrapingTaskId: jobScrapingTaskId,
                 }
             });
+            worker.on('message', async (val) => {
+                if (val.has('terminationMsg')) {
+                    console.log('Terminating the worker on WORKER_OPRATION_TERMINATED');
+                    worker.terminate();
+                }
+                console.log(val);
+                try {
+                    await this.jobScrapingTaskRepository.markAsTerminated(jobScrapingTaskId, val.successfullyStored, val.unsuccessfullyStored);
+                } catch (err) {
+                    console.log(`An errror occurred while attempting to mark the jobScraping task [id=${jobScrapingTaskId}] as TERMINATED.`);
+                }
+            });
         }
     }
 }

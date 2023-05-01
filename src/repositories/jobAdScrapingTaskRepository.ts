@@ -66,6 +66,23 @@ export default class JobAdScrapingTaskRepository {
     }
 
     /**
+   * @description Function attempts to set endTime and status (to TERMINATED) properties of the jobAdScrapingTask with the provided id.
+   * @param {number} id
+   * @returns {Promise<JobAdScrapingTask | null>}
+   */
+    public async markAsTerminated(id: number): Promise<JobAdScrapingTask | null> {
+        let jobAdScrapingTask = await db.JobAdScrapingTask.findByPk(id);
+
+        if (jobAdScrapingTask) {
+            jobAdScrapingTask.endTime = new Date(Date.now());
+            jobAdScrapingTask.status = JobAdScrapingTaskStatus.TERMINATED;
+            return await this.update(jobAdScrapingTask);
+        }
+
+        return jobAdScrapingTask;   // null
+    }
+
+    /**
    * @description Function attempts to fetch list of offsetted jobAdScrapingTasks for the user with the provided userId.
    * @param {number} userId 
    * @param {number} offset

@@ -10,6 +10,7 @@ import constants from "../constants";
 import { JobAdSource } from "../enums/jobAdSource";
 import DbQueryError from "../errors/dbQueryError";
 import OrganizationMappper from "../mappers/organizationMapper";
+import { JobAd } from "../../database/models/jobAd";
 
 export class JobScrapingWorker {
     private browserAPI: BrowserAPI;
@@ -44,8 +45,8 @@ export class JobScrapingWorker {
         try {
             await this.jobScrapingTaskRepository.markAsRunning(jobScrapingTaskId);
         } catch (err) {
-            console.log(`An error occurred while attempting to mark as RUNNING the jobScrapingTask with id=${jobScrapingTaskId}`);
-            return;
+            parentPort?.postMessage(`An error occurred while attempting to mark as RUNNING the jobScrapingTask with id=${jobScrapingTaskId}`);
+            parentPort?.postMessage(constants.WORKER_OPERATION_TERMINATED);
         }
 
         let jobAdQueryOffset = 0;
@@ -58,10 +59,16 @@ export class JobScrapingWorker {
             try {
                 jobAdsWithoutScrapedJobs = await this.jobAdRepository.getAdsWithUnscrapedJobs(jobAdQueryOffset);
             } catch (exception) {
-                console.error(`getAdsWithoutScrapedDetails unsuccessful - [${exception}]`);
-                throw new DbQueryError(`The jobs to be scraped could not be fetched.`);
+                parentPort?.postMessage(`getAdsWithoutScrapedDetails unsuccessful - [${exception}]`);
+                const terminationData: Map<string, any> = new Map<string, any>(Object.entries({
+                    terminationMsg: constants.WORKER_OPERATION_TERMINATED,
+                    successfullyStored: succStored,
+                    unsuccessfullyStored: jobAdQueryOffset
+                }));
+                parentPort?.postMessage(terminationData);
+                return; // as a sanity check
             }
-            if (jobAdsWithoutScrapedJobs.length === 0) break;
+            if (jobAdsWithoutScrapedJobs!.length === 0) break;
 
             console.log(`${jobAdsWithoutScrapedJobs.length} jobads to be scraped`);
             for (let i = 0; i < jobAdsWithoutScrapedJobs.length; i++) {

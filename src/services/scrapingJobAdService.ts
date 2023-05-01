@@ -248,9 +248,19 @@ export class ScrapingJobAdService {
                     taskInitiatorId: userId
                 }
             });
-            // worker.on('message', (val) => {  main thread can listen to messages sent by the child thread
-            //     console.log(`On: ${val}`)
-            // });
+            worker.on('message', async (val) => {
+                if (val === 'WORKER_OPRATION_TERMINATED') {
+                    console.log('Terminating the worker on WORKER_OPRATION_TERMINATED');
+                    worker.terminate();
+                }
+                console.log(val);
+
+                try {
+                    await this.jobAdScrapingTaskRepository.markAsTerminated(jobAdScrapeTaskId);
+                } catch (err) {
+                    console.log(`An errror occurred while attempting to mark the jobAdScraping task [id=${jobAdScrapeTaskId}] as TERMINATED.`);
+                }
+            });
         }
     }
 }
