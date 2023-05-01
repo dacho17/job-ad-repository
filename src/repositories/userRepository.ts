@@ -56,12 +56,12 @@ export default class UserRepository {
    * @param {string} username
    * @returns {Promise<boolean>} True or false depending on whether the update has been successfully made.
    */
-    public async markAsLoggedOut(jwtToken: string): Promise<boolean> {
+    public async markAsLoggedOut(username: string): Promise<boolean> {
         const nOfLoggedOutUsers = await db.User.update({
             jwtAuthToken: null
         },
         {
-            where: { jwtAuthToken: jwtToken }
+            where: { username: username }
         });
         const isUserLoggedOut = nOfLoggedOutUsers.length > 0;
 

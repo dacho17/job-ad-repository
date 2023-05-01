@@ -9,14 +9,14 @@ import setRoutes from '../routes/index';
 
 // About master-worker arch: https://www.arubacloud.com/tutorial/how-to-use-cluster-to-increase-node-js-performance.aspx
 export default class ServerCluster {
-    private port: string = process.env.SERVER_PORT!;
-    private host: string = process.env.SERVER_HOST!;
+    private port: string = process.env.PORT || '1700';
+    private host: string = process.env.HOST || 'localhost';
     private env: string = process.env.ENV!;
 
     public run() {
         if (cluster.isPrimary) {
             const cpuCount = os.cpus().length;
-            for (let i = 0; i < cpuCount; i++) {
+            for (let i = 0; i < 2; i++) {    // NOTE: due to free tier, cpuConunt is not used. 2 Workers are used
                 cluster.fork();
             }
 

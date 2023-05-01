@@ -370,6 +370,8 @@ export default {
 
     P: 'P',
 
+    WORKER_OPERATION_TERMINATED: 'WORKER_OPRATION_TERMINATED',
+
     // language levels
     B1: '(b1)',
     B2: '(b2)',

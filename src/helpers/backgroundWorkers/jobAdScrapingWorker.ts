@@ -4,6 +4,8 @@ import JobAdScrapingTaskRepository from "../../repositories/jobAdScrapingTaskRep
 import { ScrapingJobAdService } from "../../services/scrapingJobAdService";
 import { ScrapeJobAdsForm } from "../dtos/scrapeJobAdsForm";
 import { JobAdScrapingTaskStatus } from "../enums/jobAdScrapingTaskStatus";
+import { JobAdScrapingTask } from "../../database/models/jobAdScrapingTask";
+import constants from "../constants";
 
 class JobAdScrapingWorker {
     private jobAdScrapingService: ScrapingJobAdService;
@@ -33,7 +35,15 @@ class JobAdScrapingWorker {
 
         // can communicate with the parent process through parentPort!.postMessage(strMessage);
 
-        const jobAdScrapingTask = await this.jobAdScrapingTaskRepository.markAsRunning(workerData.jobAdScrapingTaskId);
+        let jobAdScrapingTask: JobAdScrapingTask | null;
+        try {
+            jobAdScrapingTask = await this.jobAdScrapingTaskRepository.markAsRunning(workerData.jobAdScrapingTaskId);
+        } catch (err) {
+            parentPort?.postMessage(`An error occurred while attempting to mark the jobAdScrapingTask [id=${workerData.jobAdScrapingTaskId}] as RUNNING.`);
+            parentPort?.postMessage(constants.WORKER_OPERATION_TERMINATED);
+            return;
+        }
+
         let totalAdsScraped = 0;
         let jobAdScrapers = this.jobAdScrapingService.getScrapers();
         for (let i = 0; i < jobAdScrapers.length; i++) {
@@ -43,7 +53,12 @@ class JobAdScrapingWorker {
         jobAdScrapingTask!.numberOfAdsScraped = totalAdsScraped;
         jobAdScrapingTask!.endTime = new Date(Date.now());
         jobAdScrapingTask!.status = JobAdScrapingTaskStatus.FINISHED;
-        await this.jobAdScrapingTaskRepository.update(jobAdScrapingTask!);
+        try {
+            await this.jobAdScrapingTaskRepository.update(jobAdScrapingTask!);
+        } catch (err) {
+            parentPort?.postMessage(`An error occurred while attempting to mark the jobAdScrapingTask [id=${workerData.jobAdScrapingTaskId}] as FINISHED.`);
+            parentPort?.postMessage(constants.WORKER_OPERATION_TERMINATED);
+        }
     }
 }
 
